@@ -1,0 +1,211 @@
+@using Auth2Demo.Web.Models.Account
+@using Auth2Demo.Web.Models.Home
+@model HomeIndexViewModel
+@{
+    var profile = Model.Profile;
+    var login = Model.Login ?? new LoginViewModel();
+    var externalProviders = Model.ExternalProviders;
+    ViewData["Title"] = profile is null ? T["IdentityProvider"].Value : T["MyProfile"].Value;
+}
+
+@if (profile is not null)
+{
+    <section class="profile-home">
+        <div class="profile-hero-card">
+            <div class="profile-cover"></div>
+            <div class="profile-hero-content">
+                <div class="profile-avatar-xl">
+                    @if (!string.IsNullOrWhiteSpace(profile.AvatarUrl))
+                    {
+                        <img src="@profile.AvatarUrl" alt='@string.Format(T["PhotoOfUser"].Value, profile.DisplayName)' />
+                    }
+                    else
+                    {
+                        <span>@profile.DisplayName.Substring(0, 1).ToUpperInvariant()</span>
+                    }
+                </div>
+                <div class="profile-main-info">
+                    <span class="eyebrow">@T["TextBemVindoAoPortal"]</span>
+                    <h1>@profile.DisplayName</h1>
+                    <p>@(profile.JobTitle ?? T["PlatformUser"].Value) @(!string.IsNullOrWhiteSpace(profile.Department) ? $"• {profile.Department}" : string.Empty)</p>
+                    <div class="profile-badges">
+                        <span class="badge badge-success">@profile.Status</span>
+                        <span class="badge @(profile.EmailConfirmed ? "badge-success" : "badge-warning")">@(profile.EmailConfirmed ? T["EmailConfirmed"].Value : T["EmailPending"].Value)</span>
+                        <span class="badge @(profile.TwoFactorEnabled ? "badge-success" : "badge-warning")">@(profile.TwoFactorEnabled ? T["MfaActive"].Value : T["MfaInactive"].Value)</span>
+                        @foreach (var role in profile.Roles)
+                        {
+                            <span class="badge">@role</span>
+                        }
+                    </div>
+                </div>
+                <div class="profile-actions">
+                    <a class="btn" asp-controller="Account" asp-action="ManageMfa">@T["ConfigureMfa"]</a>
+                    @if (profile.IsAdmin)
+                    {
+                        <a class="btn btn-outline" asp-area="Admin" asp-controller="Dashboard" asp-action="Index">@T["GoToAdmin"]</a>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="profile-metrics four grid">
+            <div class="card stat-card"><span>@T["ActiveSessions"]</span><h2>@profile.ActiveSessions</h2><p>@T["TextAcessosNaoRevogados"]</p></div>
+            <div class="card stat-card"><span>@T["TrustedDevices"]</span><h2>@profile.TrustedDevices</h2><p>@T["RecognizedDevices"]</p></div>
+            <div class="card stat-card"><span>@T["MfaHabilitados"]</span><h2>@profile.EnabledMfaMethods</h2><p>@T["SecurityMethods"]</p></div>
+            <div class="card stat-card"><span>@T["Passkeys"]</span><h2>@profile.Passkeys</h2><p>@T["CredenciaisModernas"]</p></div>
+        </div>
+
+        <div class="profile-grid-main">
+            <div class="card profile-info-card">
+                <div class="section-title">
+                    <div><strong>@T["AccountInformation"]</strong><span>@T["TextDadosPrincipaisDoUsuarioAutenticado"]</span></div>
+                </div>
+                <dl class="profile-details">
+                    <dt>@T["Email"]</dt><dd>@(profile.Email ?? T["NotInformed"].Value)</dd>
+                    <dt>@T["User"]</dt><dd>@(profile.UserName ?? T["NotInformed"].Value)</dd>
+                    <dt>@T["PhoneNumber"]</dt><dd>@(profile.PhoneNumber ?? T["NotInformed"].Value)</dd>
+                    <dt>@T["Cargo"]</dt><dd>@(profile.JobTitle ?? T["NotInformed"].Value)</dd>
+                    <dt>@T["Department"]</dt><dd>@(profile.Department ?? T["NotInformed"].Value)</dd>
+                    <dt>@T["Language"]</dt><dd>@(profile.Locale ?? T["NotInformed"].Value)</dd>
+                    <dt>@T["Timezone"]</dt><dd>@(profile.TimeZone ?? T["NotInformed"].Value)</dd>
+                    <dt>@T["CriadoEm"]</dt><dd>@profile.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</dd>
+                    <dt>@T["LastLogin"]</dt><dd>@(profile.LastLoginAt?.ToLocalTime().ToString("dd/MM/yyyy HH:mm") ?? T["NotRegisteredYet"].Value)</dd>
+                    <dt>@T["TextUltimaTrocaDeSenha"]</dt><dd>@(profile.LastPasswordChangeAt?.ToLocalTime().ToString("dd/MM/yyyy HH:mm") ?? T["NotRegisteredYetFemale"].Value)</dd>
+                </dl>
+            </div>
+
+            <div class="card security-card">
+                <div class="section-title">
+                    <div><strong>@T["SecurityAndChecks"]</strong><span>@T["TextResumoRapidoParaProtegerAConta"]</span></div>
+                </div>
+                <div class="security-checks">
+                    <div class="security-check @(profile.EmailConfirmed ? "ok" : "warn")"><span>✉</span><div><strong>@T["Email"]</strong><small>@(profile.EmailConfirmed ? T["Confirmed"].Value : T["ConfirmationPending"].Value)</small></div></div>
+                    <div class="security-check @(profile.PhoneNumberConfirmed ? "ok" : "warn")"><span>☎</span><div><strong>@T["PhoneNumber"]</strong><small>@(profile.PhoneNumberConfirmed ? T["Confirmed"].Value : T["NotConfirmed"].Value)</small></div></div>
+                    <div class="security-check @(profile.TwoFactorEnabled ? "ok" : "warn")"><span>🔐</span><div><strong>@T["TextAutenticacaoEmDuasEtapas"]</strong><small>@(profile.TwoFactorEnabled ? T["ActiveFemale"].Value : T["RecommendedEnable"].Value)</small></div></div>
+                    <div class="security-check ok"><span>📄</span><div><strong>@T["Document"]</strong><small>@profile.DocumentVerificationStatus</small></div></div>
+                    <div class="security-check ok"><span>🙂</span><div><strong>@T["FaceScan"]</strong><small>@profile.FaceVerificationStatus</small></div></div>
+                    <div class="security-check @(profile.LockoutEnd.HasValue && profile.LockoutEnd > DateTimeOffset.UtcNow ? "warn" : "ok")"><span>🛡</span><div><strong>@T["Lockout"]</strong><small>@(profile.LockoutEnd.HasValue && profile.LockoutEnd > DateTimeOffset.UtcNow ? string.Format(T["LockedUntil"].Value, profile.LockoutEnd.Value.ToLocalTime().ToString("dd/MM/yyyy HH:mm")) : T["NoActiveLockout"].Value)</small></div></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="profile-grid-main">
+            <div class="card">
+                <div class="section-title">
+                    <div><strong>@T["RecentSessions"]</strong><span>@T["TextUltimosAcessosRegistradosNaConta"]</span></div>
+                </div>
+                @if (profile.RecentSessions.Count == 0)
+                {
+                    <div class="empty">@T["NoSessionsRegistered"]</div>
+                }
+                else
+                {
+                    <div class="activity-list">
+                        @foreach (var session in profile.RecentSessions)
+                        {
+                            <div class="activity-item">
+                                <div class="activity-icon">💻</div>
+                                <div><strong>@session.DeviceName</strong><small>@(session.IpAddress ?? T["IpNotInformed"].Value) @(string.IsNullOrWhiteSpace(session.Location) ? string.Empty : $"• {session.Location}")</small></div>
+                                <span class="activity-time">@session.LastSeenAt.ToLocalTime().ToString("dd/MM HH:mm")</span>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+
+            <div class="card">
+                <div class="section-title">
+                    <div><strong>@T["RecentDevices"]</strong><span>@T["TextEquipamentosUsadosParaAcessarOPortal"]</span></div>
+                </div>
+                @if (profile.RecentDevices.Count == 0)
+                {
+                    <div class="empty">@T["NoDevicesRegistered"]</div>
+                }
+                else
+                {
+                    <div class="activity-list">
+                        @foreach (var device in profile.RecentDevices)
+                        {
+                            <div class="activity-item">
+                                <div class="activity-icon">📱</div>
+                                <div><strong>@device.Name</strong><small>@(device.Browser ?? T["BrowserNotInformed"].Value) @(string.IsNullOrWhiteSpace(device.OperatingSystem) ? string.Empty : $"• {device.OperatingSystem}")</small></div>
+                                <span class="badge @(device.IsTrusted ? "badge-success" : "badge-warning")">@(device.IsTrusted ? T["Trusted"].Value : T["New"].Value)</span>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
+}
+else
+{
+    <section class="portal-shell">
+        <div class="hero-panel">
+            <span class="eyebrow">@T["TextIdentityProvider"]</span>
+            <h1 class="hero-title">@T["AppName"]<br /><span>@T["IdentityProvider"]</span></h1>
+            <p class="hero-text">@T["TextServidorDeAutenticacaoProprioSeguroEExtensivelCom"]</p>
+            <ul class="feature-list">
+                <li><span class="feature-icon">✓</span> @T["TextAutenticacaoModernaComOidcOauth2EAuthorizationCode"]</li>
+                <li><span class="feature-icon">✓</span> @T["TextPainelAdministrativoParaUsuariosRolesClientsEScopes"]</li>
+                <li><span class="feature-icon">✓</span> @T["TextBaseProntaParaMfaAuditoriaApisProtegidasE"]</li>
+            </ul>
+            <div class="trust-grid">
+                <div class="trust-item"><strong>@T["Oidc"]</strong><span>@T["ModernFlow"]</span></div>
+                <div class="trust-item"><strong>@T["Admin"]</strong><span>@T["TextGestaoCentral"]</span></div>
+                <div class="trust-item"><strong>@T["Sql"]</strong><span>@T["TextPersistenciaReal"]</span></div>
+            </div>
+        </div>
+
+        <div class="auth-card">
+            <div class="auth-tabs">
+                <a class="auth-tab active" asp-controller="Account" asp-action="Login">@T["Login"]</a>
+                <a class="auth-tab" asp-controller="Account" asp-action="Register">@T["CreateAccount"]</a>
+            </div>
+            <div class="auth-header">
+                <h2>@T["SignInToYourAccount"]</h2>
+                <p>@T["TextUseSuasCredenciaisParaAcessarSeuPerfilE"]</p>
+            </div>
+            @if (TempData["Error"] is not null)
+            {
+                <div class="alert">@TempData["Error"]</div>
+            }
+            <form asp-controller="Account" asp-action="Login" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="ReturnUrl" value="@login.ReturnUrl" />
+                <div asp-validation-summary="ModelOnly" class="validation"></div>
+                <div class="form-row">
+                    <label for="Email">@T["Email"]</label>
+                    <div class="input-wrap"><span class="input-icon">✉</span><input class="with-icon" id="Email" name="Email" type="email" value="@login.Email" placeholder="admin@auth2demo.local" autocomplete="username" /></div>
+                </div>
+                <div class="form-row">
+                    <label for="Password">@T["Password"]</label>
+                    <div class="input-wrap"><span class="input-icon">🔑</span><input class="with-icon" id="Password" name="Password" type="password" placeholder='@T["EnterYourPassword"].Value' autocomplete="current-password" /></div>
+                </div>
+                <label class="check"><input name="RememberMe" type="checkbox" value="true" /> @T["RememberMe"]</label>
+                <button class="btn btn-block" type="submit">@T["Login"]</button>
+            </form>
+
+            @if (externalProviders.Count > 0)
+            {
+                <div class="external-login-divider"><span>@T["OrContinueWith"]</span></div>
+                <div class="external-login-list">
+                    @foreach (var provider in externalProviders)
+                    {
+                        <form asp-controller="Account" asp-action="ExternalLogin" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="provider" value="@provider.Scheme" />
+                            <input type="hidden" name="returnUrl" value="@(login.ReturnUrl)" />
+                            <button class="btn btn-outline btn-block external-btn" type="submit">
+                                <span class="provider-dot">@provider.DisplayName.Substring(0, 1)</span> @provider.ButtonText
+                            </button>
+                        </form>
+                    }
+                </div>
+            }
+            <p class="form-footer">@T["TextNaoTemUmaConta"] <a asp-controller="Account" asp-action="Register">@T["CreateAccount"]</a></p>
+        </div>
+    </section>
+}
+
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

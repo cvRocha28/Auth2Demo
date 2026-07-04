@@ -1,0 +1,188 @@
+@model ClientDetailsViewModel
+@{
+    ViewData["Title"] = $"Client {Model.ClientId}";
+}
+
+<div class="page-heading">
+    <div>
+        <span class="page-kicker">@T["OpenIddict"]</span>
+        <h1>@T["Client"] @Model.ClientId</h1>
+        <p>@T["TextConfigurePermissoesScopesRedirectsEDadosDoAplicativo"]</p>
+    </div>
+    <div class="actions-row">
+        <a class="btn" asp-action="Edit" asp-route-clientId="@Model.ClientId">@T["Edit"]</a>
+        <a class="btn ghost" asp-action="Index">@T["Back"]</a>
+    </div>
+</div>
+
+@if (TempData["GeneratedSecret"] is string secret)
+{
+    <div class="alert">
+        <strong>@T["ClientSecretGenerated"]</strong>
+        <pre>@secret</pre>
+        <p>@T["TextCopieAgoraDepoisEleNaoSeraExibidoNovamente"]</p>
+    </div>
+}
+
+@if (TempData["Success"] is string success)
+{
+    <div class="alert success">@success</div>
+}
+
+<div class="client-grid">
+    <section class="card client-summary-card">
+        <div class="section-title">
+            <div>
+                <span class="page-kicker">@T["General"]</span>
+                <h2>@T["ClientInformation"]</h2>
+            </div>
+        </div>
+
+        <dl class="details-list">
+            <dt>@T["ClientId"]</dt>
+            <dd><code>@Model.ClientId</code></dd>
+
+            <dt>@T["DisplayName"]</dt>
+            <dd>@Model.DisplayName</dd>
+
+            <dt>@T["Type"]</dt>
+            <dd><span class="badge">@Model.ClientType</span></dd>
+
+            <dt>@T["Consent"]</dt>
+            <dd><span class="badge">@Model.ConsentType</span></dd>
+
+            <dt>@T["Pkce"]</dt>
+            <dd><span class="badge">@(Model.RequirePkce ? T["Required"].Value : T["NotRequired"].Value)</span></dd>
+        </dl>
+    </section>
+
+    <section class="card client-summary-card">
+        <div class="section-title">
+            <div>
+                <span class="page-kicker">@T["Flow"]</span>
+                <h2>@T["GrantsEEndpoints"]</h2>
+            </div>
+        </div>
+
+        <h3>@T["GrantTypes"]</h3>
+        @if (Model.GrantTypes.Count == 0)
+        {
+            <p class="muted">@T["NoGrantTypeAllowed"]</p>
+        }
+        else
+        {
+            foreach (var grant in Model.GrantTypes)
+            {
+                <span class="badge">@grant</span>
+            }
+        }
+
+        <h3>@T["Endpoints"]</h3>
+        @if (Model.Endpoints.Count == 0)
+        {
+            <p class="muted">@T["NoEndpointAllowed"]</p>
+        }
+        else
+        {
+            foreach (var endpoint in Model.Endpoints)
+            {
+                <span class="badge">@endpoint</span>
+            }
+        }
+    </section>
+
+    <section class="card client-summary-card">
+        <div class="section-title">
+            <div>
+                <span class="page-kicker">@T["OAuthOidc"]</span>
+                <h2>@T["RedirectUris"]</h2>
+            </div>
+        </div>
+
+        <h3>@T["LoginCallback"]</h3>
+        @if (Model.RedirectUris.Count == 0)
+        {
+            <p class="muted">@T["NoRedirectUriRegistered"]</p>
+        }
+        else
+        {
+            <ul class="uri-list">
+                @foreach (var uri in Model.RedirectUris)
+                {
+                    <li><code>@uri</code></li>
+                }
+            </ul>
+        }
+
+        <h3>@T["LogoutCallback"]</h3>
+        @if (Model.PostLogoutRedirectUris.Count == 0)
+        {
+            <p class="muted">@T["NoPostLogoutRedirectUriRegistered"]</p>
+        }
+        else
+        {
+            <ul class="uri-list">
+                @foreach (var uri in Model.PostLogoutRedirectUris)
+                {
+                    <li><code>@uri</code></li>
+                }
+            </ul>
+        }
+    </section>
+</div>
+
+<section class="card scopes-card">
+    <div class="section-title">
+        <div>
+            <span class="page-kicker">@T["AllowedScopes"]</span>
+            <h2>@T["ScopesPermitidosParaEsteClient"]</h2>
+            <p>@T["TextMarqueSomenteOsScopesQueEsteAplicativoPode"]</p>
+        </div>
+    </div>
+
+    <form method="post" asp-action="UpdateScopes">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="ClientId" value="@Model.ClientId" />
+
+        <div class="scope-options">
+            @foreach (var scope in Model.AvailableScopes)
+            {
+                <label class="scope-option @(scope.IsAllowed ? "selected" : string.Empty)">
+                    <input type="checkbox" name="SelectedScopes" value="@scope.Name" checked="@scope.IsAllowed" />
+                    <span>
+                        <strong>@scope.Name</strong>
+                        <small>@scope.DisplayName</small>
+                    </span>
+                </label>
+            }
+        </div>
+
+        <div class="actions-row">
+            <button class="btn" type="submit">@T["SaveScopes"]</button>
+        </div>
+    </form>
+</section>
+
+<section class="card danger-zone">
+    <div>
+        <span class="page-kicker">@T["Secret"]</span>
+        <h2>@T["RegenerateSecret"]</h2>
+        <p>@T["TextInvalidaOSecretAtualDepoisVocePrecisaAtualizar"]</p>
+    </div>
+    <form method="post" asp-action="RegenerateSecret" asp-route-clientId="@Model.ClientId" onsubmit='return confirm("@T["TextRegenerarOSecretDesteClientOSistemaCliente"].Value")'>
+        @Html.AntiForgeryToken()
+        <button class="btn" type="submit">@T["RegenerateSecret"]</button>
+    </form>
+</section>
+
+<section class="card danger-zone">
+    <div>
+        <span class="page-kicker danger-text">@T["DangerZone"]</span>
+        <h2>@T["DeleteClient"]</h2>
+        <p>@T["TextRemoveEstaAplicacaoEImpedeNovosLoginsUsando"]</p>
+    </div>
+    <form method="post" asp-action="Delete" asp-route-clientId="@Model.ClientId" onsubmit='return confirm("@T["TextTemCertezaQueDesejaExcluirEsteClient"].Value")'>
+        @Html.AntiForgeryToken()
+        <button class="danger" type="submit">@T["DeleteClient"]</button>
+    </form>
+</section>

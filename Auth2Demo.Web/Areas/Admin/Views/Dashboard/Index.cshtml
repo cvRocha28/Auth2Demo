@@ -1,0 +1,166 @@
+@model Auth2Demo.Application.Services.Admin.AdminDashboardData
+
+@using Auth2Demo.Domain.Security
+
+@{
+    ViewData["Title"] = T["Dashboard"].Value;
+}
+
+<div class="page-heading">
+    <div>
+        <span class="page-kicker">@T["TextAdministracao"]</span>
+
+        <h1>@T["Dashboard"]</h1>
+
+        <p>@T["TextVisaoOperacionalDoServidorDeIdentidadeUsuariosLogins"]</p>
+    </div>
+</div>
+
+<div class="grid four">
+    <div class="card stat-card">
+        <span>@T["Users"]</span>
+
+        <h2>@Model.Users</h2>
+
+        <p>
+            @string.Format(T["NewUsersTodayFormat"].Value, Model.NewUsersToday)
+        </p>
+    </div>
+
+    <div class="card stat-card">
+        <span>@T["LoginsHoje"]</span>
+
+        <h2>@Model.LoginsToday</h2>
+
+        <p>
+            @string.Format(T["FailedLoginsTodayFormat"].Value, Model.FailedLoginsToday)
+        </p>
+    </div>
+
+    <div class="card stat-card">
+        <span>@T["Apps"]</span>
+
+        <h2>@Model.Applications</h2>
+
+        <p>
+            @string.Format(T["ApisScopesFormat"].Value, Model.Scopes)
+        </p>
+    </div>
+
+    <div class="card stat-card">
+        <span>@T["Providers"]</span>
+
+        <h2>@Model.IdentityProviders</h2>
+
+        <p>
+            @string.Format(T["ActiveSessionsFormat"].Value, Model.ActiveSessions)
+        </p>
+    </div>
+</div>
+
+<div class="grid two quick-grid">
+    <div class="card">
+        <h2>@T["LoginsPorProvider"]</h2>
+
+        @foreach (var providerUsage in Model.ProviderUsage)
+        {
+            <div class="metric-line">
+                <span>@providerUsage.Provider</span>
+
+                <strong>@providerUsage.Count</strong>
+            </div>
+        }
+
+        @if (!Model.ProviderUsage.Any())
+        {
+            <p class="muted">
+                @T["NoExternalLoginAudited"]
+            </p>
+        }
+    </div>
+
+    <div class="card">
+        <h2>@T["TextAcoesRapidas"]</h2>
+
+        <div class="grid two">
+            <a class="quick-card"
+               asp-controller="Clients"
+               asp-action="Create">
+                <strong>@T["NewClient"]</strong>
+
+                <span>@T["TextSpaWebNativeOuMachineToMachine"]</span>
+            </a>
+
+            <a class="quick-card"
+               asp-controller="IdentityProviders"
+               asp-action="Index">
+                <strong>@T["Providers"]</strong>
+
+                <span>@T["TextGoogleMicrosoftEOidcCustomizado"]</span>
+            </a>
+
+            <a class="quick-card"
+               asp-controller="AuditLogs"
+               asp-action="Index">
+                <strong>@T["AuditLogs"]</strong>
+
+                <span>@T["TextRastreabilidadeDeLoginEAdmin"]</span>
+            </a>
+
+            <a class="quick-card"
+               asp-controller="SecuritySettings"
+               asp-action="Index">
+                <strong>@T["Security"]</strong>
+
+                <span>@T["TextSenhaLockoutMfaETokens"]</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="table-wrap table-section">
+    <table>
+        <thead>
+            <tr>
+                <th>@T["Quando"]</th>
+                <th>@T["Event"]</th>
+                <th>@T["User"]</th>
+                <th>@T["Result"]</th>
+                <th>@T["Description"]</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @foreach (var auditLog in Model.RecentAudits)
+            {
+                <tr>
+                    <td>
+                        @auditLog.CreatedAt.ToLocalTime().ToString("dd/MM HH:mm")
+                    </td>
+
+                    <td>
+                        <strong>@auditLog.EventType</strong>
+                        <br />
+                        <small class="muted">
+                            @auditLog.Category
+                        </small>
+                    </td>
+
+                    <td>
+                        @auditLog.UserEmail
+                    </td>
+
+                    <td>
+                        <span class="badge @(auditLog.Outcome == "Success" ? "badge-success" : "badge-danger")">
+                            @auditLog.Outcome
+                        </span>
+                    </td>
+
+                    <td>
+                        @auditLog.Description
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

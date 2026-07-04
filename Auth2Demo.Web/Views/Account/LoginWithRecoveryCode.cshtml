@@ -1,0 +1,28 @@
+@model Auth2Demo.Web.Models.Account.RecoveryCodeLoginViewModel
+@{
+    ViewData["Title"] = T["RecoveryCode"].Value;
+}
+
+<section class="auth-page">
+    <div class="auth-card">
+        <span class="eyebrow">@T["Recovery"]</span>
+        <h1>@T["RecoveryCode"]</h1>
+        <p class="muted">@T["TextUseUmDosCodigosSalvosQuandoConfigurouO"]</p>
+
+        <form asp-action="LoginWithRecoveryCode" method="post" class="form-stack">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="ReturnUrl" />
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <label asp-for="RecoveryCode"></label>
+            <input asp-for="RecoveryCode" autocomplete="one-time-code" class="form-control" placeholder='@T["TextAbcdEfgh"].Value' />
+            <span asp-validation-for="RecoveryCode" class="text-danger"></span>
+
+            <button type="submit" class="btn btn-primary">@T["Login"]</button>
+        </form>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

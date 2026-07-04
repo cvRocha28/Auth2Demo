@@ -1,0 +1,71 @@
+@model Auth2Demo.Domain.Security.BrandingSettings
+
+@{
+    ViewData["Title"] = T["Branding"].Value;
+}
+
+<div class="page-heading">
+    <div>
+        <span class="page-kicker">@T["Customization"]</span>
+
+        <h1>@T["Branding"]</h1>
+
+        <p>@T["TextPersonalizeNomeLogoCoresTemaECssDo"]</p>
+    </div>
+</div>
+
+@if (TempData["Message"] is not null)
+{
+    <div class="alert alert-success">
+        @TempData["Message"]
+    </div>
+}
+
+<form method="post" class="card pro-form">
+    <input type="hidden" asp-for="Id" />
+
+    <div class="grid two">
+        <div class="form-row">
+            <label>@T["TenantName"]</label>
+            <input asp-for="TenantName" />
+        </div>
+
+        <div class="form-row">
+            <label>@T["Theme"]</label>
+
+            <select asp-for="Theme">
+                <option value="Light">@T["Light"]</option>
+                <option value="Dark">@T["Dark"]</option>
+            </select>
+        </div>
+
+        <div class="form-row">
+            <label>@T["LogoUrl"]</label>
+            <input asp-for="LogoUrl" />
+        </div>
+
+        <div class="form-row">
+            <label>@T["FaviconUrl"]</label>
+            <input asp-for="FaviconUrl" />
+        </div>
+
+        <div class="form-row">
+            <label>@T["PrimaryColor"]</label>
+            <input asp-for="PrimaryColor" />
+        </div>
+
+        <div class="form-row">
+            <label>@T["SecondaryColor"]</label>
+            <input asp-for="SecondaryColor" />
+        </div>
+    </div>
+
+    <div class="form-row">
+        <label>@T["CustomCss"]</label>
+        <textarea asp-for="CustomCss"></textarea>
+    </div>
+
+    <button class="btn" type="submit">
+        @T["SaveBranding"]
+    </button>
+</form>

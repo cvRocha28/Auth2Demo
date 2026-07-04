@@ -1,0 +1,52 @@
+@model Auth2Demo.Domain.Security.EmailTemplate
+
+@{
+    ViewData["Title"] = T["EditTemplate"].Value;
+}
+
+<div class="page-heading">
+    <div>
+        <span class="page-kicker">@T["Email"]</span>
+
+        <h1>@T["EditTemplate"]</h1>
+    </div>
+</div>
+
+<form method="post" class="card pro-form">
+    <input type="hidden" asp-for="Id" />
+
+    <div class="form-row">
+        <label>@T["Chave"]</label>
+        <input asp-for="Key" />
+    </div>
+
+    <div class="form-row">
+        <label>@T["Name"]</label>
+        <input asp-for="Name" />
+    </div>
+
+    <div class="form-row">
+        <label>@T["Subject"]</label>
+        <input asp-for="Subject" />
+    </div>
+
+    <div class="form-row">
+        <label>@T["Html"]</label>
+        <textarea asp-for="BodyHtml" rows="12"></textarea>
+    </div>
+
+    <label class="check">
+        <input asp-for="IsEnabled" />
+        @T["Active"]
+    </label>
+
+    <div class="form-actions">
+        <button class="btn" type="submit">
+            @T["Save"]
+        </button>
+
+        <a class="btn btn-outline" asp-action="Index">
+            @T["Cancel"]
+        </a>
+    </div>
+</form>

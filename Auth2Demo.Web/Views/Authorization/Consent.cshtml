@@ -1,0 +1,225 @@
+@model Auth2Demo.Web.Models.Authorization.ConsentViewModel
+
+@{
+    ViewData["Title"] = T["TextAutorizarAplicacao"].Value;
+
+    var scopes = (Model.Scope ?? string.Empty)
+        .Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+    var authorizeUrl = $"{Context.Request.PathBase}/connect/authorize";
+    var returnUrl = $"{Context.Request.PathBase}{Context.Request.Path}{Context.Request.QueryString}";
+}
+
+<section class="consent-page">
+    <div class="consent-card">
+        <div class="consent-header">
+            <div class="consent-icon">🔐</div>
+
+            <div>
+                <span class="eyebrow">@T["OpenidConnect"]</span>
+                <h1>@T["TextAutorizarAplicacao"]</h1>
+                <p>
+                    @T["TextAAplicacao"] <strong>@Model.ApplicationName</strong>
+                    @T["TextQuerAcessarSuaContaNoAuth2demo"]
+                </p>
+            </div>
+        </div>
+
+        <div class="consent-box">
+            <h2>@T["TextPermissoesSolicitadas"]</h2>
+            <p>@T["TextReviseOsEscoposAbaixoAntesDeContinuar"]</p>
+
+            <div class="scope-list">
+                @foreach (var scope in scopes)
+                {
+                    <span class="scope-pill">@scope</span>
+                }
+            </div>
+        </div>
+
+        <div class="consent-note">
+            @T["TextAoPermitirVoceSeraRedirecionadoDeVoltaPara"]
+        </div>
+
+        <div class="consent-actions">
+            <form method="post" action="@authorizeUrl">
+                @Html.AntiForgeryToken()
+
+                @foreach (var item in Context.Request.Query)
+                {
+                    foreach (var value in item.Value)
+                    {
+                        <input type="hidden" name="@item.Key" value="@value" />
+                    }
+                }
+
+                <button type="submit"
+                        class="btn btn-primary"
+                        name="accept"
+                        value="true">
+                    @T["AllowAndContinue"]
+                </button>
+            </form>
+
+            <form method="post"
+                  asp-controller="Authorization"
+                  asp-action="Deny">
+                @Html.AntiForgeryToken()
+
+                <input type="hidden" name="returnUrl" value="@returnUrl" />
+
+                <button type="submit"
+                        class="btn btn-secondary"
+                        name="deny"
+                        value="true">
+                    @T["DenyAccess"]
+                </button>
+            </form>
+        </div>
+    </div>
+</section>
+
+<style>
+    .consent-page {
+        min-height: calc(100vh - 92px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 48px 16px;
+        background: radial-gradient(circle at top left, rgba(47, 111, 237, .16), transparent 34%), #eef5ff;
+    }
+
+    .consent-card {
+        width: min(760px, 100%);
+        background: #fff;
+        border: 1px solid #d7e3f5;
+        border-radius: 28px;
+        box-shadow: 0 24px 70px rgba(15, 35, 75, .14);
+        padding: 34px;
+    }
+
+    .consent-header {
+        display: flex;
+        gap: 18px;
+        align-items: flex-start;
+        margin-bottom: 26px;
+    }
+
+    .consent-icon {
+        width: 54px;
+        height: 54px;
+        border-radius: 18px;
+        display: grid;
+        place-items: center;
+        background: linear-gradient(135deg, #2f6fed, #6ea8ff);
+        color: #fff;
+        font-size: 24px;
+        box-shadow: 0 12px 28px rgba(47, 111, 237, .28);
+        flex: 0 0 auto;
+    }
+
+    .eyebrow {
+        display: inline-block;
+        color: #2f6fed;
+        font-size: .78rem;
+        font-weight: 800;
+        letter-spacing: .11em;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+    }
+
+    .consent-card h1 {
+        margin: 0;
+        color: #061a3d;
+        font-size: clamp(2rem, 4vw, 3rem);
+        line-height: 1.03;
+    }
+
+    .consent-card p {
+        color: #50627d;
+        font-size: 1.05rem;
+        line-height: 1.55;
+        margin: 10px 0 0;
+    }
+
+    .consent-box {
+        border: 1px solid #d7e3f5;
+        background: #f8fbff;
+        border-radius: 22px;
+        padding: 22px;
+        margin-bottom: 18px;
+    }
+
+    .consent-box h2 {
+        color: #061a3d;
+        font-size: 1.1rem;
+        margin: 0;
+    }
+
+    .scope-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 18px;
+    }
+
+    .scope-pill {
+        display: inline-flex;
+        align-items: center;
+        min-height: 34px;
+        padding: 6px 12px;
+        border-radius: 999px;
+        background: #eaf2ff;
+        color: #0f4fc7;
+        border: 1px solid #bcd4ff;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        font-size: .92rem;
+        font-weight: 700;
+    }
+
+    .consent-note {
+        border-left: 4px solid #2f6fed;
+        background: #f3f7ff;
+        color: #50627d;
+        padding: 14px 16px;
+        border-radius: 14px;
+        line-height: 1.5;
+        margin-bottom: 26px;
+    }
+
+    .consent-actions {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .consent-actions form {
+        margin: 0;
+    }
+
+    .btn {
+        border: 0;
+        border-radius: 14px;
+        padding: 14px 22px;
+        font-weight: 800;
+        cursor: pointer;
+        transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
+    }
+
+    .btn:hover {
+        transform: translateY(-1px);
+    }
+
+    .btn-primary {
+        background: #2f6fed;
+        color: #fff;
+        box-shadow: 0 14px 30px rgba(47, 111, 237, .28);
+    }
+
+    .btn-secondary {
+        background: #fff;
+        color: #17345f;
+        border: 1px solid #c7d7ee;
+    }
+</style>

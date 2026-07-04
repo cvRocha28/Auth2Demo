@@ -1,0 +1,4 @@
+@model IReadOnlyList<Auth2Demo.Domain.Security.PasskeyCredential>
+@{ ViewData["Title"] = T["Passkeys"].Value; }
+<div class="page-heading"><div><span class="page-kicker">@T["Authentication"]</span><h1>@T["Passkeys"]</h1><p>@T["TextEstruturaPreparadaParaWebauthnWindowsHelloFaceId"]</p></div></div>
+<div class="table-wrap"><table><thead><tr><th>@T["User"]</th><th>@T["Passkey"]</th><th>@T["Dispositivo"]</th><th>@T["CriadaEm"]</th><th>@T["LastUse"]</th></tr></thead><tbody>@foreach (var p in Model){<tr><td>@p.UserEmail</td><td>@p.DisplayName<br/><small class="muted">@p.CredentialId</small></td><td>@p.DeviceType</td><td>@p.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy")</td><td>@p.LastUsedAt?.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td></tr>}</tbody></table></div>

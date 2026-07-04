@@ -1,0 +1,132 @@
+@model IReadOnlyList<Auth2Demo.Web.Areas.Admin.Models.IdentityProviderListItemViewModel>
+
+@{
+    ViewData["Title"] = T["IdentityProviders"].Value;
+}
+
+<div class="page-heading">
+    <div>
+        <span class="page-kicker">@T["Customization"]</span>
+
+        <h1>@T["IdentityProviders"]</h1>
+
+        <p>@T["TextGoogleMicrosoftEOidcCustomizado"]</p>
+    </div>
+
+    <a class="btn" asp-action="Create">
+        @T["NewProvider"]
+    </a>
+</div>
+
+@if (TempData["Success"] is not null)
+{
+    <div class="alert alert-success">
+        @TempData["Success"]
+    </div>
+}
+
+@if (TempData["Error"] is not null)
+{
+    <div class="alert alert-danger">
+        @TempData["Error"]
+    </div>
+}
+
+<div class="table-wrap">
+    <table>
+        <thead>
+            <tr>
+                <th>@T["Provider"]</th>
+                <th>@T["Scheme"]</th>
+                <th>@T["Type"]</th>
+                <th>@T["ClientId"]</th>
+                <th>@T["ClientSecret"]</th>
+                <th>@T["Order"]</th>
+                <th>@T["Status"]</th>
+                <th>@T["Actions"]</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @foreach (var provider in Model.OrderBy(x => x.SortOrder).ThenBy(x => x.DisplayName))
+            {
+                <tr>
+                    <td>
+                        <strong>@provider.DisplayName</strong>
+                        <br />
+                        <small class="muted">@provider.Name</small>
+                    </td>
+
+                    <td>
+                        @provider.Scheme
+                    </td>
+
+                    <td>
+                        @provider.Kind
+                    </td>
+
+                    <td>
+                        <span class="badge @(provider.HasClientId ? "badge-success" : "")">
+                            @(provider.HasClientId ? T["Yes"] : T["No"])
+                        </span>
+                    </td>
+
+                    <td>
+                        <span class="badge @(provider.HasClientSecret ? "badge-success" : "")">
+                            @(provider.HasClientSecret ? T["Yes"] : T["No"])
+                        </span>
+                    </td>
+
+                    <td>
+                        @provider.SortOrder
+                    </td>
+
+                    <td>
+                        <span class="badge @(provider.IsEnabled ? "badge-success" : "")">
+                            @(provider.IsEnabled ? T["Active"] : T["Inactive"])
+                        </span>
+                    </td>
+
+                    <td>
+                        <div class="actions-inline">
+                            <a class="btn btn-sm btn-outline"
+                               asp-action="Edit"
+                               asp-route-id="@provider.Id">
+                                @T["Edit"]
+                            </a>
+
+                            <form method="post" asp-action="Toggle">
+                                @Html.AntiForgeryToken()
+
+                                <input
+                                    type="hidden"
+                                    name="id"
+                                    value="@provider.Id" />
+
+                                <button class="btn btn-sm btn-outline" type="submit">
+                                    @(provider.IsEnabled ? T["Disabled"] : T["Enabled"])
+                                </button>
+                            </form>
+
+                            @if (!provider.IsSystemProvider)
+                            {
+                                <form method="post" asp-action="Delete">
+                                    @Html.AntiForgeryToken()
+
+                                    <input
+                                        type="hidden"
+                                        name="id"
+                                        value="@provider.Id" />
+
+                                    <button class="btn btn-sm btn-danger" type="submit">
+                                        @T["Delete"]
+                                    </button>
+                                </form>
+                            }
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

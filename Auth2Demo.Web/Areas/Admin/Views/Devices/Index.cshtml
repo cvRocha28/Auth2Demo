@@ -1,0 +1,77 @@
+@model IReadOnlyList<Auth2Demo.Domain.Security.UserDevice>
+
+@{
+    ViewData["Title"] = T["Devices"].Value;
+}
+
+<div class="page-heading">
+    <div>
+        <span class="page-kicker">@T["Security"]</span>
+
+        <h1>@T["Devices"]</h1>
+
+        <p>@T["TextGerencieDispositivosConhecidosEConfiaveis"]</p>
+    </div>
+</div>
+
+<div class="table-wrap">
+    <table>
+        <thead>
+            <tr>
+                <th>@T["User"]</th>
+                <th>@T["Dispositivo"]</th>
+                <th>@T["System"]</th>
+                <th>@T["Ip"]</th>
+                <th>@T["Trusted"]</th>
+                <th>@T["Actions"]</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @foreach (var device in Model)
+            {
+                <tr>
+                    <td>
+                        @device.UserEmail
+                    </td>
+
+                    <td>
+                        <strong>@device.Name</strong>
+                        <br />
+                        <small class="muted">@device.Browser</small>
+                    </td>
+
+                    <td>
+                        @device.OperatingSystem
+                    </td>
+
+                    <td>
+                        @device.IpAddress
+                    </td>
+
+                    <td>
+                        <span class="badge @(device.IsTrusted ? "badge-success" : "")">
+                            @(device.IsTrusted
+                                ? T["Yes"]
+                                : T["No"])
+                        </span>
+                    </td>
+
+                    <td>
+                        <form method="post" asp-action="ToggleTrusted">
+                            <input type="hidden"
+                                   name="id"
+                                   value="@device.Id" />
+
+                            <button class="btn btn-sm btn-outline" type="submit">
+                                @(device.IsTrusted
+                                    ? T["RemoveTrust"]
+                                    : T["Trust"])
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

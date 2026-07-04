@@ -1,0 +1,77 @@
+@model UserEditViewModel
+@{
+    ViewData["Title"] = T["EditUser"].Value;
+    var roles = Model.AvailableRoles.OrderBy(x => x).ToList();
+}
+
+<div class="page-heading">
+    <div>
+        <span class="page-kicker">@T["Users"]</span>
+        <h1>@T["EditUser"]</h1>
+        <p>@T["TextAtualizeDadosDaContaEMarqueApenasAs"]</p>
+    </div>
+    <a class="btn btn-outline" asp-action="Index">@T["Back"]</a>
+</div>
+
+<form method="post" class="card form-card pro-form">
+    <input type="hidden" asp-for="Id" />
+    <div asp-validation-summary="ModelOnly" class="validation"></div>
+
+    <div class="form-row">
+        <label asp-for="DisplayName">@T["DisplayName"]</label>
+        <input asp-for="DisplayName" autocomplete="name" />
+        <span asp-validation-for="DisplayName"></span>
+    </div>
+
+    <div class="form-row">
+        <label asp-for="Email">@T["Email"]</label>
+        <input asp-for="Email" autocomplete="username" />
+        <span asp-validation-for="Email"></span>
+    </div>
+
+    <div class="form-row">
+        <label asp-for="Status">@T["Status"]</label>
+        <select asp-for="Status" asp-items="Html.GetEnumSelectList<Auth2Demo.Domain.Identity.UserStatus>()"></select>
+        <span asp-validation-for="Status"></span>
+    </div>
+
+    <label class="check"><input asp-for="EmailConfirmed" /> @T["TextEMailConfirmado"]</label>
+
+    <div class="role-section">
+        <div class="section-title">
+            <strong>@T["TextRolesDoUsuario"]</strong>
+            <span>@T["TextMarcarAdicionaARoleDesmarcarRemoveARole"]</span>
+        </div>
+        <div class="role-grid">
+            @foreach (var role in roles)
+            {
+                var id = $"role_{role}".Replace(" ", "_").Replace(".", "_");
+                var selected = Model.Roles.Contains(role, StringComparer.OrdinalIgnoreCase);
+                <label class="role-option @(selected ? "selected" : string.Empty)" for="@id">
+                    <input id="@id" type="checkbox" name="Roles" value="@role" @(selected ? "checked" : null) />
+                    <span>
+                        <strong>@role</strong>
+                        <small>@GetRoleHint(role)</small>
+                    </span>
+                </label>
+            }
+        </div>
+    </div>
+
+    <div class="form-actions">
+        <button class="btn" type="submit">@T["SaveChanges"]</button>
+        <a class="btn btn-outline" asp-action="Index">@T["Cancel"]</a>
+    </div>
+</form>
+
+@functions {
+    private string GetRoleHint(string role) => role.ToLowerInvariant() switch
+    {
+        "admin" => T["RoleHintAdmin"].Value,
+        "client-manager" => T["RoleHintClientManager"].Value,
+        "user-manager" => T["RoleHintUserManager"].Value,
+        _ => T["RoleHintCustom"].Value
+    };
+}
+
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

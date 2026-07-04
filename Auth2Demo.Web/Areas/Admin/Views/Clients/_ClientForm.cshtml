@@ -1,0 +1,112 @@
+@model ClientFormViewModel
+@using Auth2Demo.Domain.Identity
+@using static OpenIddict.Abstractions.OpenIddictConstants
+
+<form method="post" class="card form-card pro-form">
+    @Html.AntiForgeryToken()
+    <div asp-validation-summary="ModelOnly" class="validation"></div>
+    <input type="hidden" asp-for="IsEdit" />
+    <input type="hidden" asp-for="OriginalClientId" />
+
+    <div class="section-title">
+        <div>
+            <span class="page-kicker">@T["General"]</span>
+            <h2>@T["Identification"]</h2>
+        </div>
+    </div>
+
+    <label asp-for="ClientId">@T["ClientId"]</label>
+    <input asp-for="ClientId" placeholder='@T["TextRarelesWeb"].Value' />
+    <span asp-validation-for="ClientId" class="validation"></span>
+
+    <label asp-for="DisplayName">@T["DisplayName"]</label>
+    <input asp-for="DisplayName" placeholder='@T["Rareles"].Value' />
+    <span asp-validation-for="DisplayName" class="validation"></span>
+
+    <label asp-for="Kind">@T["TextTipoDeAplicacao"]</label>
+    <select asp-for="Kind" asp-items="Html.GetEnumSelectList<ClientKind>()"></select>
+    <small class="muted">@T["TextWebUsaSecretSpaMobileNormalmenteEPublic"]</small>
+
+    <label asp-for="ClientType">@T["TextAutenticacaoDoClient"]</label>
+    <select asp-for="ClientType">
+        <option value="@ClientTypes.Confidential">@T["TextConfidentialComClientSecret"]</option>
+        <option value="@ClientTypes.Public">@T["TextPublicSemClientSecret"]</option>
+    </select>
+
+    <label asp-for="ConsentType">@T["Consent"]</label>
+    <select asp-for="ConsentType">
+        <option value="@ConsentTypes.Explicit">@T["TextExplicitMostraTelaDePermissao"]</option>
+        <option value="@ConsentTypes.Implicit">@T["TextImplicitNaoSolicitaPermissao"]</option>
+        <option value="@ConsentTypes.External">@T["TextExternalAutorizacaoPrecisaExistirPreviamente"]</option>
+        <option value="@ConsentTypes.Systematic">@T["TextSystematicSempreSolicitaPermissao"]</option>
+    </select>
+
+    <div class="section-title form-section-title">
+        <div>
+            <span class="page-kicker">@T["GrantTypes"]</span>
+            <h2>@T["FluxosPermitidos"]</h2>
+        </div>
+    </div>
+
+    <div class="check-grid">
+        <label class="check"><input asp-for="AllowAuthorizationCode" /> @T["AuthorizationCode"]</label>
+        <label class="check"><input asp-for="AllowRefreshToken" /> @T["RefreshToken"]</label>
+        <label class="check"><input asp-for="AllowClientCredentials" /> @T["ClientCredentials"]</label>
+        <label class="check"><input asp-for="RequirePkce" /> @T["ExigirPkce"]</label>
+    </div>
+
+    <div class="section-title form-section-title">
+        <div>
+            <span class="page-kicker">@T["Endpoints"]</span>
+            <h2>@T["EndpointsPermitidos"]</h2>
+        </div>
+    </div>
+
+    <div class="check-grid">
+        <label class="check"><input asp-for="AllowAuthorizationEndpoint" /> @T["AuthorizationEndpoint"]</label>
+        <label class="check"><input asp-for="AllowTokenEndpoint" /> @T["TokenEndpoint"]</label>
+        <label class="check"><input asp-for="AllowEndSessionEndpoint" /> @T["TextLogoutEndSessionEndpoint"]</label>
+        <label class="check"><input asp-for="AllowRevocationEndpoint" /> @T["RevocationEndpoint"]</label>
+        <label class="check"><input asp-for="AllowIntrospectionEndpoint" /> @T["IntrospectionEndpoint"]</label>
+    </div>
+
+    <div class="section-title form-section-title">
+        <div>
+            <span class="page-kicker">@T["Redirects"]</span>
+            <h2>@T["UrisAutorizadas"]</h2>
+        </div>
+    </div>
+
+    <label asp-for="RedirectUris">@T["RedirectUris"]</label>
+    <textarea asp-for="RedirectUris" placeholder='@T["TextHttpsLocalhost7108SigninOidc"].Value'></textarea>
+    <small class="muted">@T["TextUmaUriPorLinhaParaAspNetCore"] <code>@T["TextSigninOidc"]</code>.</small>
+
+    <label asp-for="PostLogoutRedirectUris">@T["PostLogoutRedirectUris"]</label>
+    <textarea asp-for="PostLogoutRedirectUris" placeholder='@T["TextHttpsLocalhost7108SignoutCallbackOidc"].Value'></textarea>
+
+    <label asp-for="Scopes">@T["AllowedScopes"]</label>
+    <textarea asp-for="Scopes" placeholder='@T["TextOpenid10Profile10Email10Roles10"].Value'></textarea>
+    <small class="muted">@T["TextSeparePorLinhaEspacoOuVirgulaScopesNao"]</small>
+
+    <div class="section-title form-section-title">
+        <div>
+            <span class="page-kicker">@T["Secret"]</span>
+            <h2>@T["Credencial"]</h2>
+        </div>
+    </div>
+
+    @if (Model.IsEdit)
+    {
+        <label class="check"><input asp-for="RegenerateSecret" /> @T["RegenerarSecretAoSalvar"]</label>
+        <small class="muted">@T["TextAoRegenerarCopieOValorExibidoDepoisDo"]</small>
+    }
+    else
+    {
+        <label class="check"><input asp-for="GenerateSecret" /> @T["GerarSecretParaConfidentialClient"]</label>
+    }
+
+    <div class="form-actions">
+        <button class="btn" type="submit">@(Model.IsEdit ? T["SaveChanges"] : T["Create"])</button>
+        <a class="btn ghost" asp-action="Index">@T["Cancel"]</a>
+    </div>
+</form>

@@ -1,0 +1,50 @@
+@model EmailConfirmationSentViewModel
+
+@{
+    ViewData["Title"] = T["EmailConfirmationSentTitle"].Value;
+}
+
+<div class="auth-card form-card">
+    <div class="auth-header">
+        <div class="auth-badge">📩</div>
+        <h1>@T["EmailConfirmationSentTitle"]</h1>
+        <p>@string.Format(T["EmailConfirmationSentDescription"].Value, Model.Email)</p>
+    </div>
+
+    <div class="confirm-email-panel">
+        <div class="confirm-email-icon">✉️</div>
+
+        <div class="confirm-email-content">
+            <strong>@T["EmailNotConfirmed"]</strong>
+            <p>@T["TemporaryConfirmationLinkNotice"]</p>
+
+            <div class="confirm-email-actions">
+                <a class="btn btn-outline btn-small"
+                   asp-action="EmailConfirmationSent"
+                   asp-route-email="@Model.Email">
+                    @T["ResendConfirmationEmail"]
+                </a>
+
+                @if (!string.IsNullOrWhiteSpace(Model.ConfirmationLink))
+                {
+                    <a class="btn btn-small"
+                       href="@Model.ConfirmationLink">
+                        @T["ConfirmEmail"]
+                    </a>
+                }
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(Model.ConfirmationLink))
+            {
+                <div class="confirmation-debug-link">
+                    <label>@T["ConfirmationLink"]</label>
+                    <input value="@Model.ConfirmationLink" readonly />
+                </div>
+            }
+        </div>
+    </div>
+
+    <p class="form-footer">
+        <a asp-action="Login">@T["BackToLogin"]</a>
+    </p>
+</div>

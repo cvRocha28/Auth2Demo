@@ -1,0 +1,57 @@
+@model Auth2Demo.Web.Areas.Admin.Models.MfaAdminIndexViewModel
+@{
+    ViewData["Title"] = T["Mfa"].Value;
+}
+
+<div class="page-heading">
+    <div>
+        <span class="page-kicker">@T["Authentication"]</span>
+        <h1>@T["Mfa"]</h1>
+        <p>@T["TextControleAdministrativoDosMetodosDeSegundoFatorDos"]</p>
+    </div>
+</div>
+
+<div class="grid three quick-grid">
+    <div class="card"><h2>@Model.TotalUsers</h2><p class="muted">@T["TextUsuariosTotais"]</p></div>
+    <div class="card"><h2>@Model.EnabledUsers</h2><p class="muted">@T["ComMfaAtivo"]</p></div>
+    <div class="card"><h2>@Model.WithoutMfaUsers</h2><p class="muted">@T["SemMfa"]</p></div>
+</div>
+
+<div class="table-wrap">
+    <table>
+        <thead>
+            <tr>
+                <th>@T["User"]</th>
+                <th>@T["Status"]</th>
+                <th>@T["Mfa"]</th>
+                <th>@T["Methods"]</th>
+                <th>@T["Codes"]</th>
+                <th>@T["LastLogin"]</th>
+                <th>@T["TextUltimoMfa"]</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var user in Model.Users)
+        {
+            <tr>
+                <td>
+                    <strong>@user.DisplayName</strong><br />
+                    <span class="muted">@user.Email</span>
+                </td>
+                <td>@user.Status</td>
+                <td>
+                    <span class="badge @(user.TwoFactorEnabled ? "badge-success" : "")">
+                        @(user.TwoFactorEnabled ? T["Active"].Value : T["Inactive"].Value)
+                    </span>
+                </td>
+                <td>@(user.Methods.Any() ? string.Join(", ", user.Methods) : "-")</td>
+                <td>@user.RecoveryCodesLeft</td>
+                <td>@user.LastLoginAt?.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                <td>@user.LastMfaUsedAt?.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                <td><a class="btn btn-sm" asp-action="Details" asp-route-id="@user.UserId">@T["Manage"]</a></td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>

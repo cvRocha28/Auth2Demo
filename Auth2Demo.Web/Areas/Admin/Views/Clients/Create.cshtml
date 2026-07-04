@@ -1,0 +1,15 @@
+@model ClientFormViewModel
+@{
+    ViewData["Title"] = T["NewClient"].Value;
+}
+
+<div class="page-heading">
+    <div>
+        <span class="page-kicker">@T["OpenIddict"]</span>
+        <h1>@T["NewClient"]</h1>
+        <p>@T["TextCadastreUmaAplicacaoQuePoderaUsarOAuth2demo"]</p>
+    </div>
+    <a class="btn ghost" asp-action="Index">@T["Back"]</a>
+</div>
+
+<partial name="_ClientForm" model="Model" />

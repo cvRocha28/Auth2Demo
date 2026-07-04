@@ -1,0 +1,24 @@
+@model Auth2Demo.Web.Models.ErrorViewModel
+@{
+    ViewData["Title"] = T["Error"].Value;
+}
+
+<h1 class="text-danger">@T["Error"]</h1>
+<h2 class="text-danger">@T["TextAnErrorOccurredWhileProcessingYourRequest"]</h2>
+
+@if (Model.ShowRequestId)
+{
+    <p>
+        <strong>@T["RequestId"]</strong> <code>@Model.RequestId</code>
+    </p>
+}
+
+<h3>@T["DevelopmentMode"]</h3>
+<p>
+    @T["SwappingTo"] <strong>@T["Development"]</strong> @T["TextEnvironmentWillDisplayMoreDetailedInformationAboutThe"]
+</p>
+<p>
+    <strong>@T["TextTheDevelopmentEnvironmentShouldnTBeEnabledFor"]</strong>
+    @T["TextItCanResultInDisplayingSensitiveInformationFrom"] <strong>@T["Development"]</strong> @T["EnvironmentBySettingThe"] <strong>@T["TextAspnetcoreEnvironment"]</strong> @T["EnvironmentVariableTo"] <strong>@T["Development"]</strong>
+    @T["TextAndRestartingTheApp"]
+</p>

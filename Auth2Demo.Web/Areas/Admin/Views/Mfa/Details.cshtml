@@ -1,0 +1,125 @@
+@model Auth2Demo.Web.Areas.Admin.Models.MfaAdminDetailsViewModel
+@{
+    ViewData["Title"] = T["GerenciarMfa"].Value;
+    var recoveryCodes = (TempData["RecoveryCodes"] as string)?.Split('|', StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
+}
+
+<div class="page-heading">
+    <div>
+        <span class="page-kicker">@T["Authentication"]</span>
+        <h1>@T["GerenciarMfa"]</h1>
+        <p>@Model.DisplayName — @Model.Email</p>
+    </div>
+    <a class="btn" asp-action="Index">@T["Back"]</a>
+</div>
+
+@if (TempData["Success"] is not null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+@if (TempData["Error"] is not null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+@if (recoveryCodes.Any())
+{
+    <div class="card">
+        <h2>@T["TextNovosCodigosDeRecuperacao"]</h2>
+        <p class="muted">@T["TextMostreEstesCodigosAoUsuarioUmaUnicaVez"]</p>
+        <div class="codes-grid">
+            @foreach (var code in recoveryCodes)
+            {
+                <code>@code</code>
+            }
+        </div>
+    </div>
+}
+
+<div class="grid three quick-grid">
+    <div class="card"><h2>@(Model.TwoFactorEnabled ? T["Active"].Value : T["Inactive"].Value)</h2><p class="muted">@T["Mfa"]</p></div>
+    <div class="card"><h2>@(Model.HasAuthenticator ? "Configurado" : "Pendente")</h2><p class="muted">@T["Authenticator"]</p></div>
+    <div class="card"><h2>@Model.RecoveryCodesLeft</h2><p class="muted">@T["TextCodigosRestantes"]</p></div>
+</div>
+
+<div class="card">
+    <h2>@T["TextAcoesAdministrativas"]</h2>
+    <p class="muted">@T["UseWithCareMfaDetails"]</p>
+    <div class="action-row">
+        <a class="btn btn-success" asp-action="SetupAuthenticator" asp-route-id="@Model.UserId">
+            @(Model.TwoFactorEnabled ? T["EditAuthenticator"] : T["EnableMfa"])
+        </a>
+        <form asp-action="Disable" method="post" asp-route-id="@Model.UserId" onsubmit='return confirm("@T["TextDesabilitarMfaDesteUsuario"].Value")'>
+            @Html.AntiForgeryToken()
+            @if (Model.TwoFactorEnabled)
+            {
+                <button class="btn btn-danger" type="submit">@T["DisableMfa"]</button>
+            }
+            else
+            {
+                <button class="btn btn-danger" type="button" disabled>@T["DisableMfa"]</button>
+            }
+        </form>
+        <form asp-action="ResetAuthenticator" method="post" asp-route-id="@Model.UserId" onsubmit='return confirm("@T["TextResetarOAutenticadorDesteUsuario"].Value")'>
+            @Html.AntiForgeryToken()
+            <button class="btn" type="submit">@T["ResetAuthenticator"]</button>
+        </form>
+        <form asp-action="GenerateRecoveryCodes" method="post" asp-route-id="@Model.UserId" onsubmit='return confirm("@T["TextGerarNovosCodigosDeRecuperacaoOsAntigosSerao"].Value")'>
+            @Html.AntiForgeryToken()
+            @if (Model.TwoFactorEnabled)
+            {
+                <button class="btn" type="submit">@T["GenerateRecoveryCodes"]</button>
+            }
+            else
+            {
+                <button class="btn" type="button" disabled>@T["GenerateRecoveryCodes"]</button>
+            }
+        </form>
+    </div>
+</div>
+
+<div class="table-wrap">
+    <table>
+        <thead>
+            <tr>
+                <th>@T["TextMetodo"]</th>
+                <th>@T["Name"]</th>
+                <th>@T["Status"]</th>
+                <th>@T["TextPadrao"]</th>
+                <th>@T["LastUse"]</th>
+                <th>@T["Actions"]</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var method in Model.Methods)
+        {
+            <tr>
+                <td>@method.Method</td>
+                <td>@method.DisplayName</td>
+                <td><span class="badge @(method.IsEnabled ? "badge-success" : "")">@(method.IsEnabled ? T["Active"].Value : T["Inactive"].Value)</span></td>
+                <td>@(method.IsDefault ? T["Yes"] : T["No"])</td>
+                <td>@method.LastUsedAt?.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                <td>
+                    <form asp-action="DeleteMethod" method="post" asp-route-id="@Model.UserId" asp-route-methodId="@method.Id" onsubmit='return confirm("@T["TextRemoverEsteMetodoMfa"].Value")'>
+                        @Html.AntiForgeryToken()
+                        <button class="btn btn-small btn-danger" type="submit">@T["Delete"]</button>
+                    </form>
+                </td>
+            </tr>
+        }
+        @if (!Model.Methods.Any())
+        {
+            <tr><td colspan="6" class="muted">@T["NoMethodsRegistered"]</td></tr>
+        }
+        </tbody>
+    </table>
+</div>
+
+<style>
+    .action-row { display: flex; flex-wrap: wrap; gap: 10px; }
+    .btn-danger { background: #dc3545 !important; color: #fff !important; }
+    .btn-success { background: #198754 !important; color: #fff !important; }
+    .btn-small { padding: 8px 12px; border-radius: 10px; font-size: .85rem; }
+    .btn:disabled { opacity: .45; cursor: not-allowed; }
+    .codes-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; margin-top: 12px; }
+    .codes-grid code { background: #f3f7ff; border: 1px solid #d7e3f5; border-radius: 12px; padding: 10px; color: #061a3d; text-align: center; }
+</style>

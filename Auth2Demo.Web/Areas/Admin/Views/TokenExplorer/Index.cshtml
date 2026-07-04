@@ -1,0 +1,5 @@
+@model Auth2Demo.Web.Areas.Admin.Models.TokenExplorerViewModel
+@{ ViewData["Title"] = T["TokenExplorer"].Value; }
+<div class="page-heading"><div><span class="page-kicker">@T["DeveloperTools"]</span><h1>@T["TokenExplorer"]</h1><p>@T["TextColeUmJwtParaVisualizarOPayloadE"]</p></div></div>
+<form method="get" class="card"><div class="form-row"><label>@T["Jwt"]</label><textarea name="token" rows="5">@Model.Token</textarea></div><button class="btn">Decodificar</button></form>
+@if (Model.Payload is not null){<div class="card"><h2>@T["Payload"]</h2><pre>@Model.Payload</pre></div>}

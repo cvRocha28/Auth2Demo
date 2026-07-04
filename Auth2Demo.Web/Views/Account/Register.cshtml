@@ -1,0 +1,38 @@
+@model RegisterViewModel
+@{ ViewData["Title"] = T["CreateAccount"].Value; }
+<div class="auth-card form-card">
+    <div class="auth-tabs">
+        <a class="auth-tab" asp-action="Login">@T["Login"]</a>
+        <a class="auth-tab active" asp-action="Register">@T["CreateAccount"]</a>
+    </div>
+    <div class="auth-header">
+        <h1>@T["CreateAccount"]</h1>
+        <p>@T["TextCrieUmaContaLocalParaTestarOIdentity"]</p>
+    </div>
+    <form method="post">
+        <div asp-validation-summary="ModelOnly" class="validation"></div>
+        <div class="form-row">
+            <label asp-for="DisplayName">@T["Name"]</label>
+            <input asp-for="DisplayName" placeholder='@T["SeuNome"].Value' autocomplete="name" />
+            <span asp-validation-for="DisplayName"></span>
+        </div>
+        <div class="form-row">
+            <label asp-for="Email">@T["Email"]</label>
+            <div class="input-wrap"><span class="input-icon">✉</span><input class="with-icon" asp-for="Email" placeholder="you@example.com" autocomplete="username" /></div>
+            <span asp-validation-for="Email"></span>
+        </div>
+        <div class="form-row">
+            <label asp-for="Password">@T["Password"]</label>
+            <div class="input-wrap"><span class="input-icon">🔑</span><input class="with-icon" asp-for="Password" placeholder='@T["TextMinimo10Caracteres"].Value' autocomplete="new-password" /></div>
+            <span asp-validation-for="Password"></span>
+        </div>
+        <div class="form-row">
+            <label asp-for="ConfirmPassword">@T["ConfirmarSenha"]</label>
+            <div class="input-wrap"><span class="input-icon">🔑</span><input class="with-icon" asp-for="ConfirmPassword" placeholder='@T["RepitaASenha"].Value' autocomplete="new-password" /></div>
+            <span asp-validation-for="ConfirmPassword"></span>
+        </div>
+        <button class="btn btn-block" type="submit">@T["CreateAccount"]</button>
+    </form>
+    <p class="form-footer">@T["TextJaTemUmaConta"] <a asp-action="Login">@T["Login"]</a></p>
+</div>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

@@ -1,0 +1,16 @@
+<Solution>
+  <Folder Name="/docs/">
+    <File Path="architecture.md" />
+    <File Path="professional-roadmap.md" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="Auth2Demo.Application/Auth2Demo.Application.csproj" />
+    <Project Path="Auth2Demo.Domain/Auth2Demo.Domain.csproj" />
+    <Project Path="Auth2Demo.Infrastructure/Auth2Demo.Infrastructure.csproj" Id="ebf4d333-9264-402b-ab61-9c60d2b7ad9c" />
+    <Project Path="Auth2Demo.Web/Auth2Demo.Web.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="Auth2Demo.IntegrationTests/Auth2Demo.IntegrationTests.csproj" Id="aa8c72f0-57f9-4259-bad7-d5f56bc919e1" />
+    <Project Path="Auth2Demo.UnitTests/Auth2Demo.UnitTests.csproj" Id="1b107ffe-7ba4-46d9-805b-f6cbf90cceda" />
+  </Folder>
+</Solution>

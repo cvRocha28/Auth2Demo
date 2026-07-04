@@ -1,0 +1,75 @@
+@model UserCreateViewModel
+@{
+    ViewData["Title"] = T["CreateUser"].Value;
+    var roles = Model.AvailableRoles.OrderBy(x => x).ToList();
+}
+
+<div class="page-heading">
+    <div>
+        <span class="page-kicker">@T["Users"]</span>
+        <h1>@T["CreateUser"]</h1>
+        <p>@T["TextCadastreUmaContaLocalPorPadraoNovosUsuarios"]</p>
+    </div>
+    <a class="btn btn-outline" asp-action="Index">@T["Back"]</a>
+</div>
+
+<form method="post" class="card form-card pro-form">
+    <div asp-validation-summary="ModelOnly" class="validation"></div>
+
+    <div class="form-row">
+        <label asp-for="DisplayName">@T["DisplayName"]</label>
+        <input asp-for="DisplayName" placeholder='@T["TextExJoaoSilva"].Value' autocomplete="name" />
+        <span asp-validation-for="DisplayName"></span>
+    </div>
+
+    <div class="form-row">
+        <label asp-for="Email">@T["Email"]</label>
+        <input asp-for="Email" placeholder="user@company.com" autocomplete="username" />
+        <span asp-validation-for="Email"></span>
+    </div>
+
+    <div class="form-row">
+        <label asp-for="Password">@T["TextSenhaTemporaria"]</label>
+        <input asp-for="Password" type="password" placeholder='@T["TextMinimo10Caracteres"].Value' autocomplete="new-password" />
+        <span asp-validation-for="Password"></span>
+    </div>
+
+    <label class="check"><input asp-for="EmailConfirmed" /> @T["TextEMailConfirmado"]</label>
+
+    <div class="role-section">
+        <div class="section-title">
+            <strong>@T["TextRolesDoUsuario"]</strong>
+            <span>@T["TextOpcionalNaoMarqueNadaParaCriarUmUsuario"]</span>
+        </div>
+        <div class="role-grid">
+            @foreach (var role in roles)
+            {
+                var id = $"role_{role}".Replace(" ", "_").Replace(".", "_");
+                <label class="role-option" for="@id">
+                    <input id="@id" type="checkbox" name="Roles" value="@role" @(Model.Roles.Contains(role, StringComparer.OrdinalIgnoreCase) ? "checked" : null) />
+                    <span>
+                        <strong>@role</strong>
+                        <small>@GetRoleHint(role)</small>
+                    </span>
+                </label>
+            }
+        </div>
+    </div>
+
+    <div class="form-actions">
+        <button class="btn" type="submit">@T["TextCriarUsuario"]</button>
+        <a class="btn btn-outline" asp-action="Index">@T["Cancel"]</a>
+    </div>
+</form>
+
+@functions {
+    private string GetRoleHint(string role) => role.ToLowerInvariant() switch
+    {
+        "admin" => T["RoleHintAdmin"].Value,
+        "client-manager" => T["RoleHintClientManager"].Value,
+        "user-manager" => T["RoleHintUserManager"].Value,
+        _ => T["RoleHintCustom"].Value
+    };
+}
+
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

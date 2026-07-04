@@ -1,0 +1,2250 @@
+<?xml version='1.0' encoding='utf-8'?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AccessDenied" xml:space="preserve">
+    <value>Acesso negado</value>
+  </data>
+  <data name="AccessTokenEmMinutos" xml:space="preserve">
+    <value>Access token em minutos</value>
+  </data>
+  <data name="Account" xml:space="preserve">
+    <value>Conta</value>
+  </data>
+  <data name="AccountInformation" xml:space="preserve">
+    <value>Informações da conta</value>
+  </data>
+  <data name="AccountLockedOut" xml:space="preserve">
+    <value>Esta conta está bloqueada.</value>
+  </data>
+  <data name="AccountSettings" xml:space="preserve">
+    <value>Configurações da conta</value>
+  </data>
+  <data name="AccountStatus" xml:space="preserve">
+    <value>Status da conta</value>
+  </data>
+  <data name="AcessarAdmin" xml:space="preserve">
+    <value>Acessar Admin</value>
+  </data>
+  <data name="AcessoNegado" xml:space="preserve">
+    <value>Acesso negado</value>
+  </data>
+  <data name="Actions" xml:space="preserve">
+    <value>Ações</value>
+  </data>
+  <data name="Active" xml:space="preserve">
+    <value>Ativo</value>
+  </data>
+  <data name="ActiveFemale" xml:space="preserve">
+    <value>Ativa</value>
+  </data>
+  <data name="ActiveSessions" xml:space="preserve">
+    <value>Sessões ativas</value>
+  </data>
+  <data name="ActiveSessionsFormat" xml:space="preserve">
+    <value>{0} sessões ativas</value>
+  </data>
+  <data name="Admin" xml:space="preserve">
+    <value>Admin</value>
+  </data>
+  <data name="AdminArea" xml:space="preserve">
+    <value>Área administrativa</value>
+  </data>
+  <data name="AdminDashboard" xml:space="preserve">
+    <value>Painel administrativo</value>
+  </data>
+  <data name="Administration" xml:space="preserve">
+    <value>Administração</value>
+  </data>
+  <data name="All" xml:space="preserve">
+    <value>Todas</value>
+  </data>
+  <data name="AllowAndContinue" xml:space="preserve">
+    <value>Permitir e continuar</value>
+  </data>
+  <data name="AllowedScopes" xml:space="preserve">
+    <value>Escopos permitidos</value>
+  </data>
+  <data name="ApisScopesFormat" xml:space="preserve">
+    <value>{0} APIs/scopes</value>
+  </data>
+  <data name="AplicativoAutenticador" xml:space="preserve">
+    <value>Aplicativo autenticador</value>
+  </data>
+  <data name="AppName" xml:space="preserve">
+    <value>Auth2Demo</value>
+  </data>
+  <data name="Apps" xml:space="preserve">
+    <value>Apps</value>
+  </data>
+  <data name="AreYouSure" xml:space="preserve">
+    <value>Tem certeza?</value>
+  </data>
+  <data name="AreYouSureDelete" xml:space="preserve">
+    <value>Tem certeza que deseja excluir este item?</value>
+  </data>
+  <data name="AuditLog" xml:space="preserve">
+    <value>Log de auditoria</value>
+  </data>
+  <data name="AuditLogs" xml:space="preserve">
+    <value>Audit Logs</value>
+  </data>
+  <data name="Auth2demo" xml:space="preserve">
+    <value>Auth2Demo</value>
+  </data>
+  <data name="Auth2demoAdmin" xml:space="preserve">
+    <value>Auth2Demo Admin</value>
+  </data>
+  <data name="Authentication" xml:space="preserve">
+    <value>Authentication</value>
+  </data>
+  <data name="Authenticator" xml:space="preserve">
+    <value>Authenticator</value>
+  </data>
+  <data name="AuthenticatorApp" xml:space="preserve">
+    <value>Aplicativo autenticador</value>
+  </data>
+  <data name="AuthenticatorQrCode" xml:space="preserve">
+    <value>QR Code do Authenticator</value>
+  </data>
+  <data name="Authority" xml:space="preserve">
+    <value>Authority</value>
+  </data>
+  <data name="Authorization" xml:space="preserve">
+    <value>Authorization</value>
+  </data>
+  <data name="AuthorizationCode" xml:space="preserve">
+    <value>Authorization Code</value>
+  </data>
+  <data name="AuthorizationEndpoint" xml:space="preserve">
+    <value>Authorization endpoint</value>
+  </data>
+  <data name="AvatarUrl" xml:space="preserve">
+    <value>URL da foto</value>
+  </data>
+  <data name="Back" xml:space="preserve">
+    <value>Voltar</value>
+  </data>
+  <data name="BackToList" xml:space="preserve">
+    <value>Voltar para a lista</value>
+  </data>
+  <data name="BackToMfa" xml:space="preserve">
+    <value>Voltar para MFA</value>
+  </data>
+  <data name="BancoDeDados" xml:space="preserve">
+    <value>Banco de dados</value>
+  </data>
+  <data name="Bloqueio" xml:space="preserve">
+    <value>Bloqueio</value>
+  </data>
+  <data name="BloqueioEmMinutos" xml:space="preserve">
+    <value>Bloqueio em minutos</value>
+  </data>
+  <data name="Branding" xml:space="preserve">
+    <value>Identidade visual</value>
+  </data>
+  <data name="BrowserNotInformed" xml:space="preserve">
+    <value>Navegador não informado</value>
+  </data>
+  <data name="ButtonText" xml:space="preserve">
+    <value>Texto do botão</value>
+  </data>
+  <data name="CallbackPath" xml:space="preserve">
+    <value>Callback Path</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Cancelar</value>
+  </data>
+  <data name="Cargo" xml:space="preserve">
+    <value>Cargo</value>
+  </data>
+  <data name="Categoria" xml:space="preserve">
+    <value>Categoria</value>
+  </data>
+  <data name="ChangePassword" xml:space="preserve">
+    <value>Alterar senha</value>
+  </data>
+  <data name="Chave" xml:space="preserve">
+    <value>Chave</value>
+  </data>
+  <data name="Claim" xml:space="preserve">
+    <value>Claim</value>
+  </data>
+  <data name="Claims" xml:space="preserve">
+    <value>Claims</value>
+  </data>
+  <data name="Clear" xml:space="preserve">
+    <value>Limpar</value>
+  </data>
+  <data name="Client" xml:space="preserve">
+    <value>Cliente</value>
+  </data>
+  <data name="ClientCredentials" xml:space="preserve">
+    <value>Client Credentials</value>
+  </data>
+  <data name="ClientId" xml:space="preserve">
+    <value>ID do cliente</value>
+  </data>
+  <data name="ClientInformation" xml:space="preserve">
+    <value>Informações do client</value>
+  </data>
+  <data name="ClientSecret" xml:space="preserve">
+    <value>Segredo do cliente</value>
+  </data>
+  <data name="ClientSecretGenerated" xml:space="preserve">
+    <value>Client secret gerado:</value>
+  </data>
+  <data name="Clients" xml:space="preserve">
+    <value>Clients</value>
+  </data>
+  <data name="Close" xml:space="preserve">
+    <value>Fechar</value>
+  </data>
+  <data name="Codes" xml:space="preserve">
+    <value>Códigos</value>
+  </data>
+  <data name="ComMfaAtivo" xml:space="preserve">
+    <value>Com MFA ativo</value>
+  </data>
+  <data name="ComoAtivar" xml:space="preserve">
+    <value>Como ativar</value>
+  </data>
+  <data name="ComoFunciona" xml:space="preserve">
+    <value>Como funciona</value>
+  </data>
+  <data name="ConfiarNesteDispositivo" xml:space="preserve">
+    <value>Confiar neste dispositivo</value>
+  </data>
+  <data name="Configurado" xml:space="preserve">
+    <value>Configurado</value>
+  </data>
+  <data name="ConfigurarAuthenticator" xml:space="preserve">
+    <value>Configurar Authenticator</value>
+  </data>
+  <data name="ConfigurarMfa" xml:space="preserve">
+    <value>Configurar MFA</value>
+  </data>
+  <data name="ConfigureMfa" xml:space="preserve">
+    <value>Configurar MFA</value>
+  </data>
+  <data name="Confirm" xml:space="preserve">
+    <value>Confirmar</value>
+  </data>
+  <data name="ConfirmEmail" xml:space="preserve">
+    <value>Confirmar e-mail</value>
+  </data>
+  <data name="ConfirmPassword" xml:space="preserve">
+    <value>Confirmar senha</value>
+  </data>
+  <data name="ConfirmarSenha" xml:space="preserve">
+    <value>Confirmar senha</value>
+  </data>
+  <data name="ConfirmationPending" xml:space="preserve">
+    <value>Confirmação pendente</value>
+  </data>
+  <data name="Confirmed" xml:space="preserve">
+    <value>Confirmado</value>
+  </data>
+  <data name="ConnectedAccounts" xml:space="preserve">
+    <value>Contas conectadas</value>
+  </data>
+  <data name="Consent" xml:space="preserve">
+    <value>Consentimento</value>
+  </data>
+  <data name="ContinuarComGoogle" xml:space="preserve">
+    <value>Continuar com Google</value>
+  </data>
+  <data name="Continue" xml:space="preserve">
+    <value>Continuar</value>
+  </data>
+  <data name="ControleGranularNoEstilo" xml:space="preserve">
+    <value>Controle granular no estilo</value>
+  </data>
+  <data name="Create" xml:space="preserve">
+    <value>Criar</value>
+  </data>
+  <data name="CreateAccount" xml:space="preserve">
+    <value>Criar conta</value>
+  </data>
+  <data name="CreateUser" xml:space="preserve">
+    <value>Criar usuário</value>
+  </data>
+  <data name="CreatedAt" xml:space="preserve">
+    <value>Criado em</value>
+  </data>
+  <data name="Credenciais" xml:space="preserve">
+    <value>Credenciais</value>
+  </data>
+  <data name="CredenciaisModernas" xml:space="preserve">
+    <value>Credenciais modernas</value>
+  </data>
+  <data name="Credencial" xml:space="preserve">
+    <value>Credencial</value>
+  </data>
+  <data name="CriadaEm" xml:space="preserve">
+    <value>Criada em</value>
+  </data>
+  <data name="CriadoEm" xml:space="preserve">
+    <value>Criado em</value>
+  </data>
+  <data name="CriarRole" xml:space="preserve">
+    <value>Criar role</value>
+  </data>
+  <data name="CurrentPassword" xml:space="preserve">
+    <value>Senha atual</value>
+  </data>
+  <data name="CustomCss" xml:space="preserve">
+    <value>CSS customizado</value>
+  </data>
+  <data name="Customization" xml:space="preserve">
+    <value>Customização</value>
+  </data>
+  <data name="DangerZone" xml:space="preserve">
+    <value>Zona de perigo</value>
+  </data>
+  <data name="Dark" xml:space="preserve">
+    <value>Dark</value>
+  </data>
+  <data name="Dashboard" xml:space="preserve">
+    <value>Dashboard</value>
+  </data>
+  <data name="Date" xml:space="preserve">
+    <value>Data</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>Excluir</value>
+  </data>
+  <data name="DeleteClient" xml:space="preserve">
+    <value>Excluir client</value>
+  </data>
+  <data name="DeleteUser" xml:space="preserve">
+    <value>Excluir usuário</value>
+  </data>
+  <data name="DenyAccess" xml:space="preserve">
+    <value>Negar acesso</value>
+  </data>
+  <data name="Department" xml:space="preserve">
+    <value>Departamento</value>
+  </data>
+  <data name="Description" xml:space="preserve">
+    <value>Descrição</value>
+  </data>
+  <data name="Details" xml:space="preserve">
+    <value>Detalhes</value>
+  </data>
+  <data name="DeveloperTools" xml:space="preserve">
+    <value>Ferramentas do desenvolvedor</value>
+  </data>
+  <data name="Development" xml:space="preserve">
+    <value>Development</value>
+  </data>
+  <data name="DevelopmentMode" xml:space="preserve">
+    <value>Modo de desenvolvimento</value>
+  </data>
+  <data name="Devices" xml:space="preserve">
+    <value>Dispositivos</value>
+  </data>
+  <data name="DigiteSuaSenha" xml:space="preserve">
+    <value>Digite sua senha</value>
+  </data>
+  <data name="DisableMfa" xml:space="preserve">
+    <value>Desativar MFA</value>
+  </data>
+  <data name="Disabled" xml:space="preserve">
+    <value>Desativado</value>
+  </data>
+  <data name="Display" xml:space="preserve">
+    <value>Exibição</value>
+  </data>
+  <data name="DisplayName" xml:space="preserve">
+    <value>Nome de exibição</value>
+  </data>
+  <data name="Dispositivo" xml:space="preserve">
+    <value>Dispositivo</value>
+  </data>
+  <data name="Document" xml:space="preserve">
+    <value>Documento</value>
+  </data>
+  <data name="Edit" xml:space="preserve">
+    <value>Editar</value>
+  </data>
+  <data name="EditClient" xml:space="preserve">
+    <value>Editar client</value>
+  </data>
+  <data name="EditTemplate" xml:space="preserve">
+    <value>Editar template</value>
+  </data>
+  <data name="EditUser" xml:space="preserve">
+    <value>Editar usuário</value>
+  </data>
+  <data name="Email" xml:space="preserve">
+    <value>E-mail</value>
+  </data>
+  <data name="EmailAddress" xml:space="preserve">
+    <value>Endereço de e-mail</value>
+  </data>
+  <data name="EmailConfirmed" xml:space="preserve">
+    <value>E-mail confirmado</value>
+  </data>
+  <data name="EmailNotConfirmed" xml:space="preserve">
+    <value>E-mail não confirmado</value>
+  </data>
+  <data name="EmailPending" xml:space="preserve">
+    <value>E-mail pendente</value>
+  </data>
+  <data name="EmailTemplates" xml:space="preserve">
+    <value>Templates de e-mail</value>
+  </data>
+  <data name="Emails" xml:space="preserve">
+    <value>E-mails</value>
+  </data>
+  <data name="EnableMfa" xml:space="preserve">
+    <value>Ativar MFA</value>
+  </data>
+  <data name="Enabled" xml:space="preserve">
+    <value>Ativo</value>
+  </data>
+  <data name="Endpoints" xml:space="preserve">
+    <value>Endpoints</value>
+  </data>
+  <data name="EndpointsPermitidos" xml:space="preserve">
+    <value>Endpoints permitidos</value>
+  </data>
+  <data name="English" xml:space="preserve">
+    <value>Inglês</value>
+  </data>
+  <data name="EnterKeyManually" xml:space="preserve">
+    <value>Digitar chave manualmente</value>
+  </data>
+  <data name="EnterYourPassword" xml:space="preserve">
+    <value>Digite sua senha</value>
+  </data>
+  <data name="EntreNaSuaConta" xml:space="preserve">
+    <value>Entre na sua conta</value>
+  </data>
+  <data name="EnvironmentBySettingThe" xml:space="preserve">
+    <value>environment by setting the</value>
+  </data>
+  <data name="EnvironmentVariableTo" xml:space="preserve">
+    <value>environment variable to</value>
+  </data>
+  <data name="Error" xml:space="preserve">
+    <value>Erro</value>
+  </data>
+  <data name="Event" xml:space="preserve">
+    <value>Evento</value>
+  </data>
+  <data name="ExibirEsteProviderNaTelaDeLogin" xml:space="preserve">
+    <value>Exibir este provider na tela de login</value>
+  </data>
+  <data name="ExigirCaractereEspecial" xml:space="preserve">
+    <value>Exigir caractere especial</value>
+  </data>
+  <data name="ExigirMfaParaAdministradores" xml:space="preserve">
+    <value>Exigir MFA para administradores</value>
+  </data>
+  <data name="ExigirPkce" xml:space="preserve">
+    <value>Exigir PKCE</value>
+  </data>
+  <data name="ExpliqueOObjetivoDessaRole" xml:space="preserve">
+    <value>Explique o objetivo dessa role</value>
+  </data>
+  <data name="ExternalAccount" xml:space="preserve">
+    <value>Conta externa</value>
+  </data>
+  <data name="ExternalLogins" xml:space="preserve">
+    <value>Logins externos</value>
+  </data>
+  <data name="ExternalPicture" xml:space="preserve">
+    <value>Foto de perfil externa</value>
+  </data>
+  <data name="ExternalPictureText" xml:space="preserve">
+    <value>Foto retornada pelo provedor externo quando disponível.</value>
+  </data>
+  <data name="ExternalProvider" xml:space="preserve">
+    <value>Provedor externo</value>
+  </data>
+  <data name="FaceScan" xml:space="preserve">
+    <value>Face scan</value>
+  </data>
+  <data name="FailedLoginsTodayFormat" xml:space="preserve">
+    <value>{0} falhas</value>
+  </data>
+  <data name="FaviconUrl" xml:space="preserve">
+    <value>Favicon URL</value>
+  </data>
+  <data name="Filter" xml:space="preserve">
+    <value>Filtrar</value>
+  </data>
+  <data name="FirstName" xml:space="preserve">
+    <value>Nome</value>
+  </data>
+  <data name="Flow" xml:space="preserve">
+    <value>Fluxo</value>
+  </data>
+  <data name="FluxoModerno" xml:space="preserve">
+    <value>Fluxo moderno</value>
+  </data>
+  <data name="FluxosPermitidos" xml:space="preserve">
+    <value>Fluxos permitidos</value>
+  </data>
+  <data name="Forbidden" xml:space="preserve">
+    <value>Proibido</value>
+  </data>
+  <data name="ForgotPassword" xml:space="preserve">
+    <value>Esqueceu a senha?</value>
+  </data>
+  <data name="FullName" xml:space="preserve">
+    <value>Nome completo</value>
+  </data>
+  <data name="General" xml:space="preserve">
+    <value>Geral</value>
+  </data>
+  <data name="GenerateNewCodes" xml:space="preserve">
+    <value>Gerar novos códigos</value>
+  </data>
+  <data name="GenerateRecoveryCodes" xml:space="preserve">
+    <value>Gerar códigos de recuperação</value>
+  </data>
+  <data name="GerarNovoQrCode" xml:space="preserve">
+    <value>Gerar novo QR Code</value>
+  </data>
+  <data name="GerarSecretParaConfidentialClient" xml:space="preserve">
+    <value>Gerar secret para confidential client</value>
+  </data>
+  <data name="GerenciarMfa" xml:space="preserve">
+    <value>Gerenciar MFA</value>
+  </data>
+  <data name="GoToAdmin" xml:space="preserve">
+    <value>Ir para administração</value>
+  </data>
+  <data name="Google" xml:space="preserve">
+    <value>Google</value>
+  </data>
+  <data name="GrantTypes" xml:space="preserve">
+    <value>Grant types</value>
+  </data>
+  <data name="Grants" xml:space="preserve">
+    <value>Grants</value>
+  </data>
+  <data name="GrantsEEndpoints" xml:space="preserve">
+    <value>Grants e endpoints</value>
+  </data>
+  <data name="Health" xml:space="preserve">
+    <value>Health</value>
+  </data>
+  <data name="Home" xml:space="preserve">
+    <value>Início</value>
+  </data>
+  <data name="Html" xml:space="preserve">
+    <value>HTML</value>
+  </data>
+  <data name="HtmlLang" xml:space="preserve">
+    <value>pt-br</value>
+  </data>
+  <data name="IdentityProvider" xml:space="preserve">
+    <value>Provedor de identidade</value>
+  </data>
+  <data name="IdentityProviders" xml:space="preserve">
+    <value>Identity Providers</value>
+  </data>
+  <data name="Identityuserlogins" xml:space="preserve">
+    <value>IdentityUserLogins</value>
+  </data>
+  <data name="Importante" xml:space="preserve">
+    <value>Importante</value>
+  </data>
+  <data name="Imprimir" xml:space="preserve">
+    <value>Imprimir</value>
+  </data>
+  <data name="Inactive" xml:space="preserve">
+    <value>Inativo</value>
+  </data>
+  <data name="Information" xml:space="preserve">
+    <value>Informação</value>
+  </data>
+  <data name="InternalName" xml:space="preserve">
+    <value>Nome interno</value>
+  </data>
+  <data name="InternalServerError" xml:space="preserve">
+    <value>Erro interno do servidor</value>
+  </data>
+  <data name="IntrospectionEndpoint" xml:space="preserve">
+    <value>Introspection endpoint</value>
+  </data>
+  <data name="InvalidEmail" xml:space="preserve">
+    <value>Endereço de e-mail inválido.</value>
+  </data>
+  <data name="InvalidLoginAttempt" xml:space="preserve">
+    <value>Tentativa de login inválida.</value>
+  </data>
+  <data name="InvalidValue" xml:space="preserve">
+    <value>Valor inválido.</value>
+  </data>
+  <data name="Ip" xml:space="preserve">
+    <value>IP</value>
+  </data>
+  <data name="IpNotInformed" xml:space="preserve">
+    <value>IP não informado</value>
+  </data>
+  <data name="Jwt" xml:space="preserve">
+    <value>JWT</value>
+  </data>
+  <data name="Language" xml:space="preserve">
+    <value>Idioma</value>
+  </data>
+  <data name="LanguagePreference" xml:space="preserve">
+    <value>Idioma de preferência</value>
+  </data>
+  <data name="LanguageSavedSuccessfully" xml:space="preserve">
+    <value>Idioma salvo com sucesso.</value>
+  </data>
+  <data name="LastActivity" xml:space="preserve">
+    <value>Última atividade</value>
+  </data>
+  <data name="LastLogin" xml:space="preserve">
+    <value>Último login</value>
+  </data>
+  <data name="LastName" xml:space="preserve">
+    <value>Sobrenome</value>
+  </data>
+  <data name="LastUse" xml:space="preserve">
+    <value>Último uso</value>
+  </data>
+  <data name="LembrarAcesso" xml:space="preserve">
+    <value>Lembrar acesso</value>
+  </data>
+  <data name="Light" xml:space="preserve">
+    <value>Light</value>
+  </data>
+  <data name="Limpar" xml:space="preserve">
+    <value>Limpar</value>
+  </data>
+  <data name="Linked" xml:space="preserve">
+    <value>Vinculado</value>
+  </data>
+  <data name="Loading" xml:space="preserve">
+    <value>Carregando...</value>
+  </data>
+  <data name="LocalAccount" xml:space="preserve">
+    <value>Conta local</value>
+  </data>
+  <data name="LockedUntil" xml:space="preserve">
+    <value>Até {0}</value>
+  </data>
+  <data name="Lockout" xml:space="preserve">
+    <value>Bloqueio</value>
+  </data>
+  <data name="Login" xml:space="preserve">
+    <value>Login</value>
+  </data>
+  <data name="LoginCallback" xml:space="preserve">
+    <value>Login callback</value>
+  </data>
+  <data name="LoginWithExternalProvider" xml:space="preserve">
+    <value>Entrar com provedor externo</value>
+  </data>
+  <data name="LoginWithGithub" xml:space="preserve">
+    <value>Entrar com GitHub</value>
+  </data>
+  <data name="LoginWithGoogle" xml:space="preserve">
+    <value>Entrar com Google</value>
+  </data>
+  <data name="LoginWithMicrosoft" xml:space="preserve">
+    <value>Entrar com Microsoft</value>
+  </data>
+  <data name="LoginsHoje" xml:space="preserve">
+    <value>Logins hoje</value>
+  </data>
+  <data name="LoginsPorProvider" xml:space="preserve">
+    <value>Logins por provider</value>
+  </data>
+  <data name="LogoUrl" xml:space="preserve">
+    <value>Logo URL</value>
+  </data>
+  <data name="Logout" xml:space="preserve">
+    <value>Sair</value>
+  </data>
+  <data name="LogoutCallback" xml:space="preserve">
+    <value>Logout callback</value>
+  </data>
+  <data name="Manage" xml:space="preserve">
+    <value>Gerenciar</value>
+  </data>
+  <data name="ManageAccountText" xml:space="preserve">
+    <value>Gerencie segurança, sessões, dispositivos, idioma e formas de autenticação da sua conta.</value>
+  </data>
+  <data name="ManageProfile" xml:space="preserve">
+    <value>Gerenciar perfil</value>
+  </data>
+  <data name="ManageSecurity" xml:space="preserve">
+    <value>Gerenciar segurança</value>
+  </data>
+  <data name="ManageUsers" xml:space="preserve">
+    <value>Gerenciar usuários</value>
+  </data>
+  <data name="Methods" xml:space="preserve">
+    <value>Métodos</value>
+  </data>
+  <data name="Mfa" xml:space="preserve">
+    <value>MFA</value>
+  </data>
+  <data name="MfaActive" xml:space="preserve">
+    <value>MFA ativo</value>
+  </data>
+  <data name="MfaAndPasskeys" xml:space="preserve">
+    <value>MFA e Passkeys</value>
+  </data>
+  <data name="MfaDisabled" xml:space="preserve">
+    <value>MFA desabilitado.</value>
+  </data>
+  <data name="MfaEnabled" xml:space="preserve">
+    <value>MFA ativado</value>
+  </data>
+  <data name="MfaHabilitados" xml:space="preserve">
+    <value>MFA habilitados</value>
+  </data>
+  <data name="MfaInactive" xml:space="preserve">
+    <value>MFA inativo</value>
+  </data>
+  <data name="MfaMethods" xml:space="preserve">
+    <value>Métodos MFA</value>
+  </data>
+  <data name="MfaPrepared" xml:space="preserve">
+    <value>Estrutura preparada para Authenticator, e-mail, recovery codes e WebAuthn.</value>
+  </data>
+  <data name="ModernFlow" xml:space="preserve">
+    <value>Fluxo moderno</value>
+  </data>
+  <data name="MyAccount" xml:space="preserve">
+    <value>Minha conta</value>
+  </data>
+  <data name="MyProfile" xml:space="preserve">
+    <value>Meu perfil</value>
+  </data>
+  <data name="MySecurity" xml:space="preserve">
+    <value>Minha segurança</value>
+  </data>
+  <data name="Name" xml:space="preserve">
+    <value>Nome</value>
+  </data>
+  <data name="New" xml:space="preserve">
+    <value>Novo</value>
+  </data>
+  <data name="NewClient" xml:space="preserve">
+    <value>Novo client</value>
+  </data>
+  <data name="NewPassword" xml:space="preserve">
+    <value>Nova senha</value>
+  </data>
+  <data name="NewProvider" xml:space="preserve">
+    <value>Novo provider</value>
+  </data>
+  <data name="NewScopeApi" xml:space="preserve">
+    <value>Novo scope/API</value>
+  </data>
+  <data name="NewTemplate" xml:space="preserve">
+    <value>Novo template</value>
+  </data>
+  <data name="NewUsersTodayFormat" xml:space="preserve">
+    <value>{0} novos hoje</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>Não</value>
+  </data>
+  <data name="NoActiveLockout" xml:space="preserve">
+    <value>Sem bloqueio ativo</value>
+  </data>
+  <data name="NoClientsRegistered" xml:space="preserve">
+    <value>Nenhum client cadastrado.</value>
+  </data>
+  <data name="NoDevices" xml:space="preserve">
+    <value>Nenhum dispositivo registrado ainda.</value>
+  </data>
+  <data name="NoDevicesRegistered" xml:space="preserve">
+    <value>Nenhum dispositivo registrado ainda.</value>
+  </data>
+  <data name="NoEndpointAllowed" xml:space="preserve">
+    <value>Nenhum endpoint permitido.</value>
+  </data>
+  <data name="NoExternalLogin" xml:space="preserve">
+    <value>Nenhum login externo vinculado.</value>
+  </data>
+  <data name="NoExternalLoginAudited" xml:space="preserve">
+    <value>Nenhum login externo auditado ainda.</value>
+  </data>
+  <data name="NoGrantTypeAllowed" xml:space="preserve">
+    <value>Nenhum grant type permitido.</value>
+  </data>
+  <data name="NoMethodsRegistered" xml:space="preserve">
+    <value>Nenhum método registrado ainda.</value>
+  </data>
+  <data name="NoPostLogoutRedirectUriRegistered" xml:space="preserve">
+    <value>Nenhuma post logout redirect URI cadastrada.</value>
+  </data>
+  <data name="NoProfilePicture" xml:space="preserve">
+    <value>Sem foto</value>
+  </data>
+  <data name="NoProvidersRegistered" xml:space="preserve">
+    <value>Nenhum provider cadastrado.</value>
+  </data>
+  <data name="NoRecentSessions" xml:space="preserve">
+    <value>Nenhuma sessão registrada ainda.</value>
+  </data>
+  <data name="NoRecord" xml:space="preserve">
+    <value>Sem registro</value>
+  </data>
+  <data name="NoRecordsFound" xml:space="preserve">
+    <value>Nenhum registro encontrado.</value>
+  </data>
+  <data name="NoRedirectUriRegistered" xml:space="preserve">
+    <value>Nenhuma redirect URI cadastrada.</value>
+  </data>
+  <data name="NoScopesRegistered" xml:space="preserve">
+    <value>Nenhum scope cadastrado.</value>
+  </data>
+  <data name="NoSessionsRegistered" xml:space="preserve">
+    <value>Nenhuma sessão registrada ainda.</value>
+  </data>
+  <data name="NoUsersFound" xml:space="preserve">
+    <value>Nenhum usuário encontrado.</value>
+  </data>
+  <data name="None" xml:space="preserve">
+    <value>Nenhum</value>
+  </data>
+  <data name="NotConfirmed" xml:space="preserve">
+    <value>Não confirmado</value>
+  </data>
+  <data name="NotFound" xml:space="preserve">
+    <value>Não encontrado</value>
+  </data>
+  <data name="NotInformed" xml:space="preserve">
+    <value>Não informado</value>
+  </data>
+  <data name="NotRegisteredYet" xml:space="preserve">
+    <value>Ainda não registrado</value>
+  </data>
+  <data name="NotRegisteredYetFemale" xml:space="preserve">
+    <value>Ainda não registrada</value>
+  </data>
+  <data name="NotRequired" xml:space="preserve">
+    <value>Não obrigatório</value>
+  </data>
+  <data name="NovoScope" xml:space="preserve">
+    <value>Novo scope</value>
+  </data>
+  <data name="OAuthOidc" xml:space="preserve">
+    <value>OAuth/OIDC</value>
+  </data>
+  <data name="Oidc" xml:space="preserve">
+    <value>OIDC</value>
+  </data>
+  <data name="OpenIddict" xml:space="preserve">
+    <value>OPENIDDICT</value>
+  </data>
+  <data name="OpenidConnect" xml:space="preserve">
+    <value>OpenID Connect</value>
+  </data>
+  <data name="OperationCompletedSuccessfully" xml:space="preserve">
+    <value>Operação concluída com sucesso.</value>
+  </data>
+  <data name="OperationFailed" xml:space="preserve">
+    <value>A operação falhou.</value>
+  </data>
+  <data name="Optional" xml:space="preserve">
+    <value>Opcional</value>
+  </data>
+  <data name="OrContinueWith" xml:space="preserve">
+    <value>ou continue com</value>
+  </data>
+  <data name="Order" xml:space="preserve">
+    <value>Ordem</value>
+  </data>
+  <data name="OuContinueCom" xml:space="preserve">
+    <value>ou continue com</value>
+  </data>
+  <data name="Passkey" xml:space="preserve">
+    <value>Passkey</value>
+  </data>
+  <data name="Passkeys" xml:space="preserve">
+    <value>Passkeys</value>
+  </data>
+  <data name="Password" xml:space="preserve">
+    <value>Senha</value>
+  </data>
+  <data name="PasswordChangedSuccessfully" xml:space="preserve">
+    <value>Senha alterada com sucesso.</value>
+  </data>
+  <data name="Payload" xml:space="preserve">
+    <value>Payload</value>
+  </data>
+  <data name="Pending" xml:space="preserve">
+    <value>Pendente</value>
+  </data>
+  <data name="Permission" xml:space="preserve">
+    <value>Permissão</value>
+  </data>
+  <data name="Permissions" xml:space="preserve">
+    <value>Permissões</value>
+  </data>
+  <data name="PersonalData" xml:space="preserve">
+    <value>Dados pessoais</value>
+  </data>
+  <data name="PhoneNumber" xml:space="preserve">
+    <value>Telefone</value>
+  </data>
+  <data name="PhotoOfUser" xml:space="preserve">
+    <value>Foto de {0}</value>
+  </data>
+  <data name="PictureFromProvider" xml:space="preserve">
+    <value>Foto retornada pelo seu provedor de login externo.</value>
+  </data>
+  <data name="Pkce" xml:space="preserve">
+    <value>PKCE</value>
+  </data>
+  <data name="PlatformUser" xml:space="preserve">
+    <value>Usuário da plataforma</value>
+  </data>
+  <data name="Portal" xml:space="preserve">
+    <value>Portal</value>
+  </data>
+  <data name="Portuguese" xml:space="preserve">
+    <value>Português</value>
+  </data>
+  <data name="PostLogoutRedirectUri" xml:space="preserve">
+    <value>URI de redirecionamento pós-logout</value>
+  </data>
+  <data name="PostLogoutRedirectUris" xml:space="preserve">
+    <value>Post logout redirect URIs</value>
+  </data>
+  <data name="PreferredLanguage" xml:space="preserve">
+    <value>Idioma de preferência</value>
+  </data>
+  <data name="PrimaryColor" xml:space="preserve">
+    <value>Cor primária</value>
+  </data>
+  <data name="PrivacyPolicy" xml:space="preserve">
+    <value>Política de Privacidade</value>
+  </data>
+  <data name="Profile" xml:space="preserve">
+    <value>Perfil</value>
+  </data>
+  <data name="ProfileData" xml:space="preserve">
+    <value>Dados do perfil</value>
+  </data>
+  <data name="ProfilePicture" xml:space="preserve">
+    <value>Foto do perfil</value>
+  </data>
+  <data name="ProfileUpdated" xml:space="preserve">
+    <value>Perfil atualizado</value>
+  </data>
+  <data name="ProfileUpdatedSuccessfully" xml:space="preserve">
+    <value>Perfil atualizado com sucesso.</value>
+  </data>
+  <data name="Protegida" xml:space="preserve">
+    <value>Protegida</value>
+  </data>
+  <data name="Provider" xml:space="preserve">
+    <value>Provedor</value>
+  </data>
+  <data name="ProviderInformation" xml:space="preserve">
+    <value>Informações do provedor</value>
+  </data>
+  <data name="ProviderName" xml:space="preserve">
+    <value>Nome do provedor</value>
+  </data>
+  <data name="Providers" xml:space="preserve">
+    <value>Providers</value>
+  </data>
+  <data name="ProvidersAtivos" xml:space="preserve">
+    <value>Providers ativos</value>
+  </data>
+  <data name="Quando" xml:space="preserve">
+    <value>Quando</value>
+  </data>
+  <data name="QuickActions" xml:space="preserve">
+    <value>Ações rápidas</value>
+  </data>
+  <data name="Rareles" xml:space="preserve">
+    <value>Rareles</value>
+  </data>
+  <data name="RecentDevices" xml:space="preserve">
+    <value>Dispositivos recentes</value>
+  </data>
+  <data name="RecentSessions" xml:space="preserve">
+    <value>Sessões recentes</value>
+  </data>
+  <data name="RecognizedDevices" xml:space="preserve">
+    <value>Equipamentos reconhecidos</value>
+  </data>
+  <data name="RecommendedEnable" xml:space="preserve">
+    <value>Recomendado ativar</value>
+  </data>
+  <data name="RecordCreatedSuccessfully" xml:space="preserve">
+    <value>Registro criado com sucesso.</value>
+  </data>
+  <data name="RecordDeletedSuccessfully" xml:space="preserve">
+    <value>Registro excluído com sucesso.</value>
+  </data>
+  <data name="RecordUpdatedSuccessfully" xml:space="preserve">
+    <value>Registro atualizado com sucesso.</value>
+  </data>
+  <data name="Recovery" xml:space="preserve">
+    <value>Recuperação</value>
+  </data>
+  <data name="RecoveryCode" xml:space="preserve">
+    <value>Código de recuperação</value>
+  </data>
+  <data name="RecoveryCodes" xml:space="preserve">
+    <value>Códigos de recuperação</value>
+  </data>
+  <data name="RecursosProtegidos" xml:space="preserve">
+    <value>Recursos protegidos</value>
+  </data>
+  <data name="RedirectUri" xml:space="preserve">
+    <value>URI de redirecionamento</value>
+  </data>
+  <data name="RedirectUris" xml:space="preserve">
+    <value>Redirect URIs</value>
+  </data>
+  <data name="Redirects" xml:space="preserve">
+    <value>Redirects</value>
+  </data>
+  <data name="RefreshToken" xml:space="preserve">
+    <value>Refresh Token</value>
+  </data>
+  <data name="RefreshTokenEmDias" xml:space="preserve">
+    <value>Refresh token em dias</value>
+  </data>
+  <data name="RegenerarSecretAoSalvar" xml:space="preserve">
+    <value>Regenerar secret ao salvar</value>
+  </data>
+  <data name="RegenerateSecret" xml:space="preserve">
+    <value>Regenerar secret</value>
+  </data>
+  <data name="Register" xml:space="preserve">
+    <value>Cadastrar</value>
+  </data>
+  <data name="RememberMe" xml:space="preserve">
+    <value>Lembrar de mim</value>
+  </data>
+  <data name="RepitaASenha" xml:space="preserve">
+    <value>Repita a senha</value>
+  </data>
+  <data name="RequestId" xml:space="preserve">
+    <value>ID da requisição:</value>
+  </data>
+  <data name="Required" xml:space="preserve">
+    <value>Obrigatório</value>
+  </data>
+  <data name="RequiredField" xml:space="preserve">
+    <value>Este campo é obrigatório.</value>
+  </data>
+  <data name="ResendConfirmationEmail" xml:space="preserve">
+    <value>Reenviar e-mail de confirmação</value>
+  </data>
+  <data name="ResetAuthenticator" xml:space="preserve">
+    <value>Redefinir autenticador</value>
+  </data>
+  <data name="ResetPassword" xml:space="preserve">
+    <value>Redefinir senha</value>
+  </data>
+  <data name="ResetQrCode" xml:space="preserve">
+    <value>Resetar QR Code</value>
+  </data>
+  <data name="Result" xml:space="preserve">
+    <value>Resultado</value>
+  </data>
+  <data name="RevocationEndpoint" xml:space="preserve">
+    <value>Revocation endpoint</value>
+  </data>
+  <data name="Revogar" xml:space="preserve">
+    <value>Revogar</value>
+  </data>
+  <data name="Role" xml:space="preserve">
+    <value>Perfil</value>
+  </data>
+  <data name="RoleHintAdmin" xml:space="preserve">
+    <value>Acesso total ao painel administrativo.</value>
+  </data>
+  <data name="RoleHintClientManager" xml:space="preserve">
+    <value>Gerencia clients, secrets e scopes.</value>
+  </data>
+  <data name="RoleHintCustom" xml:space="preserve">
+    <value>Permissão personalizada.</value>
+  </data>
+  <data name="RoleHintUserManager" xml:space="preserve">
+    <value>Gerencia usuários, bloqueios e roles.</value>
+  </data>
+  <data name="RoleName" xml:space="preserve">
+    <value>Nome da role</value>
+  </data>
+  <data name="Roles" xml:space="preserve">
+    <value>Roles</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Salvar</value>
+  </data>
+  <data name="SaveBranding" xml:space="preserve">
+    <value>Salvar branding</value>
+  </data>
+  <data name="SaveChanges" xml:space="preserve">
+    <value>Salvar alterações</value>
+  </data>
+  <data name="SaveProvider" xml:space="preserve">
+    <value>Salvar provider</value>
+  </data>
+  <data name="SaveScopes" xml:space="preserve">
+    <value>Salvar scopes</value>
+  </data>
+  <data name="SaveSettings" xml:space="preserve">
+    <value>Salvar configurações</value>
+  </data>
+  <data name="Saved" xml:space="preserve">
+    <value>Salvo</value>
+  </data>
+  <data name="SavedLanguage" xml:space="preserve">
+    <value>Idioma atualizado com sucesso.</value>
+  </data>
+  <data name="Scheme" xml:space="preserve">
+    <value>Scheme</value>
+  </data>
+  <data name="Scope" xml:space="preserve">
+    <value>Escopo</value>
+  </data>
+  <data name="Scopes" xml:space="preserve">
+    <value>APIs/Scopes</value>
+  </data>
+  <data name="ScopesPermitidosParaEsteClient" xml:space="preserve">
+    <value>Scopes permitidos para este client</value>
+  </data>
+  <data name="Search" xml:space="preserve">
+    <value>Pesquisar</value>
+  </data>
+  <data name="SecondaryColor" xml:space="preserve">
+    <value>Cor secundária</value>
+  </data>
+  <data name="Secret" xml:space="preserve">
+    <value>Secret</value>
+  </data>
+  <data name="Security" xml:space="preserve">
+    <value>Segurança</value>
+  </data>
+  <data name="SecurityAndChecks" xml:space="preserve">
+    <value>Segurança e verificações</value>
+  </data>
+  <data name="SecurityHistory" xml:space="preserve">
+    <value>Histórico de segurança</value>
+  </data>
+  <data name="SecurityMethods" xml:space="preserve">
+    <value>Métodos de segurança</value>
+  </data>
+  <data name="SelectLanguage" xml:space="preserve">
+    <value>Selecione um idioma</value>
+  </data>
+  <data name="SemMfa" xml:space="preserve">
+    <value>Sem MFA</value>
+  </data>
+  <data name="Sessions" xml:space="preserve">
+    <value>Sessões</value>
+  </data>
+  <data name="Settings" xml:space="preserve">
+    <value>Configurações</value>
+  </data>
+  <data name="SeuNome" xml:space="preserve">
+    <value>Seu nome</value>
+  </data>
+  <data name="SignIn" xml:space="preserve">
+    <value>Entrar</value>
+  </data>
+  <data name="SignInToYourAccount" xml:space="preserve">
+    <value>Entre na sua conta</value>
+  </data>
+  <data name="SignOut" xml:space="preserve">
+    <value>Sair</value>
+  </data>
+  <data name="SixDigitCode" xml:space="preserve">
+    <value>Código de 6 dígitos</value>
+  </data>
+  <data name="Source" xml:space="preserve">
+    <value>Origem</value>
+  </data>
+  <data name="Sql" xml:space="preserve">
+    <value>SQL</value>
+  </data>
+  <data name="Status" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="Subject" xml:space="preserve">
+    <value>Assunto</value>
+  </data>
+  <data name="Success" xml:space="preserve">
+    <value>Sucesso</value>
+  </data>
+  <data name="SwappingTo" xml:space="preserve">
+    <value>Swapping to</value>
+  </data>
+  <data name="System" xml:space="preserve">
+    <value>Sistema</value>
+  </data>
+  <data name="Template" xml:space="preserve">
+    <value>Template</value>
+  </data>
+  <data name="TenantName" xml:space="preserve">
+    <value>Nome do tenant</value>
+  </data>
+  <data name="TentativasAntesDoBloqueio" xml:space="preserve">
+    <value>Tentativas antes do bloqueio</value>
+  </data>
+  <data name="Text1EscaneieOQrCode" xml:space="preserve">
+    <value>1. Escaneie o QR Code</value>
+  </data>
+  <data name="Text2ConfirmeOCodigo" xml:space="preserve">
+    <value>2. Confirme o código</value>
+  </data>
+  <data name="TextAAplicacao" xml:space="preserve">
+    <value>A aplicação</value>
+  </data>
+  <data name="TextAbcdEfgh" xml:space="preserve">
+    <value>ABCD-EFGH</value>
+  </data>
+  <data name="TextAbraMicrosoftAuthenticatorGoogleAuthenticatorAuthy1passwordOu" xml:space="preserve">
+    <value>Abra Microsoft Authenticator, Google Authenticator, Authy, 1Password ou Bitwarden e adicione uma nova conta.</value>
+  </data>
+  <data name="TextAcesseComSeuEMailESenhaPara" xml:space="preserve">
+    <value>Acesse com seu e-mail e senha para abrir o painel administrativo.</value>
+  </data>
+  <data name="TextAcessosNaoRevogados" xml:space="preserve">
+    <value>Acessos não revogados</value>
+  </data>
+  <data name="TextAcoesAdministrativas" xml:space="preserve">
+    <value>Ações administrativas</value>
+  </data>
+  <data name="TextAcoesRapidas" xml:space="preserve">
+    <value>Ações rápidas</value>
+  </data>
+  <data name="TextAdministracao" xml:space="preserve">
+    <value>Administração</value>
+  </data>
+  <data name="TextAltereGrantsEndpointsRedirectsScopesEConsentimentoDo" xml:space="preserve">
+    <value>Altere grants, endpoints, redirects, scopes e consentimento do client.</value>
+  </data>
+  <data name="TextAnErrorOccurredWhileProcessingYourRequest" xml:space="preserve">
+    <value>Ocorreu um erro ao processar sua solicitação.</value>
+  </data>
+  <data name="TextAndRestartingTheApp" xml:space="preserve">
+    <value>and restarting the app.</value>
+  </data>
+  <data name="TextAoPermitirVoceSeraRedirecionadoDeVoltaPara" xml:space="preserve">
+    <value>Ao permitir, você será redirecionado de volta para a aplicação solicitante. Essa decisão será salva para este aplicativo e não será solicitada novamente enquanto o consentimento permanecer válido.</value>
+  </data>
+  <data name="TextAoRegenerarCopieOValorExibidoDepoisDo" xml:space="preserve">
+    <value>Ao regenerar, copie o valor exibido depois do salvamento e atualize o sistema cliente.</value>
+  </data>
+  <data name="TextApisScopes" xml:space="preserve">
+    <value>APIs/Scopes</value>
+  </data>
+  <data name="TextAplicacoesAutorizadasAUsarSeuIdentityProvider" xml:space="preserve">
+    <value>Aplicações autorizadas a usar seu Identity Provider.</value>
+  </data>
+  <data name="TextAposEscanearInformeOCodigoAtualGeradoPelo" xml:space="preserve">
+    <value>Após escanear, informe o código atual gerado pelo aplicativo.</value>
+  </data>
+  <data name="TextArrayEmpty" xml:space="preserve">
+    <value>?? Array.Empty</value>
+  </data>
+  <data name="TextAspnetcoreEnvironment" xml:space="preserve">
+    <value>ASPNETCORE_ENVIRONMENT</value>
+  </data>
+  <data name="TextAtualizeDadosDaContaEMarqueApenasAs" xml:space="preserve">
+    <value>Atualize dados da conta e marque apenas as roles que esse usuário deve possuir.</value>
+  </data>
+  <data name="TextAutenticacaoDoClient" xml:space="preserve">
+    <value>Autenticação do client</value>
+  </data>
+  <data name="TextAutenticacaoEmDuasEtapas" xml:space="preserve">
+    <value>Autenticação em duas etapas</value>
+  </data>
+  <data name="TextAutenticacaoModernaComOidcOauth2EAuthorizationCode" xml:space="preserve">
+    <value>Autenticação moderna com OIDC/OAuth2 e Authorization Code + PKCE</value>
+  </data>
+  <data name="TextAutorizarAplicacao" xml:space="preserve">
+    <value>Autorizar aplicação</value>
+  </data>
+  <data name="TextBaseProntaParaMfaAuditoriaApisProtegidasE" xml:space="preserve">
+    <value>Base pronta para MFA, auditoria, APIs protegidas e login do Rareles</value>
+  </data>
+  <data name="TextBemVindoAoPortal" xml:space="preserve">
+    <value>👋 Bem-vindo ao portal</value>
+  </data>
+  <data name="TextCadastreOsDadosQueSeraoUsadosParaExibir" xml:space="preserve">
+    <value>Cadastre os dados que serão usados para exibir e controlar os provedores externos na tela de login.</value>
+  </data>
+  <data name="TextCadastreUmaAplicacaoQuePoderaUsarOAuth2demo" xml:space="preserve">
+    <value>Cadastre uma aplicação que poderá usar o Auth2Demo como provedor OpenID Connect.</value>
+  </data>
+  <data name="TextCadastreUmaContaLocalPorPadraoNovosUsuarios" xml:space="preserve">
+    <value>Cadastre uma conta local. Por padrão, novos usuários entram sem roles administrativas.</value>
+  </data>
+  <data name="TextCentralParaMensagensDeConfirmacaoRecuperacaoMfaE" xml:space="preserve">
+    <value>Central para mensagens de confirmação, recuperação, MFA e boas-vindas.</value>
+  </data>
+  <data name="TextClientModelClientid" xml:space="preserve">
+    <value>Client @Model.ClientId</value>
+  </data>
+  <data name="TextClientsManage" xml:space="preserve">
+    <value>clients.manage</value>
+  </data>
+  <data name="TextCodigosRestantes" xml:space="preserve">
+    <value>Códigos restantes</value>
+  </data>
+  <data name="TextColeUmJwtParaVisualizarOPayloadE" xml:space="preserve">
+    <value>Cole um JWT para visualizar o payload e facilitar testes de integração.</value>
+  </data>
+  <data name="TextComKeyVaultSecretsManagerOuCriptografiaNo" xml:space="preserve">
+    <value>com Key Vault/Secrets Manager ou criptografia no banco. Este cadastro já deixa a estrutura pronta para o painel administrativo.</value>
+  </data>
+  <data name="TextConexaoSqlServer" xml:space="preserve">
+    <value>Conexão SQL Server.</value>
+  </data>
+  <data name="TextConfidentialComClientSecret" xml:space="preserve">
+    <value>Confidential - com client secret</value>
+  </data>
+  <data name="TextConfiguracoesDeSeguranca" xml:space="preserve">
+    <value>Configurações de segurança</value>
+  </data>
+  <data name="TextConfigurePermissoesScopesRedirectsEDadosDoAplicativo" xml:space="preserve">
+    <value>Configure permissões, scopes, redirects e dados do aplicativo autorizado.</value>
+  </data>
+  <data name="TextConfirmarCodigo" xml:space="preserve">
+    <value>Confirmar código</value>
+  </data>
+  <data name="TextConsulteContasAltereStatusEGerenciePermissoesAdministrativas" xml:space="preserve">
+    <value>Consulte contas, altere status e gerencie permissões administrativas.</value>
+  </data>
+  <data name="TextControleAdministrativoDosMetodosDeSegundoFatorDos" xml:space="preserve">
+    <value>Controle administrativo dos métodos de segundo fator dos usuários.</value>
+  </data>
+  <data name="TextCopieAgoraDepoisEleNaoSeraExibidoNovamente" xml:space="preserve">
+    <value>Copie agora. Depois ele não será exibido novamente.</value>
+  </data>
+  <data name="TextCriarUsuario" xml:space="preserve">
+    <value>Criar usuário</value>
+  </data>
+  <data name="TextCrieRolesPersonalizadasEAtribuaPermissoesAosUsuarios" xml:space="preserve">
+    <value>Crie roles personalizadas e atribua permissões aos usuários pela tela de edição.</value>
+  </data>
+  <data name="TextCrieUmaContaLocalParaTestarOIdentity" xml:space="preserve">
+    <value>Crie uma conta local para testar o Identity Provider. A conta criada entra como usuário comum.</value>
+  </data>
+  <data name="TextDadosPrincipaisDoUsuarioAutenticado" xml:space="preserve">
+    <value>Dados principais do usuário autenticado.</value>
+  </data>
+  <data name="TextDatetimeoffsetUtcnowWarnOk" xml:space="preserve">
+    <value>DateTimeOffset.UtcNow ? "warn" : "ok")"&gt;</value>
+  </data>
+  <data name="TextDefinaOsScopesQueOsClientsPodemSolicitar" xml:space="preserve">
+    <value>Defina os scopes que os clients podem solicitar nos tokens.</value>
+  </data>
+  <data name="TextDepoisDeEscanearInformeOCodigoDe6" xml:space="preserve">
+    <value>Depois de escanear, informe o código de 6 dígitos gerado pelo aplicativo.</value>
+  </data>
+  <data name="TextDesabilitarMfaDesteUsuario" xml:space="preserve">
+    <value>Desabilitar MFA deste usuário?</value>
+  </data>
+  <data name="TextDesabilitarMfaReduzASegurancaDaContaContinuar" xml:space="preserve">
+    <value>Desabilitar MFA reduz a segurança da conta. Continuar?</value>
+  </data>
+  <data name="TextDigiteEstaChaveManualmenteNoAplicativo" xml:space="preserve">
+    <value>Digite esta chave manualmente no aplicativo:</value>
+  </data>
+  <data name="TextDigiteOCodigoDe6DigitosGeradoNo" xml:space="preserve">
+    <value>Digite o código de 6 dígitos gerado no Microsoft Authenticator, Google Authenticator ou outro app compatível.</value>
+  </data>
+  <data name="TextEMailConfirmado" xml:space="preserve">
+    <value>E-mail confirmado</value>
+  </data>
+  <data name="TextEMailProfileEmailconfirmedConfirmadoPendente" xml:space="preserve">
+    <value>E-mail @(profile.EmailConfirmed ? "confirmado" : "pendente")</value>
+  </data>
+  <data name="TextEmProducaoPrefiraProtegerO" xml:space="preserve">
+    <value>Em produção, prefira proteger o</value>
+  </data>
+  <data name="TextEnvironmentWillDisplayMoreDetailedInformationAboutThe" xml:space="preserve">
+    <value>environment will display more detailed information about the error that occurred.</value>
+  </data>
+  <data name="TextEquipamentosUsadosParaAcessarOPortal" xml:space="preserve">
+    <value>Equipamentos usados para acessar o portal.</value>
+  </data>
+  <data name="TextEstaTabelaControlaQuaisBotoesAparecemNoLogin" xml:space="preserve">
+    <value>Esta tabela controla quais botões aparecem no login. O vínculo do usuário com o provider continua sendo salvo pelo ASP.NET Identity em</value>
+  </data>
+  <data name="TextEstaTelaPermiteAoAdministradorConfigurarOMfa" xml:space="preserve">
+    <value>Esta tela permite ao administrador configurar o MFA do usuário. O usuário deve estar presente com o celular: escaneie o QR Code no Microsoft Authenticator/Google Authenticator e informe o código de 6 dígitos abaixo.</value>
+  </data>
+  <data name="TextEstruturaPreparadaParaWebauthnWindowsHelloFaceId" xml:space="preserve">
+    <value>Estrutura preparada para WebAuthn, Windows Hello, Face ID, Touch ID e chaves físicas.</value>
+  </data>
+  <data name="TextEventoMaisRecente" xml:space="preserve">
+    <value>Evento mais recente.</value>
+  </data>
+  <data name="TextExJoaoSilva" xml:space="preserve">
+    <value>Ex.: João Silva</value>
+  </data>
+  <data name="TextExSupportManager" xml:space="preserve">
+    <value>ex.: support-manager</value>
+  </data>
+  <data name="TextExcluirEstaRoleElaNaoPodeEstarAtribuida" xml:space="preserve">
+    <value>Excluir esta role? Ela não pode estar atribuída a nenhum usuário.</value>
+  </data>
+  <data name="TextExcluirEsteProvider" xml:space="preserve">
+    <value>Excluir este provider?</value>
+  </data>
+  <data name="TextExigirMaiuscula" xml:space="preserve">
+    <value>Exigir maiúscula</value>
+  </data>
+  <data name="TextExigirMinuscula" xml:space="preserve">
+    <value>Exigir minúscula</value>
+  </data>
+  <data name="TextExigirNumero" xml:space="preserve">
+    <value>Exigir número</value>
+  </data>
+  <data name="TextExplicitMostraTelaDePermissao" xml:space="preserve">
+    <value>Explicit - mostra tela de permissão</value>
+  </data>
+  <data name="TextExternalAutorizacaoPrecisaExistirPreviamente" xml:space="preserve">
+    <value>External - autorização precisa existir previamente</value>
+  </data>
+  <data name="TextFederacaoDeIdentidade" xml:space="preserve">
+    <value>Federação de identidade</value>
+  </data>
+  <data name="TextGerarNovosCodigosDeRecuperacaoOsAntigosSerao" xml:space="preserve">
+    <value>Gerar novos códigos de recuperação? Os antigos serão invalidados.</value>
+  </data>
+  <data name="TextGerarUmaNovaChaveEInvalidarOQr" xml:space="preserve">
+    <value>Gerar uma nova chave e invalidar o QR Code atual?</value>
+  </data>
+  <data name="TextGerencieDispositivosConhecidosEConfiaveis" xml:space="preserve">
+    <value>Gerencie dispositivos conhecidos e confiáveis.</value>
+  </data>
+  <data name="TextGerencieOsProvedoresExternosExibidosNaTelaDe" xml:space="preserve">
+    <value>Gerencie os provedores externos exibidos na tela de login, como Google, Microsoft, GitHub ou provedores OIDC personalizados.</value>
+  </data>
+  <data name="TextGestaoCentral" xml:space="preserve">
+    <value>Gestão central</value>
+  </data>
+  <data name="TextGoogleMicrosoftEOidcCustomizado" xml:space="preserve">
+    <value>Google, Microsoft e OIDC customizado.</value>
+  </data>
+  <data name="TextGoogleMicrosoftEtc" xml:space="preserve">
+    <value>Google, Microsoft etc.</value>
+  </data>
+  <data name="TextHttpsLocalhost7108SigninOidc" xml:space="preserve">
+    <value>https://localhost:7108/signin-oidc</value>
+  </data>
+  <data name="TextHttpsLocalhost7108SignoutCallbackOidc" xml:space="preserve">
+    <value>https://localhost:7108/signout-callback-oidc</value>
+  </data>
+  <data name="TextHttpsLoginMicrosoftonlineComCommonV20" xml:space="preserve">
+    <value>https://login.microsoftonline.com/common/v2.0</value>
+  </data>
+  <data name="TextIdentityProvider" xml:space="preserve">
+    <value>🔐 Identity Provider</value>
+  </data>
+  <data name="TextImplicitNaoSolicitaPermissao" xml:space="preserve">
+    <value>Implicit - não solicita permissão</value>
+  </data>
+  <data name="TextInvalidaOSecretAtualDepoisVocePrecisaAtualizar" xml:space="preserve">
+    <value>Invalida o secret atual. Depois você precisa atualizar o sistema cliente.</value>
+  </data>
+  <data name="TextIssoVaiDesabilitarOMfaAtualEGerar" xml:space="preserve">
+    <value>Isso vai desabilitar o MFA atual e gerar uma nova chave. Continuar?</value>
+  </data>
+  <data name="TextItCanResultInDisplayingSensitiveInformationFrom" xml:space="preserve">
+    <value>It can result in displaying sensitive information from exceptions to end users. For local debugging, enable the</value>
+  </data>
+  <data name="TextJaTemUmaConta" xml:space="preserve">
+    <value>Já tem uma conta?</value>
+  </data>
+  <data name="TextLerUsuarios" xml:space="preserve">
+    <value>Ler usuários</value>
+  </data>
+  <data name="TextLogoutEndSessionEndpoint" xml:space="preserve">
+    <value>Logout/end session endpoint</value>
+  </data>
+  <data name="TextMarcarAdicionaARoleDesmarcarRemoveARole" xml:space="preserve">
+    <value>Marcar adiciona a role. Desmarcar remove a role ao salvar.</value>
+  </data>
+  <data name="TextMarqueSomenteOsScopesQueEsteAplicativoPode" xml:space="preserve">
+    <value>Marque somente os scopes que este aplicativo pode solicitar. Isso evita erros de permissão de scope.</value>
+  </data>
+  <data name="TextMetodo" xml:space="preserve">
+    <value>Método</value>
+  </data>
+  <data name="TextMfaProfileTwofactorenabledAtivoInativo" xml:space="preserve">
+    <value>MFA @(profile.TwoFactorEnabled ? "ativo" : "inativo")</value>
+  </data>
+  <data name="TextMinimo10Caracteres" xml:space="preserve">
+    <value>Mínimo 10 caracteres</value>
+  </data>
+  <data name="TextMostreEstesCodigosAoUsuarioUmaUnicaVez" xml:space="preserve">
+    <value>Mostre estes códigos ao usuário uma única vez. Eles não serão exibidos novamente.</value>
+  </data>
+  <data name="TextNaoConsegueEscanear" xml:space="preserve">
+    <value>Não consegue escanear?</value>
+  </data>
+  <data name="TextNaoTemUmaConta" xml:space="preserve">
+    <value>Não tem uma conta?</value>
+  </data>
+  <data name="TextNomeOuEMail" xml:space="preserve">
+    <value>Nome ou e-mail</value>
+  </data>
+  <data name="TextNovoProvider" xml:space="preserve">
+    <value>+ Novo provider</value>
+  </data>
+  <data name="TextNovosCodigosDeRecuperacao" xml:space="preserve">
+    <value>Novos códigos de recuperação</value>
+  </data>
+  <data name="TextOpcionalNaoMarqueNadaParaCriarUmUsuario" xml:space="preserve">
+    <value>Opcional. Não marque nada para criar um usuário comum.</value>
+  </data>
+  <data name="TextOpenid10Profile10Email10Roles10" xml:space="preserve">
+    <value>openid&amp;#10;profile&amp;#10;email&amp;#10;roles&amp;#10;offline_access&amp;#10;rareles.api</value>
+  </data>
+  <data name="TextPadrao" xml:space="preserve">
+    <value>Padrão</value>
+  </data>
+  <data name="TextPainelAdministrativoParaUsuariosRolesClientsEScopes" xml:space="preserve">
+    <value>Painel administrativo para usuários, roles, clients e scopes</value>
+  </data>
+  <data name="TextPermissoesSolicitadas" xml:space="preserve">
+    <value>Permissões solicitadas</value>
+  </data>
+  <data name="TextPersistenciaReal" xml:space="preserve">
+    <value>Persistência real</value>
+  </data>
+  <data name="TextPersonalizeNomeLogoCoresTemaECssDo" xml:space="preserve">
+    <value>Personalize nome, logo, cores, tema e CSS do portal.</value>
+  </data>
+  <data name="TextPoliticaDeSenhaBloqueioMfaETempoDe" xml:space="preserve">
+    <value>Política de senha, bloqueio, MFA e tempo de token.</value>
+  </data>
+  <data name="TextProtejaLoginsComUsuarioESenhaUsandoUm" xml:space="preserve">
+    <value>Proteja logins com usuário e senha usando um app autenticador. Não há custo e não depende de SMS.</value>
+  </data>
+  <data name="TextProvidersWrite" xml:space="preserve">
+    <value>providers.write</value>
+  </data>
+  <data name="TextPublicSemClientSecret" xml:space="preserve">
+    <value>Public - sem client secret</value>
+  </data>
+  <data name="TextQuerAcessarSuaContaNoAuth2demo" xml:space="preserve">
+    <value>quer acessar sua conta no Auth2Demo.</value>
+  </data>
+  <data name="TextRarelesWeb" xml:space="preserve">
+    <value>rareles-web</value>
+  </data>
+  <data name="TextRastreabilidadeDeLoginEAdmin" xml:space="preserve">
+    <value>Rastreabilidade de login e admin.</value>
+  </data>
+  <data name="TextRastreieEventosCriticosDeAutenticacaoAdministracaoEConfiguracao" xml:space="preserve">
+    <value>Rastreie eventos críticos de autenticação, administração e configuração.</value>
+  </data>
+  <data name="TextRegenerarOSecretDesteClientOSistemaCliente" xml:space="preserve">
+    <value>Regenerar o secret deste client? O sistema cliente precisará ser atualizado.</value>
+  </data>
+  <data name="TextRemoveEstaAplicacaoEImpedeNovosLoginsUsando" xml:space="preserve">
+    <value>Remove esta aplicação e impede novos logins usando este ClientId.</value>
+  </data>
+  <data name="TextRemoverEsteMetodoMfa" xml:space="preserve">
+    <value>Remover este método MFA?</value>
+  </data>
+  <data name="TextResetarOAutenticadorDesteUsuario" xml:space="preserve">
+    <value>Resetar o autenticador deste usuário?</value>
+  </data>
+  <data name="TextResumoRapidoParaProtegerAConta" xml:space="preserve">
+    <value>Resumo rápido para proteger a conta.</value>
+  </data>
+  <data name="TextReviseOsEscoposAbaixoAntesDeContinuar" xml:space="preserve">
+    <value>Revise os escopos abaixo antes de continuar.</value>
+  </data>
+  <data name="TextRolesDoUsuario" xml:space="preserve">
+    <value>Roles do usuário</value>
+  </data>
+  <data name="TextSalveEstesCodigosEmLocalSeguroElesAparecem" xml:space="preserve">
+    <value>Salve estes códigos em local seguro. Eles aparecem apenas agora e cada um pode ser usado uma única vez.</value>
+  </data>
+  <data name="TextSenhaLockoutMfaETokens" xml:space="preserve">
+    <value>Senha, lockout, MFA e tokens.</value>
+  </data>
+  <data name="TextSenhaTemporaria" xml:space="preserve">
+    <value>Senha temporária</value>
+  </data>
+  <data name="TextSeparePorLinhaEspacoOuVirgulaScopesNao" xml:space="preserve">
+    <value>Separe por linha, espaço ou vírgula. Scopes não permitidos geram erro quando o client solicita login/token.</value>
+  </data>
+  <data name="TextServidorDeAutenticacaoProprioSeguroEExtensivelCom" xml:space="preserve">
+    <value>Servidor de autenticação próprio, seguro e extensível com ASP.NET Core Identity + OpenIddict para usuários, clientes, roles, APIs, scopes e tokens.</value>
+  </data>
+  <data name="TextSessoes" xml:space="preserve">
+    <value>Sessões</value>
+  </data>
+  <data name="TextSigninGoogle" xml:space="preserve">
+    <value>/signin-google</value>
+  </data>
+  <data name="TextSigninOidc" xml:space="preserve">
+    <value>/signin-oidc</value>
+  </data>
+  <data name="TextSpaWebNativeOuMachineToMachine" xml:space="preserve">
+    <value>SPA, Web, Native ou Machine-to-Machine.</value>
+  </data>
+  <data name="TextSystematicSempreSolicitaPermissao" xml:space="preserve">
+    <value>Systematic - sempre solicita permissão</value>
+  </data>
+  <data name="TextTAuditlogs" xml:space="preserve">
+    <value>🧾 @T["AuditLogs"]</value>
+  </data>
+  <data name="TextTBranding" xml:space="preserve">
+    <value>🎨 @T["Branding"]</value>
+  </data>
+  <data name="TextTClients" xml:space="preserve">
+    <value>🧩 @T["Clients"]</value>
+  </data>
+  <data name="TextTDashboard" xml:space="preserve">
+    <value>📊 @T["Dashboard"]</value>
+  </data>
+  <data name="TextTDevices" xml:space="preserve">
+    <value>📱 @T["Devices"]</value>
+  </data>
+  <data name="TextTEmails" xml:space="preserve">
+    <value>✉️ @T["Emails"]</value>
+  </data>
+  <data name="TextTHealth" xml:space="preserve">
+    <value>🟢 @T["Health"]</value>
+  </data>
+  <data name="TextTIdentityproviders" xml:space="preserve">
+    <value>🌐 @T["IdentityProviders"]</value>
+  </data>
+  <data name="TextTMfa" xml:space="preserve">
+    <value>🔐 @T["Mfa"]</value>
+  </data>
+  <data name="TextTPasskeys" xml:space="preserve">
+    <value>🗝️ @T["Passkeys"]</value>
+  </data>
+  <data name="TextTPermissions" xml:space="preserve">
+    <value>🔑 @T["Permissions"]</value>
+  </data>
+  <data name="TextTRoles" xml:space="preserve">
+    <value>🛡️ @T["Roles"]</value>
+  </data>
+  <data name="TextTScopes" xml:space="preserve">
+    <value>🔌 @T["Scopes"]</value>
+  </data>
+  <data name="TextTSecurity" xml:space="preserve">
+    <value>⚙️ @T["Security"]</value>
+  </data>
+  <data name="TextTSessions" xml:space="preserve">
+    <value>💻 @T["Sessions"]</value>
+  </data>
+  <data name="TextTTokenexplorer" xml:space="preserve">
+    <value>🧪 @T["TokenExplorer"]</value>
+  </data>
+  <data name="TextTUsers" xml:space="preserve">
+    <value>👤 @T["Users"]</value>
+  </data>
+  <data name="TextTamanhoMinimoDaSenha" xml:space="preserve">
+    <value>Tamanho mínimo da senha</value>
+  </data>
+  <data name="TextTemCertezaQueDesejaExcluirEsteClient" xml:space="preserve">
+    <value>Tem certeza que deseja excluir este client?</value>
+  </data>
+  <data name="TextTheDevelopmentEnvironmentShouldnTBeEnabledFor" xml:space="preserve">
+    <value>The Development environment shouldn't be enabled for deployed applications.</value>
+  </data>
+  <data name="TextTipoDeAplicacao" xml:space="preserve">
+    <value>Tipo de aplicação</value>
+  </data>
+  <data name="TextUltimaTrocaDeSenha" xml:space="preserve">
+    <value>Última troca de senha</value>
+  </data>
+  <data name="TextUltimoAuditLog" xml:space="preserve">
+    <value>Último audit log</value>
+  </data>
+  <data name="TextUltimoMfa" xml:space="preserve">
+    <value>Último MFA</value>
+  </data>
+  <data name="TextUltimosAcessosRegistradosNaConta" xml:space="preserve">
+    <value>Últimos acessos registrados na conta.</value>
+  </data>
+  <data name="TextUmaUriPorLinhaParaAspNetCore" xml:space="preserve">
+    <value>Uma URI por linha. Para ASP.NET Core MVC, use normalmente</value>
+  </data>
+  <data name="TextUsarCodigoDeRecuperacao" xml:space="preserve">
+    <value>Usar código de recuperação</value>
+  </data>
+  <data name="TextUseEstaChaveCasoOAppNaoConsiga" xml:space="preserve">
+    <value>Use esta chave caso o app não consiga escanear o QR Code.</value>
+  </data>
+  <data name="TextUseSuasCredenciaisParaAcessarSeuPerfilE" xml:space="preserve">
+    <value>Use suas credenciais para acessar seu perfil e, se for administrador, gerenciar o servidor de identidade.</value>
+  </data>
+  <data name="TextUseThisPageToDetailYourSiteS" xml:space="preserve">
+    <value>Use esta página para detalhar a política de privacidade do seu site.</value>
+  </data>
+  <data name="TextUseUmDosCodigosSalvosQuandoConfigurouO" xml:space="preserve">
+    <value>Use um dos códigos salvos quando configurou o MFA. Cada código funciona apenas uma vez.</value>
+  </data>
+  <data name="TextUsersRead" xml:space="preserve">
+    <value>users.read</value>
+  </data>
+  <data name="TextUsuarioEventoOuDescricao" xml:space="preserve">
+    <value>usuário, evento ou descrição</value>
+  </data>
+  <data name="TextUsuariosTotais" xml:space="preserve">
+    <value>Usuários totais</value>
+  </data>
+  <data name="TextViewbagNewuserstodayHoje" xml:space="preserve">
+    <value>+@ViewBag.NewUsersToday hoje</value>
+  </data>
+  <data name="TextVisaoDeSaudeDosComponentesPrincipais" xml:space="preserve">
+    <value>Visão de saúde dos componentes principais.</value>
+  </data>
+  <data name="TextVisaoOperacionalDoServidorDeIdentidadeUsuariosLogins" xml:space="preserve">
+    <value>Visão operacional do servidor de identidade: usuários, logins, providers, sessões, segurança e integrações.</value>
+  </data>
+  <data name="TextVisualizeERevogueSessoesDeUsuarios" xml:space="preserve">
+    <value>Visualize e revogue sessões de usuários.</value>
+  </data>
+  <data name="TextVoceNaoTemPermissaoParaAcessarEssaArea" xml:space="preserve">
+    <value>Você não tem permissão para acessar essa área.</value>
+  </data>
+  <data name="TextWebUsaSecretSpaMobileNormalmenteEPublic" xml:space="preserve">
+    <value>Web usa secret. SPA/mobile normalmente é public client. Machine-to-machine usa client credentials.</value>
+  </data>
+  <data name="Texte1671797" xml:space="preserve">
+    <value>e</value>
+  </data>
+  <data name="Theme" xml:space="preserve">
+    <value>Tema</value>
+  </data>
+  <data name="Timezone" xml:space="preserve">
+    <value>Fuso horário</value>
+  </data>
+  <data name="TitleSuffix" xml:space="preserve">
+    <value>Auth2Demo</value>
+  </data>
+  <data name="TokenEndpoint" xml:space="preserve">
+    <value>Token endpoint</value>
+  </data>
+  <data name="TokenExplorer" xml:space="preserve">
+    <value>Token Explorer</value>
+  </data>
+  <data name="Trusted" xml:space="preserve">
+    <value>Confiável</value>
+  </data>
+  <data name="TrustedDevices" xml:space="preserve">
+    <value>Dispositivos confiáveis</value>
+  </data>
+  <data name="TwoFactorAuthentication" xml:space="preserve">
+    <value>Autenticação de dois fatores</value>
+  </data>
+  <data name="Type" xml:space="preserve">
+    <value>Tipo</value>
+  </data>
+  <data name="Unauthorized" xml:space="preserve">
+    <value>Não autorizado</value>
+  </data>
+  <data name="Unknown" xml:space="preserve">
+    <value>Desconhecido</value>
+  </data>
+  <data name="UpdateProfile" xml:space="preserve">
+    <value>Atualizar perfil</value>
+  </data>
+  <data name="UpdatedAt" xml:space="preserve">
+    <value>Atualizado em</value>
+  </data>
+  <data name="UrisAutorizadas" xml:space="preserve">
+    <value>URIs autorizadas</value>
+  </data>
+  <data name="UseAnotherServiceToLogin" xml:space="preserve">
+    <value>Use outro serviço para entrar.</value>
+  </data>
+  <data name="User" xml:space="preserve">
+    <value>Usuário</value>
+  </data>
+  <data name="UserId" xml:space="preserve">
+    <value>ID do usuário</value>
+  </data>
+  <data name="UserName" xml:space="preserve">
+    <value>Nome de usuário</value>
+  </data>
+  <data name="Username" xml:space="preserve">
+    <value>Nome de usuário</value>
+  </data>
+  <data name="Users" xml:space="preserve">
+    <value>Usuários</value>
+  </data>
+  <data name="ValidateCode" xml:space="preserve">
+    <value>Validar código</value>
+  </data>
+  <data name="VerificationCode" xml:space="preserve">
+    <value>Código de verificação</value>
+  </data>
+  <data name="Verify" xml:space="preserve">
+    <value>Verificar</value>
+  </data>
+  <data name="ViewProfile" xml:space="preserve">
+    <value>Ver perfil</value>
+  </data>
+  <data name="Warning" xml:space="preserve">
+    <value>Aviso</value>
+  </data>
+  <data name="Welcome" xml:space="preserve">
+    <value>Bem-vindo</value>
+  </data>
+  <data name="WelcomeBack" xml:space="preserve">
+    <value>Bem-vindo de volta</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>Sim</value>
+  </data>
+  <data name="YouDoNotHaveAccess" xml:space="preserve">
+    <value>Você não tem acesso a este recurso.</value>
+  </data>
+  <data name="ProfileOverview" xml:space="preserve">
+    <value>Resumo do perfil</value>
+  </data>
+  <data name="AdminProfile" xml:space="preserve">
+    <value>Administrador</value>
+  </data>
+  <data name="OpenMfaSettings" xml:space="preserve">
+    <value>Abrir configurações de MFA</value>
+  </data>
+  <data name="OpenAdminPanel" xml:space="preserve">
+    <value>Abrir painel admin</value>
+  </data>
+  <data name="MfaProfileHint" xml:space="preserve">
+    <value>Proteja sua conta com um segundo fator.</value>
+  </data>
+  <data name="TrustedDevicesFormat" xml:space="preserve">
+    <value>{0} dispositivo(s) confiável(is)</value>
+  </data>
+  <data name="EditProfile" xml:space="preserve">
+    <value>Editar perfil</value>
+  </data>
+  <data name="EditProfileText" xml:space="preserve">
+    <value>Atualize o nome público exibido no portal e nas telas administrativas.</value>
+  </data>
+  <data name="DisplayNameHint" xml:space="preserve">
+    <value>Obrigatório. Use até 100 caracteres.</value>
+  </data>
+  <data name="SaveDisplayName" xml:space="preserve">
+    <value>Salvar nome de exibição</value>
+  </data>
+  <data name="LanguagePreferenceText" xml:space="preserve">
+    <value>Escolha o idioma usado depois que você entrar.</value>
+  </data>
+  <data name="JobTitle" xml:space="preserve">
+    <value>Cargo</value>
+  </data>
+  <data name="TimeZone" xml:space="preserve">
+    <value>Fuso horário</value>
+  </data>
+  <data name="SecurityCenter" xml:space="preserve">
+    <value>Central de segurança</value>
+  </data>
+  <data name="ExternalLoginLinked" xml:space="preserve">
+    <value>Login externo vinculado</value>
+  </data>
+  <data name="AdminShortcuts" xml:space="preserve">
+    <value>Atalhos administrativos</value>
+  </data>
+  <data name="AdminShortcutsText" xml:space="preserve">
+    <value>Ações administrativas disponíveis porque sua conta tem a role admin.</value>
+  </data>
+  <data name="ManageUsersText" xml:space="preserve">
+    <value>Gerencie contas, roles, status e informações de perfil.</value>
+  </data>
+  <data name="ManageClientsText" xml:space="preserve">
+    <value>Gerencie clients OAuth/OIDC e URLs de redirecionamento.</value>
+  </data>
+  <data name="AuditLogsText" xml:space="preserve">
+    <value>Revise eventos de segurança e conta.</value>
+  </data>
+  <data name="NoSecurityHistory" xml:space="preserve">
+    <value>Nenhum evento de segurança encontrado.</value>
+  </data>
+  <data name="DisplayNameRequired" xml:space="preserve">
+    <value>O nome de exibição é obrigatório.</value>
+  </data>
+  <data name="DisplayNameMaxLength" xml:space="preserve">
+    <value>O nome de exibição deve ter no máximo 100 caracteres.</value>
+  </data>
+  <data name="ProfileUpdateFailed" xml:space="preserve">
+    <value>Não foi possível atualizar o perfil.</value>
+  </data>
+  <data name="BrandingSaved" xml:space="preserve">
+    <value>Branding salvo.</value>
+  </data>
+  <data name="SettingsSaved" xml:space="preserve">
+    <value>Configurações salvas.</value>
+  </data>
+  <data name="InvalidToken" xml:space="preserve">
+    <value>Token inválido.</value>
+  </data>
+  <data name="TokenDecodeFailed" xml:space="preserve">
+    <value>Não foi possível decodificar o token.</value>
+  </data>
+  <data name="ClientIdAlreadyExists" xml:space="preserve">
+    <value>Já existe um client com esse ClientId.</value>
+  </data>
+  <data name="ClientCreatedSuccessfully" xml:space="preserve">
+    <value>Client criado com sucesso.</value>
+  </data>
+  <data name="ClientUpdatedSuccessfully" xml:space="preserve">
+    <value>Client atualizado com sucesso.</value>
+  </data>
+  <data name="AllowedScopesUpdatedSuccessfully" xml:space="preserve">
+    <value>Scopes permitidos atualizados com sucesso.</value>
+  </data>
+  <data name="ClientSecretRegenerated" xml:space="preserve">
+    <value>Secret regenerado. Atualize o sistema cliente com o novo valor.</value>
+  </data>
+  <data name="ClientDeletedSuccessfully" xml:space="preserve">
+    <value>Client excluído com sucesso.</value>
+  </data>
+  <data name="IdentityProviderAlreadyExists" xml:space="preserve">
+    <value>Já existe um provider com esse nome ou scheme.</value>
+  </data>
+  <data name="ProviderCreatedSuccessfully" xml:space="preserve">
+    <value>Provider criado com sucesso.</value>
+  </data>
+  <data name="ProviderUpdatedSuccessfully" xml:space="preserve">
+    <value>Provider atualizado com sucesso.</value>
+  </data>
+  <data name="SystemProvidersCannotBeDeleted" xml:space="preserve">
+    <value>Providers de sistema não podem ser excluídos. Desabilite o provider se não quiser exibi-lo no login.</value>
+  </data>
+  <data name="ProviderDeletedSuccessfully" xml:space="preserve">
+    <value>Provider excluído com sucesso.</value>
+  </data>
+  <data name="InvalidAuthenticatorCodeCheckDeviceTime" xml:space="preserve">
+    <value>Código inválido. Confira o horário do celular e tente novamente.</value>
+  </data>
+  <data name="AuditAdminEnabledMfaAuthenticator" xml:space="preserve">
+    <value>Administrador configurou e habilitou MFA Authenticator para o usuário.</value>
+  </data>
+  <data name="MfaEnabledForUser" xml:space="preserve">
+    <value>MFA habilitado para o usuário.</value>
+  </data>
+  <data name="AuditAdminDisabledUserMfa" xml:space="preserve">
+    <value>Administrador desabilitou MFA do usuário.</value>
+  </data>
+  <data name="MfaDisabledForUser" xml:space="preserve">
+    <value>MFA desabilitado para o usuário.</value>
+  </data>
+  <data name="AuditAdminResetUserAuthenticatorKey" xml:space="preserve">
+    <value>Administrador resetou a chave do autenticador do usuário.</value>
+  </data>
+  <data name="AuthenticatorResetConfigureNewQrCode" xml:space="preserve">
+    <value>Autenticador resetado. Configure o novo QR Code para habilitar novamente.</value>
+  </data>
+  <data name="AuditAdminRemovedMfaMethodFormat" xml:space="preserve">
+    <value>Administrador removeu o método MFA {0}.</value>
+  </data>
+  <data name="MfaMethodRemoved" xml:space="preserve">
+    <value>Método MFA removido.</value>
+  </data>
+  <data name="UserMustHaveMfaEnabledToGenerateCodes" xml:space="preserve">
+    <value>O usuário precisa estar com MFA ativo para gerar códigos.</value>
+  </data>
+  <data name="AuditAdminGeneratedUserRecoveryCodes" xml:space="preserve">
+    <value>Administrador gerou códigos de recuperação para o usuário.</value>
+  </data>
+  <data name="InvalidUsernameOrPassword" xml:space="preserve">
+    <value>Usuário ou senha inválidos.</value>
+  </data>
+  <data name="AuditPasswordValidatedMfaRequested" xml:space="preserve">
+    <value>Senha validada. MFA solicitado.</value>
+  </data>
+  <data name="AuditPasswordLoginSucceeded" xml:space="preserve">
+    <value>Login com senha realizado.</value>
+  </data>
+  <data name="AuditPasswordLoginFailed" xml:space="preserve">
+    <value>Tentativa de login com senha falhou.</value>
+  </data>
+  <data name="UserTemporarilyLockedInvalidAttempts" xml:space="preserve">
+    <value>Usuário temporariamente bloqueado por tentativas inválidas.</value>
+  </data>
+  <data name="AuditPasswordMfaLoginSucceeded" xml:space="preserve">
+    <value>Login com senha e MFA realizado.</value>
+  </data>
+  <data name="AuditUserLockedByMfaFailures" xml:space="preserve">
+    <value>Usuário bloqueado por falhas no MFA.</value>
+  </data>
+  <data name="AuditInvalidMfaCode" xml:space="preserve">
+    <value>Código MFA inválido.</value>
+  </data>
+  <data name="InvalidCode" xml:space="preserve">
+    <value>Código inválido.</value>
+  </data>
+  <data name="AuditRecoveryCodeLoginSucceeded" xml:space="preserve">
+    <value>Login com código de recuperação realizado.</value>
+  </data>
+  <data name="AuditRecoveryCodeLoginFailed" xml:space="preserve">
+    <value>Tentativa de login com código de recuperação falhou.</value>
+  </data>
+  <data name="UserTemporarilyLocked" xml:space="preserve">
+    <value>Usuário temporariamente bloqueado.</value>
+  </data>
+  <data name="InvalidRecoveryCode" xml:space="preserve">
+    <value>Código de recuperação inválido.</value>
+  </data>
+  <data name="AuditUserEnabledMfaAuthenticator" xml:space="preserve">
+    <value>Usuário habilitou MFA com aplicativo autenticador.</value>
+  </data>
+  <data name="AuditUserDisabledMfa" xml:space="preserve">
+    <value>Usuário desabilitou MFA.</value>
+  </data>
+  <data name="AuditUserResetAuthenticatorKey" xml:space="preserve">
+    <value>Usuário redefiniu a chave do autenticador.</value>
+  </data>
+  <data name="AuthenticatorKeyResetScanQrAgain" xml:space="preserve">
+    <value>Chave redefinida. Escaneie o novo QR Code e confirme novamente.</value>
+  </data>
+  <data name="EnableMfaBeforeGeneratingRecoveryCodes" xml:space="preserve">
+    <value>Ative o MFA antes de gerar códigos de recuperação.</value>
+  </data>
+  <data name="AuditUserGeneratedNewRecoveryCodes" xml:space="preserve">
+    <value>Usuário gerou novos códigos de recuperação.</value>
+  </data>
+  <data name="ExternalProviderDisabledOrNotRegistered" xml:space="preserve">
+    <value>Provider externo desabilitado ou não cadastrado.</value>
+  </data>
+  <data name="ExternalProviderErrorFormat" xml:space="preserve">
+    <value>Erro no provider externo: {0}</value>
+  </data>
+  <data name="ExternalLoginInfoLoadFailed" xml:space="preserve">
+    <value>Não foi possível carregar as informações do login externo.</value>
+  </data>
+  <data name="ExternalProviderDidNotReturnEmail" xml:space="preserve">
+    <value>O provider externo não retornou um e-mail.</value>
+  </data>
+  <data name="AuditExternalLoginSucceeded" xml:space="preserve">
+    <value>Login externo realizado.</value>
+  </data>
+  <data name="AuditExternalLoginLinkedOrSucceeded" xml:space="preserve">
+    <value>Login externo vinculado/realizado.</value>
+  </data>
+  <data name="AuditUserCreatedNewAccount" xml:space="preserve">
+    <value>Usuário criou uma nova conta.</value>
+  </data>
+  <data name="AuditAutomaticLoginAfterRegistration" xml:space="preserve">
+    <value>Login automático após cadastro.</value>
+  </data>
+  <data name="OpenIddictRequestNotFound" xml:space="preserve">
+    <value>Requisição OpenIddict não encontrada.</value>
+  </data>
+  <data name="ConsentPostMissingClientId" xml:space="preserve">
+    <value>ClientId está vazio. O POST do consentimento chegou sem client_id. Verifique o Consent.cshtml.</value>
+  </data>
+  <data name="UserNotFound" xml:space="preserve">
+    <value>Usuário não encontrado.</value>
+  </data>
+  <data name="InvalidClientFormat" xml:space="preserve">
+    <value>Client inválido: {0}</value>
+  </data>
+  <data name="ApplicationIdNotFound" xml:space="preserve">
+    <value>ApplicationId não encontrado.</value>
+  </data>
+  <data name="InvalidReturnUrl" xml:space="preserve">
+    <value>ReturnUrl inválida.</value>
+  </data>
+  <data name="UserDeniedApplicationAccess" xml:space="preserve">
+    <value>O usuário negou o acesso ao aplicativo.</value>
+  </data>
+  <data name="UnsupportedGrantType" xml:space="preserve">
+    <value>Grant type não suportado.</value>
+  </data>
+  <data name="RoleNameRequired" xml:space="preserve">
+    <value>Informe o nome da role.</value>
+  </data>
+  <data name="RoleAlreadyExists" xml:space="preserve">
+    <value>Essa role já existe.</value>
+  </data>
+  <data name="RoleCreatedSuccessfully" xml:space="preserve">
+    <value>Role criada com sucesso.</value>
+  </data>
+  <data name="SystemRolesCannotBeDeleted" xml:space="preserve">
+    <value>Roles de sistema não podem ser excluídas.</value>
+  </data>
+  <data name="RemoveUsersFromRoleBeforeDeleting" xml:space="preserve">
+    <value>Remova essa role dos usuários antes de excluí-la.</value>
+  </data>
+  <data name="RoleDeletedSuccessfully" xml:space="preserve">
+    <value>Role excluída com sucesso.</value>
+  </data>
+  <data name="AccessManagement" xml:space="preserve">
+    <value>Gestão de acesso</value>
+  </data>
+  <data name="Applications" xml:space="preserve">
+    <value>Aplicações</value>
+  </data>
+  <data name="Falha" xml:space="preserve">
+    <value>Falha</value>
+  </data>
+  <data name="Ok" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="Operations" xml:space="preserve">
+    <value>Operações</value>
+  </data>
+  <data name="Overview" xml:space="preserve">
+    <value>Visão geral</value>
+  </data>
+  <data name="RemoveTrust" xml:space="preserve">
+    <value>Remover confiança</value>
+  </data>
+  <data name="SalvarConfiguracoes" xml:space="preserve">
+    <value>Salvar configurações</value>
+  </data>
+  <data name="TextEventosDeLoginConsentimentoMfaEAdmin" xml:space="preserve">
+    <value>Eventos de login, consentimento, MFA e administração.</value>
+  </data>
+  <data name="TextStatusBasicoDosComponentesDoServidor" xml:space="preserve">
+    <value>Status básico dos componentes do servidor.</value>
+  </data>
+  <data name="Trust" xml:space="preserve">
+    <value>Confiar</value>
+  </data>
+  <data name="NotConfigured" xml:space="preserve">
+    <value>Não configurado</value>
+  </data>
+  <data name="RequiredForLocalLogin" xml:space="preserve">
+    <value>Obrigatório no login local</value>
+  </data>
+  <data name="ApplicationCode" xml:space="preserve">
+    <value>Código do aplicativo</value>
+  </data>
+  <data name="RecoveryCodeRequired" xml:space="preserve">
+    <value>Informe um código de recuperação.</value>
+  </data>
+  <data name="AuthenticationCodeRequired" xml:space="preserve">
+    <value>Informe o código do aplicativo autenticador.</value>
+  </data>
+  <data name="AuthenticationCode" xml:space="preserve">
+    <value>Código de autenticação</value>
+  </data>
+  <data name="EnableMfaForThisUser" xml:space="preserve">
+    <value>Ativar MFA para este usuário</value>
+  </data>
+  <data name="UseWithCareMfaDetails" xml:space="preserve">
+    <value>Use com cuidado. Para ativar MFA por app autenticador, abra a configuração, escaneie o QR Code no celular do usuário e confirme o código gerado.</value>
+  </data>
+  <data name="EditAuthenticator" xml:space="preserve">
+    <value>Editar Authenticator</value>
+  </data>
+  <data name="SaveIdentityProvider" xml:space="preserve">
+    <value>Salvar provider</value>
+  </data>
+  <data name="Identification" xml:space="preserve">
+    <value>Identificação</value>
+  </data>
+  <data name="Configured" xml:space="preserve">
+    <value>Configurado</value>
+  </data>
+  <data name="EditProvider" xml:space="preserve">
+    <value>Editar provider</value>
+  </data>
+  <data name="EmailConfirmationRequiredBeforeLogin" xml:space="preserve">
+    <value>Você precisa confirmar seu e-mail antes de entrar.</value>
+  </data>
+  <data name="EmailConfirmationSentTitle" xml:space="preserve">
+    <value>Confirmação de e-mail enviada</value>
+  </data>
+  <data name="EmailConfirmationSentDescription" xml:space="preserve">
+    <value>Criamos sua conta para {0}, mas você precisa confirmar este e-mail antes de entrar.</value>
+  </data>
+  <data name="TemporaryConfirmationLinkNotice" xml:space="preserve">
+    <value>Modo temporário de desenvolvimento: use o link de confirmação abaixo. Depois você pode enviar esse link por e-mail via SMTP.</value>
+  </data>
+  <data name="ConfirmationLink" xml:space="preserve">
+    <value>Link de confirmação</value>
+  </data>
+  <data name="BackToLogin" xml:space="preserve">
+    <value>Voltar para o login</value>
+  </data>
+  <data name="InvalidEmailConfirmationLink" xml:space="preserve">
+    <value>O link de confirmação de e-mail é inválido ou expirou.</value>
+  </data>
+  <data name="EmailConfirmedSuccessfully" xml:space="preserve">
+    <value>Seu e-mail foi confirmado com sucesso. Agora você já pode entrar.</value>
+  </data>
+  <data name="EmailConfirmationFailed" xml:space="preserve">
+    <value>Não foi possível confirmar seu e-mail. Gere um novo link de confirmação e tente novamente.</value>
+  </data>
+  <data name="EmailConfirmedSuccessfullyTitle" xml:space="preserve">
+    <value>E-mail confirmado</value>
+  </data>
+  <data name="EmailConfirmationFailedTitle" xml:space="preserve">
+    <value>Falha na confirmação do e-mail</value>
+  </data>
+  <data name="ForgotPasswordQuestion" xml:space="preserve">
+    <value>Esqueceu a senha?</value>
+  </data>
+  <data name="ForgotPasswordTitle" xml:space="preserve">
+    <value>Esqueci minha senha</value>
+  </data>
+  <data name="ForgotPasswordDescription" xml:space="preserve">
+    <value>Informe seu e-mail e vamos gerar um link para redefinir a senha.</value>
+  </data>
+  <data name="SendPasswordResetLink" xml:space="preserve">
+    <value>Enviar link de redefinição</value>
+  </data>
+  <data name="PasswordResetSentTitle" xml:space="preserve">
+    <value>Link de redefinição gerado</value>
+  </data>
+  <data name="PasswordResetSentDescription" xml:space="preserve">
+    <value>Se a conta {0} existir e usar senha, use o link temporário abaixo para redefinir.</value>
+  </data>
+  <data name="TemporaryPasswordResetLinkNotice" xml:space="preserve">
+    <value>Modo temporário de desenvolvimento: use o link de redefinição abaixo. Depois você poderá enviar esse link por e-mail via SMTP.</value>
+  </data>
+  <data name="PasswordResetLink" xml:space="preserve">
+    <value>Link de redefinição de senha</value>
+  </data>
+  <data name="PasswordResetGenericNoLink" xml:space="preserve">
+    <value>Nenhum link de redefinição foi gerado. Confira o e-mail ou use Google/Microsoft se esta conta foi criada com provedor externo.</value>
+  </data>
+  <data name="InvalidPasswordResetLink" xml:space="preserve">
+    <value>O link de redefinição de senha é inválido ou expirou.</value>
+  </data>
+  <data name="PasswordResetSuccessfully" xml:space="preserve">
+    <value>Sua senha foi redefinida com sucesso. Você já pode entrar.</value>
+  </data>
+  <data name="ResetPasswordDescription" xml:space="preserve">
+    <value>Crie uma nova senha para sua conta.</value>
+  </data>
+  <data name="ConfirmNewPassword" xml:space="preserve">
+    <value>Confirmar nova senha</value>
+  </data>
+  <data name="SaveNewPassword" xml:space="preserve">
+    <value>Salvar nova senha</value>
+  </data>
+  <data name="AuditPasswordResetLinkGenerated" xml:space="preserve">
+    <value>Link de redefinição de senha gerado em modo de desenvolvimento.</value>
+  </data>
+  <data name="AuditPasswordResetSucceeded" xml:space="preserve">
+    <value>Usuário redefiniu a senha com sucesso.</value>
+  </data>
+</root>

@@ -1,0 +1,107 @@
+@model Auth2Demo.Web.Areas.Admin.Models.AuditLogsIndexViewModel
+
+@using Auth2Demo.Domain.Security
+
+@{
+    ViewData["Title"] = T["AuditLogs"].Value;
+}
+
+<div class="page-heading">
+    <div>
+        <span class="page-kicker">@T["Security"]</span>
+
+        <h1>@T["AuditLogs"]</h1>
+
+        <p>@T["TextEventosDeLoginConsentimentoMfaEAdmin"]</p>
+    </div>
+</div>
+
+<div class="card toolbar-card">
+    <form method="get" class="form-inline">
+        <div>
+            <label>@T["Search"]</label>
+
+            <input name="q"
+                   value="@Model.Query"
+                   placeholder="@T["TextUsuarioEventoOuDescricao"].Value" />
+        </div>
+
+        <div>
+            <label>@T["Categoria"]</label>
+
+            <select name="category">
+                <option value="">
+                    @T["All"]
+                </option>
+
+                @foreach (var category in Model.Categories)
+                {
+                    <option value="@category"
+                            selected="@(Model.Category == category)">
+                        @category
+                    </option>
+                }
+            </select>
+        </div>
+
+        <button class="btn" type="submit">
+            @T["Filter"]
+        </button>
+    </form>
+</div>
+
+<div class="table-wrap">
+    <table>
+        <thead>
+            <tr>
+                <th>@T["Date"]</th>
+                <th>@T["Event"]</th>
+                <th>@T["User"]</th>
+                <th>@T["Source"]</th>
+                <th>@T["Result"]</th>
+                <th>@T["Description"]</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @foreach (var auditLog in Model.Logs)
+            {
+                <tr>
+                    <td>
+                        @auditLog.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")
+                    </td>
+
+                    <td>
+                        <strong>@auditLog.EventType</strong>
+                        <br />
+                        <small class="muted">
+                            @auditLog.Category
+                        </small>
+                    </td>
+
+                    <td>
+                        @auditLog.UserEmail
+                    </td>
+
+                    <td>
+                        @auditLog.IpAddress
+                        <br />
+                        <small class="muted">
+                            @auditLog.Provider
+                        </small>
+                    </td>
+
+                    <td>
+                        <span class="badge @(auditLog.Outcome == "Success" ? "badge-success" : "badge-danger")">
+                            @auditLog.Outcome
+                        </span>
+                    </td>
+
+                    <td>
+                        @auditLog.Description
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

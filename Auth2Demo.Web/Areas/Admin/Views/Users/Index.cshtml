@@ -1,0 +1,84 @@
+@model Auth2Demo.Web.Areas.Admin.Models.UsersIndexViewModel
+@{
+    ViewData["Title"] = T["Users"].Value;
+}
+
+<div class="page-heading">
+    <div>
+        <span class="page-kicker">@T["TextAdministracao"]</span>
+        <h1>@T["Users"]</h1>
+        <p>@T["TextConsulteContasAltereStatusEGerenciePermissoesAdministrativas"]</p>
+    </div>
+    <a class="btn" asp-action="Create">@T["CreateUser"]</a>
+</div>
+
+<div class="card toolbar-card">
+    <form method="get" class="form-inline search-form">
+        <div>
+            <label for="q">@T["Search"]</label>
+            <input id="q" name="q" value="@Model.Query" placeholder='@T["TextNomeOuEMail"].Value' />
+        </div>
+        <button class="btn btn-outline" type="submit">@T["Search"]</button>
+        @if (!string.IsNullOrWhiteSpace(Model.Query))
+        {
+            <a class="btn btn-outline" asp-action="Index">@T["Limpar"]</a>
+        }
+    </form>
+</div>
+
+<div class="table-wrap">
+    <table>
+        <thead>
+            <tr>
+                <th>@T["User"]</th>
+                <th>@T["Email"]</th>
+                <th>@T["Status"]</th>
+                <th>@T["Email"]</th>
+                <th>@T["LastLogin"]</th>
+                <th class="actions-col">@T["Actions"]</th>
+            </tr>
+        </thead>
+        <tbody>
+        @if (Model.Users.Count == 0)
+        {
+            <tr><td colspan="6" class="empty">@T["NoUsersFound"]</td></tr>
+        }
+        else
+        {
+            foreach (var u in Model.Users)
+            {
+                <tr>
+                    <td>
+                        <div class="user-cell">
+                            <span class="avatar">@GetInitials(u.DisplayName)</span>
+                            <div><strong>@u.DisplayName</strong><small>@u.Id</small></div>
+                        </div>
+                    </td>
+                    <td>@u.Email</td>
+                    <td><span class="badge @(u.Status == Auth2Demo.Domain.Identity.UserStatus.Active ? "badge-success" : "badge-danger")">@u.Status</span></td>
+                    <td><span class="badge @(u.EmailConfirmed ? "badge-success" : string.Empty)">@(u.EmailConfirmed ? "Confirmado" : "Pendente")</span></td>
+                    <td>@(u.LastLoginAt?.ToLocalTime().ToString("dd/MM/yyyy HH:mm") ?? "Nunca")</td>
+                    <td>
+                        <div class="row-actions">
+                            <a class="btn btn-outline btn-sm" asp-action="Edit" asp-route-id="@u.Id">@T["Edit"]</a>
+                            <form class="inline" asp-action="ToggleBlock" method="post" asp-route-id="@u.Id">
+                                <button class="btn btn-outline btn-sm" type="submit">@(u.Status == Auth2Demo.Domain.Identity.UserStatus.Blocked ? "Desbloquear" : "Bloquear")</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            }
+        }
+        </tbody>
+    </table>
+</div>
+
+@functions {
+    private static string GetInitials(string? name)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return "U";
+        var parts = name.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        if (parts.Length == 1) return parts[0][0].ToString().ToUpperInvariant();
+        return string.Concat(parts[0][0], parts[^1][0]).ToUpperInvariant();
+    }
+}

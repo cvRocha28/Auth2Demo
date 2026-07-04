@@ -1,0 +1,147 @@
+@inject Microsoft.Extensions.Localization.IStringLocalizer<Auth2Demo.Web.SharedResource> T
+@{
+    var currentArea = ViewContext.RouteData.Values["area"]?.ToString();
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? string.Empty;
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? string.Empty;
+
+    bool IsController(params string[] controllers) =>
+        controllers.Any(controller => string.Equals(controller, currentController, StringComparison.OrdinalIgnoreCase));
+
+    bool IsActive(string controller, string action = "Index") =>
+        string.Equals(currentArea, "Admin", StringComparison.OrdinalIgnoreCase)
+        && string.Equals(currentController, controller, StringComparison.OrdinalIgnoreCase)
+        && string.Equals(currentAction, action, StringComparison.OrdinalIgnoreCase);
+
+    var overviewOpen = IsController("Dashboard", "Health");
+    var accessOpen = IsController("Users", "Roles", "Permissions");
+    var authenticationOpen = IsController("IdentityProviders", "Mfa", "Passkeys", "Sessions", "Devices");
+    var applicationsOpen = IsController("Clients", "Scopes", "TokenExplorer");
+    var administrationOpen = IsController("AuditLogs", "EmailTemplates", "Branding", "SecuritySettings");
+}
+
+<!doctype html>
+<html lang="@T["HtmlLang"].Value">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] - Admin Auth2Demo</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <header class="topbar">
+        <a class="brand" asp-area="Admin" asp-controller="Dashboard" asp-action="Index">
+            <span class="brand-mark">🔐</span>
+            <span>@T["Auth2demoAdmin"]</span>
+        </a>
+
+        <nav>
+            <a class="nav-link" asp-area="" asp-controller="Perfil" asp-action="Index">@T["Profile"]</a>
+            <form asp-area="" asp-controller="Account" asp-action="Logout" method="post" class="inline">
+                <button class="link-button" type="submit">@T["Logout"]</button>
+            </form>
+        </nav>
+    </header>
+
+    <div class="admin-shell">
+        <aside class="sidebar" aria-label="Menu administrativo">
+            <div class="sidebar-menu" data-admin-menu>
+
+                <details class="sidebar-group" @(overviewOpen ? "open" : null)>
+                    <summary>
+                        <span class="sidebar-icon">🏠</span>
+                        <span class="sidebar-label">@T["Overview"]</span>
+                        <span class="sidebar-arrow">›</span>
+                    </summary>
+                    <div class="sidebar-items">
+                        <a class="@(IsActive("Dashboard") ? "active" : null)" asp-area="Admin" asp-controller="Dashboard" asp-action="Index">📊 @T["Dashboard"]</a>
+                        <a class="@(IsActive("Health") ? "active" : null)" asp-area="Admin" asp-controller="Health" asp-action="Index">💚 @T["Health"]</a>
+                    </div>
+                </details>
+
+                <details class="sidebar-group" @(accessOpen ? "open" : null)>
+                    <summary>
+                        <span class="sidebar-icon">👥</span>
+                        <span class="sidebar-label">@T["AccessManagement"]</span>
+                        <span class="sidebar-arrow">›</span>
+                    </summary>
+                    <div class="sidebar-items">
+                        <a class="@(IsActive("Users") ? "active" : null)" asp-area="Admin" asp-controller="Users" asp-action="Index">👤 @T["Users"]</a>
+                        <a class="@(IsActive("Roles") ? "active" : null)" asp-area="Admin" asp-controller="Roles" asp-action="Index">🛡️ @T["Roles"]</a>
+                        <a class="@(IsActive("Permissions") ? "active" : null)" asp-area="Admin" asp-controller="Permissions" asp-action="Index">🔑 @T["Permissions"]</a>
+                    </div>
+                </details>
+
+                <details class="sidebar-group" @(authenticationOpen ? "open" : null)>
+                    <summary>
+                        <span class="sidebar-icon">🔐</span>
+                        <span class="sidebar-label">@T["Authentication"]</span>
+                        <span class="sidebar-arrow">›</span>
+                    </summary>
+                    <div class="sidebar-items">
+                        <a class="@(IsActive("IdentityProviders") ? "active" : null)" asp-area="Admin" asp-controller="IdentityProviders" asp-action="Index">🌐 @T["IdentityProviders"]</a>
+                        <a class="@(IsActive("Mfa") ? "active" : null)" asp-area="Admin" asp-controller="Mfa" asp-action="Index">🔐 @T["Mfa"]</a>
+                        <a class="@(IsActive("Passkeys") ? "active" : null)" asp-area="Admin" asp-controller="Passkeys" asp-action="Index">🗝️ @T["Passkeys"]</a>
+                        <a class="@(IsActive("Sessions") ? "active" : null)" asp-area="Admin" asp-controller="Sessions" asp-action="Index">💻 @T["Sessions"]</a>
+                        <a class="@(IsActive("Devices") ? "active" : null)" asp-area="Admin" asp-controller="Devices" asp-action="Index">📱 @T["Devices"]</a>
+                    </div>
+                </details>
+
+                <details class="sidebar-group" @(applicationsOpen ? "open" : null)>
+                    <summary>
+                        <span class="sidebar-icon">🧩</span>
+                        <span class="sidebar-label">@T["Applications"]</span>
+                        <span class="sidebar-arrow">›</span>
+                    </summary>
+                    <div class="sidebar-items">
+                        <a class="@(IsActive("Clients") ? "active" : null)" asp-area="Admin" asp-controller="Clients" asp-action="Index">🧩 @T["Clients"]</a>
+                        <a class="@(IsActive("Scopes") ? "active" : null)" asp-area="Admin" asp-controller="Scopes" asp-action="Index">🔌 @T["Scopes"]</a>
+                        <a class="@(IsActive("TokenExplorer") ? "active" : null)" asp-area="Admin" asp-controller="TokenExplorer" asp-action="Index">🧪 @T["TokenExplorer"]</a>
+                    </div>
+                </details>
+
+                <details class="sidebar-group" @(administrationOpen ? "open" : null)>
+                    <summary>
+                        <span class="sidebar-icon">⚙️</span>
+                        <span class="sidebar-label">@T["Administration"]</span>
+                        <span class="sidebar-arrow">›</span>
+                    </summary>
+                    <div class="sidebar-items">
+                        <a class="@(IsActive("AuditLogs") ? "active" : null)" asp-area="Admin" asp-controller="AuditLogs" asp-action="Index">📄 @T["AuditLogs"]</a>
+                        <a class="@(IsActive("EmailTemplates") ? "active" : null)" asp-area="Admin" asp-controller="EmailTemplates" asp-action="Index">✉️ @T["Emails"]</a>
+                        <a class="@(IsActive("Branding") ? "active" : null)" asp-area="Admin" asp-controller="Branding" asp-action="Index">🎨 @T["Branding"]</a>
+                        <a class="@(IsActive("SecuritySettings") ? "active" : null)" asp-area="Admin" asp-controller="SecuritySettings" asp-action="Index">⚙️ @T["Security"]</a>
+                    </div>
+                </details>
+
+            </div>
+        </aside>
+
+        <main class="admin-content">
+            @RenderBody()
+        </main>
+    </div>
+
+    <script>
+        (() => {
+            const menu = document.querySelector('[data-admin-menu]');
+            if (!menu) return;
+
+            const groups = Array.from(menu.querySelectorAll('.sidebar-group'));
+
+            groups.forEach(group => {
+                group.addEventListener('toggle', () => {
+                    if (!group.open) return;
+
+                    groups.forEach(otherGroup => {
+                        if (otherGroup !== group) {
+                            otherGroup.open = false;
+                        }
+                    });
+                });
+            });
+        })();
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

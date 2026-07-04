@@ -1,0 +1,45 @@
+@model Auth2Demo.Application.Services.Admin.AdminHealthData
+
+@{
+    ViewData["Title"] = T["Health"].Value;
+}
+
+<div class="page-heading">
+    <div>
+        <span class="page-kicker">@T["Operations"]</span>
+
+        <h1>@T["Health"]</h1>
+
+        <p>@T["TextStatusBasicoDosComponentesDoServidor"]</p>
+    </div>
+</div>
+
+<div class="grid three">
+    <div class="card stat-card">
+        <span>@T["BancoDeDados"]</span>
+
+        <h2>
+            @(Model.DatabaseOk ? T["Ok"] : T["Falha"])
+        </h2>
+
+        <p>@T["TextConexaoSqlServer"]</p>
+    </div>
+
+    <div class="card stat-card">
+        <span>@T["ProvidersAtivos"]</span>
+
+        <h2>@Model.ProviderCount</h2>
+
+        <p>@T["TextGoogleMicrosoftEtc"]</p>
+    </div>
+
+    <div class="card stat-card">
+        <span>@T["TextUltimoAuditLog"]</span>
+
+        <h2>
+            @(Model.LastAudit?.ToLocalTime().ToString("HH:mm") ?? "-")
+        </h2>
+
+        <p>@T["TextEventoMaisRecente"]</p>
+    </div>
+</div>

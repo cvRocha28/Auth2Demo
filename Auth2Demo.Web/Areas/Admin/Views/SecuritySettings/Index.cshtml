@@ -1,0 +1,70 @@
+@model Auth2Demo.Domain.Security.SecuritySettings
+@{
+    ViewData["Title"] = T["TextConfiguracoesDeSeguranca"].Value;
+}
+<div class="page-heading">
+    <div><span class="page-kicker">@T["Settings"]</span><h1>@T["Security"]</h1><p>@T["TextPoliticaDeSenhaBloqueioMfaETempoDe"]</p></div>
+</div>
+@if (TempData["Message"] is not null)
+{
+    <div class="alert alert-success">@TempData["Message"]</div>
+}
+<form method="post" class="card pro-form">
+    <input type="hidden" asp-for="Id" />
+
+    <div class="grid two">
+        <div class="form-row">
+            <label>@T["TextTamanhoMinimoDaSenha"]</label>
+            <input asp-for="PasswordRequiredLength" type="number" />
+        </div>
+
+        <div class="form-row">
+            <label>@T["TentativasAntesDoBloqueio"]</label>
+            <input asp-for="MaxFailedAccessAttempts" type="number" />
+        </div>
+
+        <div class="form-row">
+            <label>@T["BloqueioEmMinutos"]</label>
+            <input asp-for="LockoutMinutes" type="number" />
+        </div>
+
+        <div class="form-row">
+            <label>@T["AccessTokenEmMinutos"]</label>
+            <input asp-for="AccessTokenLifetimeMinutes" type="number" />
+        </div>
+
+        <div class="form-row">
+            <label>@T["RefreshTokenEmDias"]</label>
+            <input asp-for="RefreshTokenLifetimeDays" type="number" />
+        </div>
+    </div>
+
+    <label class="check">
+        <input asp-for="RequireDigit" />
+        @T["TextExigirNumero"]
+    </label>
+
+    <label class="check">
+        <input asp-for="RequireUppercase" />
+        @T["TextExigirMaiuscula"]
+    </label>
+
+    <label class="check">
+        <input asp-for="RequireLowercase" />
+        @T["TextExigirMinuscula"]
+    </label>
+
+    <label class="check">
+        <input asp-for="RequireNonAlphanumeric" />
+        @T["ExigirCaractereEspecial"]
+    </label>
+
+    <label class="check">
+        <input asp-for="RequireMfaForAdmins" />
+        @T["ExigirMfaParaAdministradores"]
+    </label>
+
+    <button class="btn" type="submit">
+        @T["SalvarConfiguracoes"]
+    </button>
+</form>

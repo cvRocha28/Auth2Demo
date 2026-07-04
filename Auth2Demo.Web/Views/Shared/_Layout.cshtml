@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang='@T["HtmlLang"].Value'>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] - @T["TitleSuffix"]</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+@if (User.Identity?.IsAuthenticated == true)
+{
+    <header class="topbar">
+        <a class="brand" asp-controller="Home" asp-action="Index">
+            <span class="brand-mark">🔐</span>
+            <span>@T["Auth2demo"]</span>
+        </a>
+        <nav>
+            <a class="nav-link" asp-controller="Perfil" asp-action="Index">@T["Profile"]</a>
+            <a class="nav-link" asp-controller="Account" asp-action="ManageMfa">@T["Mfa"]</a>
+            @if (User.IsInRole("admin"))
+            {
+                <a class="nav-link" asp-area="Admin" asp-controller="Dashboard" asp-action="Index">@T["Admin"]</a>
+            }
+            <form asp-controller="Account" asp-action="Logout" method="post" class="inline">
+                <button class="link-button" type="submit">@T["Logout"]</button>
+            </form>
+        </nav>
+    </header>
+}
+<main class="container">@RenderBody()</main>
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

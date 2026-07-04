@@ -1,0 +1,94 @@
+@using Auth2Demo.Domain.Identity
+@model Auth2Demo.Web.Areas.Admin.Models.IdentityProviderEditViewModel
+@{
+    ViewData["Title"] = Model.Id is null ? T["NewProvider"].Value : T["EditProvider"].Value;
+}
+
+<div class="page-heading">
+    <div>
+        <span class="page-kicker">@T["IdentityProvider"]</span>
+        <h1>@ViewData["Title"]</h1>
+        <p>@T["TextCadastreOsDadosQueSeraoUsadosParaExibir"]</p>
+    </div>
+    <a class="btn btn-outline" asp-action="Index">@T["Back"]</a>
+</div>
+
+<form asp-action="Save" method="post" class="card pro-form">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+    <input type="hidden" asp-for="IsSystemProvider" />
+    <div asp-validation-summary="ModelOnly" class="validation"></div>
+
+    <div class="grid" style="grid-template-columns:1fr 1fr">
+        <div class="form-row">
+            <label asp-for="Name">@T["InternalName"]</label>
+            <input asp-for="Name" placeholder='@T["Google"].Value' />
+            <span asp-validation-for="Name"></span>
+        </div>
+        <div class="form-row">
+            <label asp-for="DisplayName">@T["DisplayName"]</label>
+            <input asp-for="DisplayName" placeholder='@T["Google"].Value' />
+            <span asp-validation-for="DisplayName"></span>
+        </div>
+    </div>
+
+    <div class="grid" style="grid-template-columns:1fr 1fr">
+        <div class="form-row">
+            <label asp-for="Scheme">@T["Scheme"]</label>
+            <input asp-for="Scheme" placeholder='@T["Google"].Value' />
+            <span asp-validation-for="Scheme"></span>
+        </div>
+        <div class="form-row">
+            <label asp-for="Kind">@T["Type"]</label>
+            <select asp-for="Kind" asp-items="Html.GetEnumSelectList<IdentityProviderKind>()"></select>
+        </div>
+    </div>
+
+    <div class="grid" style="grid-template-columns:1fr 1fr">
+        <div class="form-row">
+            <label asp-for="ClientId">@T["ClientId"]</label>
+            <input asp-for="ClientId" autocomplete="off" />
+            <span asp-validation-for="ClientId"></span>
+        </div>
+        <div class="form-row">
+            <label asp-for="ClientSecret">@T["ClientSecret"]</label>
+            <input asp-for="ClientSecret" autocomplete="off" />
+            <span asp-validation-for="ClientSecret"></span>
+        </div>
+    </div>
+
+    <div class="grid" style="grid-template-columns:1fr 1fr">
+        <div class="form-row">
+            <label asp-for="CallbackPath">@T["CallbackPath"]</label>
+            <input asp-for="CallbackPath" placeholder='@T["TextSigninGoogle"].Value' />
+        </div>
+        <div class="form-row">
+            <label asp-for="Authority">@T["Authority"]</label>
+            <input asp-for="Authority" placeholder='@T["TextHttpsLoginMicrosoftonlineComCommonV20"].Value' />
+        </div>
+    </div>
+
+    <div class="grid" style="grid-template-columns:1fr 1fr">
+        <div class="form-row">
+            <label asp-for="ButtonText">@T["ButtonText"]</label>
+            <input asp-for="ButtonText" placeholder='@T["ContinuarComGoogle"].Value' />
+        </div>
+        <div class="form-row">
+            <label asp-for="SortOrder">@T["Order"]</label>
+            <input asp-for="SortOrder" type="number" />
+        </div>
+    </div>
+
+    <label class="check"><input asp-for="IsEnabled" /> @T["ExibirEsteProviderNaTelaDeLogin"]</label>
+
+    <div class="alert">
+        @T["TextEmProducaoPrefiraProtegerO"] <strong>@T["ClientSecret"]</strong> @T["TextComKeyVaultSecretsManagerOuCriptografiaNo"]
+    </div>
+
+    <div class="form-actions">
+        <button class="btn" type="submit">@T["SaveIdentityProvider"]</button>
+        <a class="btn btn-outline" asp-action="Index">@T["Cancel"]</a>
+    </div>
+</form>
+
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

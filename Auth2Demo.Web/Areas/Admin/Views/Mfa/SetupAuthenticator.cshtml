@@ -1,0 +1,76 @@
+@model Auth2Demo.Web.Areas.Admin.Models.MfaAdminAuthenticatorSetupViewModel
+@{
+    ViewData["Title"] = T["ConfigurarAuthenticator"].Value;
+}
+
+<div class="page-heading">
+    <div>
+        <span class="page-kicker">@T["Authentication"]</span>
+        <h1>@T["ConfigurarMfa"]</h1>
+        <p>@Model.DisplayName — @Model.Email</p>
+    </div>
+    <a class="btn" asp-action="Details" asp-route-id="@Model.UserId">@T["Back"]</a>
+</div>
+
+<div class="card warning-card">
+    <h2>@T["ComoAtivar"]</h2>
+    <p class="muted">
+        @T["TextEstaTelaPermiteAoAdministradorConfigurarOMfa"]
+    </p>
+</div>
+
+<div class="mfa-setup-grid">
+    <div class="card qr-card">
+        <h2>@T["AuthenticatorQrCode"]</h2>
+        <img class="qr-code" src="@Model.QrCodeDataUrl" alt="QR Code MFA" />
+
+        <details class="manual-key">
+            <summary>@T["EnterKeyManually"]</summary>
+            <p class="muted">@T["TextUseEstaChaveCasoOAppNaoConsiga"]</p>
+            <code>@Model.SharedKey</code>
+        </details>
+    </div>
+
+    <div class="card">
+        <h2>@T["TextConfirmarCodigo"]</h2>
+        <p class="muted">@T["TextAposEscanearInformeOCodigoAtualGeradoPelo"]</p>
+
+        <form method="post" class="form-stack">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="UserId" />
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <label asp-for="Code">@T["SixDigitCode"]</label>
+            <input asp-for="Code" class="form-control" inputmode="numeric" autocomplete="one-time-code" placeholder="000000" />
+            <span asp-validation-for="Code" class="text-danger"></span>
+
+            <button class="btn btn-success" type="submit">@T["EnableMfaForThisUser"]</button>
+        </form>
+
+        <div class="action-row mt-3">
+            <form asp-action="ResetAuthenticator" method="post" asp-route-id="@Model.UserId" onsubmit='return confirm("@T["TextGerarUmaNovaChaveEInvalidarOQr"].Value")'>
+                @Html.AntiForgeryToken()
+                <button class="btn" type="submit">@T["GerarNovoQrCode"]</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .warning-card { margin-bottom: 18px; }
+    .mfa-setup-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .qr-card { text-align: center; }
+    .qr-code { width: min(320px, 100%); border: 1px solid #d7e3f5; border-radius: 22px; padding: 14px; background: #fff; }
+    .manual-key { margin-top: 18px; text-align: left; }
+    .manual-key code { display: block; background: #f3f7ff; border: 1px solid #d7e3f5; border-radius: 14px; padding: 12px; color: #061a3d; word-break: break-all; }
+    .form-stack { display: grid; gap: 10px; }
+    .form-control { border: 1px solid #c7d7ee; border-radius: 14px; padding: 13px 14px; }
+    .btn-success { background: #198754 !important; color: #fff !important; }
+    .action-row { display: flex; flex-wrap: wrap; gap: 10px; }
+    .mt-3 { margin-top: 16px; }
+    @@media (max-width: 900px) { .mfa-setup-grid { grid-template-columns: 1fr; } }
+</style>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

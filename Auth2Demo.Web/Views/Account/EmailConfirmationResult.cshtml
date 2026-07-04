@@ -1,0 +1,15 @@
+@model EmailConfirmationResultViewModel
+@{
+    ViewData["Title"] = Model.Succeeded ? T["EmailConfirmedSuccessfullyTitle"].Value : T["EmailConfirmationFailedTitle"].Value;
+}
+
+<div class="auth-card form-card">
+    <div class="auth-header">
+        <h1>@ViewData["Title"]</h1>
+        <p>@Model.Message</p>
+    </div>
+
+    <p class="form-footer">
+        <a class="btn btn-block" asp-action="Login">@T["BackToLogin"]</a>
+    </p>
+</div>

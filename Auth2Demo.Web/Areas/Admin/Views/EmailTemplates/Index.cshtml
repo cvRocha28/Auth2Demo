@@ -1,0 +1,65 @@
+@model IReadOnlyList<Auth2Demo.Domain.Security.EmailTemplate>
+
+@{
+    ViewData["Title"] = T["EmailTemplates"].Value;
+}
+
+<div class="page-heading">
+    <div>
+        <span class="page-kicker">@T["Customization"]</span>
+
+        <h1>@T["EmailTemplates"]</h1>
+
+        <p>@T["TextCentralParaMensagensDeConfirmacaoRecuperacaoMfaE"]</p>
+    </div>
+
+    <a class="btn" asp-action="Edit">
+        @T["NewTemplate"]
+    </a>
+</div>
+
+<div class="table-wrap">
+    <table>
+        <thead>
+            <tr>
+                <th>@T["Template"]</th>
+                <th>@T["Subject"]</th>
+                <th>@T["Status"]</th>
+                <th></th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @foreach (var template in Model)
+            {
+                <tr>
+                    <td>
+                        <strong>@template.Name</strong>
+                        <br />
+                        <small class="muted">@template.Key</small>
+                    </td>
+
+                    <td>
+                        @template.Subject
+                    </td>
+
+                    <td>
+                        <span class="badge @(template.IsEnabled ? "badge-success" : "")">
+                            @(template.IsEnabled
+                                ? T["Active"]
+                                : T["Inactive"])
+                        </span>
+                    </td>
+
+                    <td>
+                        <a class="btn btn-sm btn-outline"
+                           asp-action="Edit"
+                           asp-route-id="@template.Id">
+                            @T["Edit"]
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

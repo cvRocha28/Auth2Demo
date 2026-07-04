@@ -1,0 +1,36 @@
+@model IReadOnlyList<Auth2Demo.Web.Areas.Admin.Models.ScopeListItemViewModel>
+@{
+    ViewData["Title"] = T["TextApisScopes"].Value;
+}
+
+<div class="page-heading">
+    <div>
+        <span class="page-kicker">@T["RecursosProtegidos"]</span>
+        <h1>@T["TextApisScopes"]</h1>
+        <p>@T["TextDefinaOsScopesQueOsClientsPodemSolicitar"]</p>
+    </div>
+    <a class="btn" asp-action="Create">@T["NewScopeApi"]</a>
+</div>
+
+<div class="table-wrap">
+    <table>
+        <thead><tr><th>@T["Name"]</th><th>@T["Display"]</th><th>@T["Description"]</th></tr></thead>
+        <tbody>
+        @if (Model.Count == 0)
+        {
+            <tr><td colspan="3" class="empty">@T["NoScopesRegistered"]</td></tr>
+        }
+        else
+        {
+            foreach (var s in Model)
+            {
+                <tr>
+                    <td><code>@s.Name</code></td>
+                    <td>@s.DisplayName</td>
+                    <td>@s.Description</td>
+                </tr>
+            }
+        }
+        </tbody>
+    </table>
+</div>

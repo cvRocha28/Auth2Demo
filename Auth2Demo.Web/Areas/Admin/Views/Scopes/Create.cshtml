@@ -1,0 +1,11 @@
+@model ScopeCreateViewModel
+@{ ViewData["Title"] = T["NovoScope"].Value; }
+<h1>@T["NewScopeApi"]</h1>
+<form method="post" class="card form-card">
+<div asp-validation-summary="ModelOnly" class="validation"></div>
+<label asp-for="Name"></label><input asp-for="Name" />
+<label asp-for="DisplayName"></label><input asp-for="DisplayName" />
+<label asp-for="Description"></label><textarea asp-for="Description"></textarea>
+<label asp-for="Resources"></label><input asp-for="Resources" />
+<button class="btn">@T["Create"]</button>
+</form>

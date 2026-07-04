@@ -1,0 +1,37 @@
+@model Auth2Demo.Web.Models.Account.RecoveryCodesViewModel
+@{
+    ViewData["Title"] = T["RecoveryCodes"].Value;
+}
+
+<section class="mfa-page">
+    <div class="mfa-card">
+        <span class="eyebrow">@T["Importante"]</span>
+        <h1>@T["RecoveryCodes"]</h1>
+        <p>@T["TextSalveEstesCodigosEmLocalSeguroElesAparecem"]</p>
+
+        <div class="codes-grid">
+            @foreach (var code in Model.Codes)
+            {
+                <code>@code</code>
+            }
+        </div>
+
+        <div class="action-row">
+            <a class="btn btn-primary" asp-action="ManageMfa">@T["BackToMfa"]</a>
+            <button class="btn btn-secondary" onclick="window.print()">@T["Imprimir"]</button>
+        </div>
+    </div>
+</section>
+
+<style>
+    .mfa-page { max-width: 900px; margin: 0 auto; padding: 42px 18px; }
+    .mfa-card { background: #fff; border: 1px solid #d7e3f5; border-radius: 24px; padding: 26px; box-shadow: 0 18px 50px rgba(15,35,75,.10); }
+    .eyebrow { color: #2f6fed; font-weight: 900; text-transform: uppercase; letter-spacing: .1em; font-size: .78rem; }
+    .codes-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; margin: 20px 0; }
+    .codes-grid code { background: #f3f7ff; border: 1px solid #d7e3f5; border-radius: 14px; padding: 14px; font-size: 1.1rem; color: #061a3d; text-align: center; }
+    .action-row { display: flex; gap: 10px; flex-wrap: wrap; }
+    .btn { border: 0; border-radius: 14px; padding: 13px 18px; font-weight: 900; cursor: pointer; text-decoration: none; }
+    .btn-primary { background: #2f6fed; color: #fff; }
+    .btn-secondary { background: #fff; color: #17345f; border: 1px solid #c7d7ee; }
+    @@media (max-width: 700px) { .codes-grid { grid-template-columns: 1fr; } }
+</style>

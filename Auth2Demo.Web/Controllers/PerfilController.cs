@@ -1,0 +1,114 @@
+using Auth2Demo.Infrastructure.Identity;
+using Auth2Demo.Web.Localization;
+using Auth2Demo.Infrastructure.Services.Portal;
+using Auth2Demo.Web.Models.Perfil;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Localization;
+using Microsoft.AspNetCore.Mvc;
+
+namespace Auth2Demo.Web.Controllers;
+
+[Authorize]
+public sealed class PerfilController : Controller
+{
+    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly SignInManager<ApplicationUser> _signInManager;
+    private readonly IPerfilService _perfil;
+
+    public PerfilController(
+        UserManager<ApplicationUser> userManager,
+        SignInManager<ApplicationUser> signInManager,
+        IPerfilService perfil)
+    {
+        _userManager = userManager;
+        _signInManager = signInManager;
+        _perfil = perfil;
+    }
+
+    public async Task<IActionResult> Index()
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user is null) return Challenge();
+
+        var data = await _perfil.BuildIndexAsync(user);
+        return View(new PerfilIndexViewModel
+        {
+            User = data.User,
+            DisplayName = data.DisplayName,
+            CurrentLocale = data.CurrentLocale,
+            IsAdmin = data.IsAdmin,
+            ExternalLogins = data.ExternalLogins,
+            Sessions = data.Sessions,
+            Devices = data.Devices,
+            AuditLogs = data.AuditLogs,
+            MfaMethods = data.MfaMethods,
+            Passkeys = data.Passkeys
+        });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> AlterarDisplayName(string displayName)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user is null) return Challenge();
+
+        displayName = (displayName ?? string.Empty).Trim();
+
+        if (string.IsNullOrWhiteSpace(displayName))
+        {
+            TempData["Error"] = "DisplayNameRequired";
+            return RedirectToAction(nameof(Index));
+        }
+
+        if (displayName.Length > 100)
+        {
+            TempData["Error"] = "DisplayNameMaxLength";
+            return RedirectToAction(nameof(Index));
+        }
+
+        if (!await _perfil.UpdateDisplayNameAsync(user, displayName))
+        {
+            TempData["Error"] = "ProfileUpdateFailed";
+            return RedirectToAction(nameof(Index));
+        }
+
+        await _signInManager.RefreshSignInAsync(user);
+        TempData["Success"] = "ProfileUpdated";
+
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> AlterarIdioma(string locale, string? returnUrl = null)
+    {
+        locale = UserProfileRequestCultureProvider.NormalizeLocale(locale);
+
+        var user = await _userManager.GetUserAsync(User);
+        if (user is null) return Challenge();
+
+        await _perfil.UpdateLocaleAsync(user, locale);
+
+        Response.Cookies.Append(
+            CookieRequestCultureProvider.DefaultCookieName,
+            CookieRequestCultureProvider.MakeCookieValue(new RequestCulture(locale)),
+            new CookieOptions
+            {
+                Expires = DateTimeOffset.UtcNow.AddYears(1),
+                IsEssential = true,
+                SameSite = SameSiteMode.Lax,
+                Secure = Request.IsHttps
+            });
+
+        TempData["Success"] = "SavedLanguage";
+
+        if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
+        {
+            return LocalRedirect(returnUrl);
+        }
+
+        return RedirectToAction(nameof(Index));
+    }
+}
