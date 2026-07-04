@@ -1,7 +1,10 @@
 <Solution>
   <Folder Name="/docs/">
-    <File Path="architecture.md" />
-    <File Path="professional-roadmap.md" />
+    <File Path="docs/architecture.md" />
+    <File Path="docs/authentication.md" />
+    <File Path="docs/deployment.md" />
+    <File Path="docs/localization.md" />
+    <File Path="docs/professional-roadmap.md" />
   </Folder>
   <Folder Name="/src/">
     <Project Path="Auth2Demo.Application/Auth2Demo.Application.csproj" />
