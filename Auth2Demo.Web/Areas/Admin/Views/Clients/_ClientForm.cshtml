@@ -45,15 +45,29 @@
         <div>
             <span class="page-kicker">@T["GrantTypes"]</span>
             <h2>@T["FluxosPermitidos"]</h2>
+            <p class="muted">Adicione os fluxos permitidos usando presets ou digite um grant type customizado.</p>
         </div>
     </div>
 
-    <div class="check-grid">
-        <label class="check"><input asp-for="AllowAuthorizationCode" /> @T["AuthorizationCode"]</label>
-        <label class="check"><input asp-for="AllowRefreshToken" /> @T["RefreshToken"]</label>
-        <label class="check"><input asp-for="AllowClientCredentials" /> @T["ClientCredentials"]</label>
-        <label class="check"><input asp-for="RequirePkce" /> @T["ExigirPkce"]</label>
+    <textarea asp-for="GrantTypes" class="js-list-source" data-list="grant-types" hidden></textarea>
+    <input type="hidden" asp-for="AllowAuthorizationCode" />
+    <input type="hidden" asp-for="AllowRefreshToken" />
+    <input type="hidden" asp-for="AllowClientCredentials" />
+
+    <div class="addable-list" data-list-target="grant-types">
+        <div class="addable-list-items"></div>
+        <div class="actions-row addable-list-actions">
+            <select class="addable-list-select">
+                <option value="authorization_code">authorization_code</option>
+                <option value="refresh_token">refresh_token</option>
+                <option value="client_credentials">client_credentials</option>
+            </select>
+            <input class="addable-list-input" placeholder="custom_grant_type" />
+            <button class="btn ghost addable-list-add" type="button">Adicionar</button>
+        </div>
     </div>
+
+    <label class="check"><input asp-for="RequirePkce" /> @T["ExigirPkce"]</label>
 
     <div class="section-title form-section-title">
         <div>
@@ -78,15 +92,62 @@
     </div>
 
     <label asp-for="RedirectUris">@T["RedirectUris"]</label>
-    <textarea asp-for="RedirectUris" placeholder='@T["TextHttpsLocalhost7108SigninOidc"].Value'></textarea>
+    <textarea asp-for="RedirectUris" class="js-list-source" data-list="redirect-uris" hidden></textarea>
+    <div class="addable-list" data-list-target="redirect-uris">
+        <div class="addable-list-items"></div>
+        <div class="actions-row addable-list-actions">
+            <input class="addable-list-input" placeholder='@T["TextHttpsLocalhost7108SigninOidc"].Value' />
+            <button class="btn ghost addable-list-add" type="button">Adicionar</button>
+        </div>
+    </div>
     <small class="muted">@T["TextUmaUriPorLinhaParaAspNetCore"] <code>@T["TextSigninOidc"]</code>.</small>
 
     <label asp-for="PostLogoutRedirectUris">@T["PostLogoutRedirectUris"]</label>
-    <textarea asp-for="PostLogoutRedirectUris" placeholder='@T["TextHttpsLocalhost7108SignoutCallbackOidc"].Value'></textarea>
+    <textarea asp-for="PostLogoutRedirectUris" class="js-list-source" data-list="post-logout-uris" hidden></textarea>
+    <div class="addable-list" data-list-target="post-logout-uris">
+        <div class="addable-list-items"></div>
+        <div class="actions-row addable-list-actions">
+            <input class="addable-list-input" placeholder='@T["TextHttpsLocalhost7108SignoutCallbackOidc"].Value' />
+            <button class="btn ghost addable-list-add" type="button">Adicionar</button>
+        </div>
+    </div>
 
     <label asp-for="Scopes">@T["AllowedScopes"]</label>
-    <textarea asp-for="Scopes" placeholder='@T["TextOpenid10Profile10Email10Roles10"].Value'></textarea>
+    <textarea asp-for="Scopes" class="js-list-source" data-list="scopes" hidden></textarea>
+    <div class="addable-list" data-list-target="scopes">
+        <div class="addable-list-items"></div>
+        <div class="actions-row addable-list-actions">
+            <select class="addable-list-select">
+                <option value="openid">openid</option>
+                <option value="profile">profile</option>
+                <option value="email">email</option>
+                <option value="roles">roles</option>
+                <option value="offline_access">offline_access</option>
+                <option value="auth2demo.api">auth2demo.api</option>
+                <option value="rareles.api">rareles.api</option>
+            </select>
+            <input class="addable-list-input" placeholder="custom.scope" />
+            <button class="btn ghost addable-list-add" type="button">Adicionar</button>
+        </div>
+    </div>
     <small class="muted">@T["TextSeparePorLinhaEspacoOuVirgulaScopesNao"]</small>
+
+    <div class="section-title form-section-title">
+        <div>
+            <span class="page-kicker">Claims</span>
+            <h2>Claims obrigatórias do usuário</h2>
+            <p class="muted">Informe a claim que o usuário precisa ter para conseguir usar este client. Use <code>tipo=valor</code>. Se deixar sem valor, basta a claim existir.</p>
+        </div>
+    </div>
+
+    <textarea asp-for="RequiredClaims" class="js-list-source" data-list="required-claims" hidden></textarea>
+    <div class="addable-list" data-list-target="required-claims">
+        <div class="addable-list-items"></div>
+        <div class="actions-row addable-list-actions">
+            <input class="addable-list-input" placeholder="role=Admin" />
+            <button class="btn ghost addable-list-add" type="button">Adicionar claim</button>
+        </div>
+    </div>
 
     <div class="section-title form-section-title">
         <div>
@@ -110,3 +171,75 @@
         <a class="btn ghost" asp-action="Index">@T["Cancel"]</a>
     </div>
 </form>
+
+<script>
+(() => {
+    const splitLines = value => (value || '')
+        .split(/[\r\n,;\t ]+/)
+        .map(item => item.trim())
+        .filter(Boolean);
+
+    document.querySelectorAll('.js-list-source').forEach(source => {
+        const listName = source.dataset.list;
+        const wrapper = document.querySelector(`[data-list-target="${listName}"]`);
+        if (!wrapper) return;
+
+        const itemsContainer = wrapper.querySelector('.addable-list-items');
+        const input = wrapper.querySelector('.addable-list-input');
+        const select = wrapper.querySelector('.addable-list-select');
+        const addButton = wrapper.querySelector('.addable-list-add');
+
+        const values = new Set(splitLines(source.value));
+
+        const sync = () => {
+            source.value = Array.from(values).join('\n');
+            render();
+        };
+
+        const addValue = value => {
+            const normalized = (value || '').trim();
+            if (!normalized || values.has(normalized)) return;
+            values.add(normalized);
+            if (input) input.value = '';
+            sync();
+        };
+
+        const render = () => {
+            itemsContainer.innerHTML = '';
+            Array.from(values).forEach(value => {
+                const row = document.createElement('div');
+                row.className = 'addable-list-row';
+
+                const code = document.createElement('code');
+                code.textContent = value;
+
+                const remove = document.createElement('button');
+                remove.type = 'button';
+                remove.className = 'btn ghost';
+                remove.textContent = 'Remover';
+                remove.addEventListener('click', () => {
+                    values.delete(value);
+                    sync();
+                });
+
+                row.appendChild(code);
+                row.appendChild(remove);
+                itemsContainer.appendChild(row);
+            });
+        };
+
+        addButton?.addEventListener('click', () => addValue(input?.value || select?.value));
+        select?.addEventListener('change', () => {
+            if (input) input.value = select.value;
+        });
+        input?.addEventListener('keydown', event => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                addValue(input.value);
+            }
+        });
+
+        sync();
+    });
+})();
+</script>
