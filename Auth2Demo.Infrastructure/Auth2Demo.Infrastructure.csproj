@@ -30,6 +30,10 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="OpenIddict.EntityFrameworkCore" Version="7.5.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="10.0.9" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.MicrosoftAccount" Version="10.0.9" />
+    <PackageReference Include="OpenIddict.AspNetCore" Version="7.5.0" />
+    <PackageReference Include="OpenIddict.Validation.AspNetCore" Version="7.5.0" />
   </ItemGroup>
 
   <ItemGroup>

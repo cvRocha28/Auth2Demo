@@ -2,9 +2,13 @@
 @{
     ViewData["Title"] = T["Permissions"].Value;
 }
-<div class="page-heading">
-    <div><span class="page-kicker">@T["Authorization"]</span><h1>@T["Permissions"]</h1><p>@T["ControleGranularNoEstilo"] <code>@T["TextUsersRead"]</code>, <code>@T["TextProvidersWrite"]</code> @T["Texte1671797"] <code>@T["TextClientsManage"]</code>.</p></div>
-</div>
+@section AdminHeader {
+    <span class="admin-page-kicker">@T["Authorization"]</span>
+    <h1>@T["Permissions"]</h1>
+    <p>@T["ControleGranularNoEstilo"] <code>@T["TextUsersRead"]</code>, <code>@T["TextProvidersWrite"]</code> @T["Texte1671797"] <code>@T["TextClientsManage"]</code>.</p>
+}
+
+
 <div class="card"><form method="post" asp-action="Create" class="form-inline"><div><label>@T["Name"]</label><input name="name" placeholder='@T["TextUsersRead"].Value' /></div><div><label>@T["Display"]</label><input name="displayName" placeholder='@T["TextLerUsuarios"].Value' /></div><div><label>@T["Categoria"]</label><input name="category" placeholder='@T["Users"].Value' /></div><div class="grow"><label>@T["Description"]</label><input name="description" /></div><button class="btn">@T["Create"]</button></form></div>
 <div class="table-wrap">
     <table>

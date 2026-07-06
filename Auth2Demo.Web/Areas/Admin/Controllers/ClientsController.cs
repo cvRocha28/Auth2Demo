@@ -1,14 +1,13 @@
-using Auth2Demo.Domain.Identity;
-using Auth2Demo.Infrastructure.Security;
+using Auth2Demo.Application.Services.Admin;
 using Auth2Demo.Web.Areas.Admin.Models;
 using Auth2Demo.Web.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
-using System.Globalization;
 using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using Auth2Demo.Web;
+using System.Text.Json;
 
 namespace Auth2Demo.Web.Areas.Admin.Controllers;
 
@@ -25,24 +24,45 @@ public sealed class ClientsController : Controller
         Scopes.OfflineAccess
     ];
 
-    private const string RequiredClaimPermissionPrefix = "custom:required_claim:";
-    private const string ClientSecretPermissionPrefix = "custom:client_secret:";
-
     private readonly IOpenIddictApplicationManager _applicationManager;
     private readonly IOpenIddictScopeManager _scopeManager;
     private readonly IClientSecretGenerator _secretGenerator;
     private readonly IStringLocalizer<SharedResource> _localizer;
+    private readonly IClientApplicationAdminService _clientApplications;
+    private readonly IAdminIdentityProviderService _identityProviders;
 
     public ClientsController(
         IOpenIddictApplicationManager applicationManager,
         IOpenIddictScopeManager scopeManager,
         IClientSecretGenerator secretGenerator,
-        IStringLocalizer<SharedResource> localizer)
+        IStringLocalizer<SharedResource> localizer,
+        IClientApplicationAdminService clientApplications,
+        IAdminIdentityProviderService identityProviders)
     {
         _applicationManager = applicationManager;
         _scopeManager = scopeManager;
         _secretGenerator = secretGenerator;
         _localizer = localizer;
+        _clientApplications = clientApplications;
+        _identityProviders = identityProviders;
+    }
+
+    private Task<bool> ActiveClientIdExistsAsync(string clientId, Guid? ignoreApplicationId = null)
+    {
+        return _clientApplications.ActiveClientIdExistsAsync(clientId, ignoreApplicationId);
+    }
+
+    private async Task<object?> FindActiveClientByClientIdAsync(string clientId)
+    {
+        var app = await _applicationManager.FindByClientIdAsync(clientId);
+
+        if (app is null)
+        {
+            return null;
+        }
+
+        var metadata = await GetApplicationAuditMetadataAsync(app);
+        return metadata.IsDeleted ? null : app;
     }
 
     public async Task<IActionResult> Index()
@@ -52,13 +72,23 @@ public sealed class ClientsController : Controller
         await foreach (var app in _applicationManager.ListAsync(100, 0))
         {
             var permissions = await _applicationManager.GetPermissionsAsync(app);
+            var metadata = await GetApplicationAuditMetadataAsync(app);
+            if (metadata.IsDeleted)
+            {
+                continue;
+            }
+
             clients.Add(new ClientIndexViewModel
             {
                 ClientId = await _applicationManager.GetClientIdAsync(app) ?? string.Empty,
                 DisplayName = await _applicationManager.GetDisplayNameAsync(app) ?? string.Empty,
                 ClientType = await _applicationManager.GetClientTypeAsync(app) ?? string.Empty,
                 ConsentType = await _applicationManager.GetConsentTypeAsync(app) ?? string.Empty,
-                GrantTypes = ExtractGrantTypes(permissions).ToArray()
+                GrantTypes = ExtractGrantTypes(permissions).ToArray(),
+                CreatedAt = metadata.CreatedAt,
+                UpdatedAt = metadata.UpdatedAt,
+                IsEnabled = metadata.IsEnabled,
+                BrandingEnabled = ExtractClientBranding(app)?.IsEnabled == true
             });
         }
 
@@ -82,28 +112,48 @@ public sealed class ClientsController : Controller
             return View(model);
         }
 
-        if (await _applicationManager.FindByClientIdAsync(model.ClientId) is not null)
+        if (await ActiveClientIdExistsAsync(model.ClientId))
         {
             ModelState.AddModelError(nameof(model.ClientId), _localizer["ClientIdAlreadyExists"].Value);
             return View(model);
         }
 
         var descriptor = BuildDescriptor(model);
-        var secret = model.ClientType == ClientTypes.Confidential && model.GenerateSecret
-            ? _secretGenerator.GenerateSecret()
-            : null;
+        var generatedSecrets = new List<GeneratedClientSecret>();
+        var initialSecret = BuildPrimarySecretForOpenIddict(model.SecretItems);
 
-        if (!string.IsNullOrWhiteSpace(secret))
+        if (string.Equals(model.ClientType, ClientTypes.Confidential, StringComparison.Ordinal))
         {
-            descriptor.ClientSecret = secret;
-            AddSecretMetadata(descriptor, "Default secret");
+            if (initialSecret is null)
+            {
+                var fallbackSecret = _secretGenerator.GenerateSecret();
+                initialSecret = new GeneratedClientSecret(_localizer["DefaultSecretDescription"].Value, fallbackSecret);
+            }
+
+            descriptor.ClientSecret = initialSecret.Secret;
+        }
+        else
+        {
+            descriptor.ClientSecret = null;
         }
 
         await _applicationManager.CreateAsync(descriptor);
 
-        if (!string.IsNullOrWhiteSpace(secret))
+        var createdApp = await _applicationManager.FindByClientIdAsync(model.ClientId)
+            ?? throw new InvalidOperationException(_localizer["ClientCreatedButCouldNotBeLoaded"].Value);
+
+        await MarkApplicationCreatedAsync(createdApp, "ClientCreated", model.ClientId);
+
+        if (initialSecret is not null)
         {
-            TempData["GeneratedSecret"] = secret;
+            var expiresAtUtc = GetExpirationForPrimarySecret(model.SecretItems) ?? CalculateExpiration(ClientSecretExpiration.Never);
+            await CreateClientSecretAsync(createdApp, initialSecret.Description, initialSecret.Secret, expiresAtUtc);
+            generatedSecrets.Add(initialSecret);
+        }
+
+        if (generatedSecrets.Count > 0)
+        {
+            TempData["GeneratedSecret"] = string.Join(Environment.NewLine, generatedSecrets.Select(secret => $"{secret.Description}: {secret.Secret}"));
         }
 
         TempData["Success"] = _localizer["ClientCreatedSuccessfully"].Value;
@@ -112,7 +162,7 @@ public sealed class ClientsController : Controller
 
     public async Task<IActionResult> Edit(string clientId)
     {
-        var app = await _applicationManager.FindByClientIdAsync(clientId);
+        var app = await FindActiveClientByClientIdAsync(clientId);
 
         if (app is null)
         {
@@ -134,16 +184,18 @@ public sealed class ClientsController : Controller
             return View(model);
         }
 
-        var app = await _applicationManager.FindByClientIdAsync(model.OriginalClientId);
+        var app = await FindActiveClientByClientIdAsync(model.OriginalClientId);
 
         if (app is null)
         {
             return NotFound();
         }
 
+        var currentApplicationId = await GetApplicationGuidAsync(app);
+
         if (!string.Equals(model.OriginalClientId, model.ClientId, StringComparison.Ordinal))
         {
-            if (await _applicationManager.FindByClientIdAsync(model.ClientId) is not null)
+            if (await ActiveClientIdExistsAsync(model.ClientId, currentApplicationId))
             {
                 ModelState.AddModelError(nameof(model.ClientId), _localizer["ClientIdAlreadyExists"].Value);
                 return View(model);
@@ -155,23 +207,39 @@ public sealed class ClientsController : Controller
 
         ApplyModelToDescriptor(model, descriptor);
 
-        var generatedSecret = string.Empty;
-        if (model.ClientType == ClientTypes.Confidential && model.RegenerateSecret)
-        {
-            generatedSecret = _secretGenerator.GenerateSecret();
-            descriptor.ClientSecret = generatedSecret;
-        }
+        var generatedSecrets = new List<GeneratedClientSecret>();
+        var changedToPublic = model.ClientType == ClientTypes.Public;
+        var newPrimarySecret = changedToPublic
+            ? null
+            : BuildPrimarySecretForOpenIddict(model.SecretItems.Where(secret => !secret.IsExisting || !string.IsNullOrWhiteSpace(secret.PlainTextSecret)));
 
-        if (model.ClientType == ClientTypes.Public)
+        if (changedToPublic)
         {
             descriptor.ClientSecret = null;
+        }
+        else if (newPrimarySecret is not null)
+        {
+            descriptor.ClientSecret = newPrimarySecret.Secret;
         }
 
         await _applicationManager.UpdateAsync(app, descriptor);
 
-        if (!string.IsNullOrWhiteSpace(generatedSecret))
+        if (changedToPublic)
         {
-            TempData["GeneratedSecret"] = generatedSecret;
+            await RevokeAllClientSecretsAsync(app, _localizer["ClientChangedToPublicReason"].Value);
+        }
+        else if (newPrimarySecret is not null)
+        {
+            var expiresAtUtc = GetExpirationForPrimarySecret(model.SecretItems) ?? CalculateExpiration(ClientSecretExpiration.Never);
+            await CreateClientSecretAsync(app, newPrimarySecret.Description, newPrimarySecret.Secret, expiresAtUtc);
+            generatedSecrets.Add(newPrimarySecret);
+        }
+
+        await MarkApplicationUpdatedAsync(app, "ClientUpdated", model.ClientId);
+
+        if (generatedSecrets.Count > 0)
+        {
+            TempData["GeneratedSecret"] = string.Join(Environment.NewLine, generatedSecrets.Select(secret => $"{secret.Description}: {secret.Secret}"));
         }
 
         TempData["Success"] = _localizer["ClientUpdatedSuccessfully"].Value;
@@ -180,7 +248,7 @@ public sealed class ClientsController : Controller
 
     public async Task<IActionResult> Details(string clientId)
     {
-        var app = await _applicationManager.FindByClientIdAsync(clientId);
+        var app = await FindActiveClientByClientIdAsync(clientId);
 
         if (app is null)
         {
@@ -190,11 +258,50 @@ public sealed class ClientsController : Controller
         return View(await BuildDetailsViewModelAsync(app));
     }
 
+    public async Task<IActionResult> Branding(string clientId)
+    {
+        var app = await FindActiveClientByClientIdAsync(clientId);
+
+        if (app is null)
+        {
+            return NotFound();
+        }
+
+        return View(await BuildClientBrandingViewModelAsync(app));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Branding(ClientBrandingViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            model.ProviderOptions = await BuildBrandingProviderOptionsAsync(model.EnabledProviderSchemes);
+            return View(model);
+        }
+
+        var app = await FindActiveClientByClientIdAsync(model.ClientId);
+
+        if (app is null)
+        {
+            return NotFound();
+        }
+
+        var descriptor = new OpenIddictApplicationDescriptor();
+        await _applicationManager.PopulateAsync(descriptor, app);
+        SetClientBrandingProperties(descriptor, model);
+        await _applicationManager.UpdateAsync(app, descriptor);
+        await MarkApplicationUpdatedAsync(app, "ClientBrandingUpdated", model.ClientId);
+
+        TempData["Success"] = _localizer["ClientUpdatedSuccessfully"].Value;
+        return RedirectToAction(nameof(Branding), new { clientId = model.ClientId });
+    }
+
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> UpdateScopes(ClientScopesUpdateViewModel model)
     {
-        var app = await _applicationManager.FindByClientIdAsync(model.ClientId);
+        var app = await FindActiveClientByClientIdAsync(model.ClientId);
 
         if (app is null)
         {
@@ -208,6 +315,7 @@ public sealed class ClientsController : Controller
         AddScopePermissions(descriptor, model.SelectedScopes ?? []);
 
         await _applicationManager.UpdateAsync(app, descriptor);
+        await MarkApplicationUpdatedAsync(app, "ClientScopesUpdated", model.ClientId);
 
         TempData["Success"] = _localizer["AllowedScopesUpdatedSuccessfully"].Value;
         return RedirectToAction(nameof(Details), new { clientId = model.ClientId });
@@ -215,51 +323,53 @@ public sealed class ClientsController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> RegenerateSecret(string clientId)
+    public async Task<IActionResult> AddSecret(string clientId, string? displayName, ClientSecretExpiration expiration = ClientSecretExpiration.Never)
     {
-        var app = await _applicationManager.FindByClientIdAsync(clientId);
+        var app = await FindActiveClientByClientIdAsync(clientId);
 
         if (app is null)
         {
             return NotFound();
         }
 
+        var clientType = await _applicationManager.GetClientTypeAsync(app);
+        if (!string.Equals(clientType, ClientTypes.Confidential, StringComparison.Ordinal))
+        {
+            TempData["Success"] = _localizer["OnlyConfidentialClientsCanHaveSecrets"].Value;
+            return RedirectToAction(nameof(Details), new { clientId });
+        }
+
+        var secret = _secretGenerator.GenerateSecret();
+        var description = string.IsNullOrWhiteSpace(displayName) ? _localizer["NewSecretDefaultDescription"].Value : displayName.Trim();
+        var expiresAtUtc = CalculateExpiration(expiration);
+
         var descriptor = new OpenIddictApplicationDescriptor();
         await _applicationManager.PopulateAsync(descriptor, app);
-
-        descriptor.ClientType = ClientTypes.Confidential;
-        descriptor.ClientSecret = _secretGenerator.GenerateSecret();
-
+        descriptor.ClientSecret = secret;
         await _applicationManager.UpdateAsync(app, descriptor);
 
-        TempData["GeneratedSecret"] = descriptor.ClientSecret;
-        TempData["Success"] = _localizer["ClientSecretRegenerated"].Value;
+        await CreateClientSecretAsync(app, description, secret, expiresAtUtc);
+        await MarkApplicationUpdatedAsync(app, "ClientSecretAdded", clientId);
 
+        TempData["GeneratedSecret"] = $"{description}: {secret}";
+        TempData["Success"] = _localizer["ClientSecretAddedSuccessfully"].Value;
         return RedirectToAction(nameof(Details), new { clientId });
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> AddSecret(string clientId, string? displayName)
+    public async Task<IActionResult> RevokeSecret(string clientId, Guid secretId)
     {
-        var app = await _applicationManager.FindByClientIdAsync(clientId);
+        var app = await FindActiveClientByClientIdAsync(clientId);
 
         if (app is null)
         {
             return NotFound();
         }
 
-        var descriptor = new OpenIddictApplicationDescriptor();
-        await _applicationManager.PopulateAsync(descriptor, app);
-
-        descriptor.ClientType = ClientTypes.Confidential;
-        descriptor.ClientSecret = _secretGenerator.GenerateSecret();
-        AddSecretMetadata(descriptor, string.IsNullOrWhiteSpace(displayName) ? "Client secret" : displayName.Trim());
-
-        await _applicationManager.UpdateAsync(app, descriptor);
-
-        TempData["GeneratedSecret"] = descriptor.ClientSecret;
-        TempData["Success"] = "Secret created successfully. Copy it now because it will not be shown again.";
+        await RevokeClientSecretAsync(app, secretId, _localizer["RevokedByAdmin"].Value);
+        await MarkApplicationUpdatedAsync(app, "ClientSecretRevoked", clientId);
+        TempData["Success"] = _localizer["ClientSecretRevokedSuccessfully"].Value;
 
         return RedirectToAction(nameof(Details), new { clientId });
     }
@@ -268,15 +378,55 @@ public sealed class ClientsController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(string clientId)
     {
-        var app = await _applicationManager.FindByClientIdAsync(clientId);
+        var app = await FindActiveClientByClientIdAsync(clientId);
 
         if (app is not null)
         {
-            await _applicationManager.DeleteAsync(app);
+            await SoftDeleteApplicationAsync(app, clientId);
+            await RevokeAllClientSecretsAsync(app, _localizer["ClientDeletedSuccessfully"].Value);
             TempData["Success"] = _localizer["ClientDeletedSuccessfully"].Value;
         }
 
         return RedirectToAction(nameof(Index));
+    }
+
+    private async Task MarkApplicationCreatedAsync(object app, string eventType, string clientId)
+    {
+        var applicationId = await GetApplicationGuidAsync(app);
+        await _clientApplications.MarkCreatedAsync(applicationId, eventType, clientId, BuildAuditActor());
+    }
+
+    private async Task MarkApplicationUpdatedAsync(object app, string eventType, string clientId)
+    {
+        var applicationId = await GetApplicationGuidAsync(app);
+        await _clientApplications.MarkUpdatedAsync(applicationId, eventType, clientId, BuildAuditActor());
+    }
+
+    private async Task SoftDeleteApplicationAsync(object app, string clientId)
+    {
+        var applicationId = await GetApplicationGuidAsync(app);
+        await _clientApplications.SoftDeleteAsync(applicationId, clientId, BuildAuditActor());
+    }
+
+    private Guid? GetCurrentUserId()
+    {
+        var value = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        return Guid.TryParse(value, out var id) ? id : null;
+    }
+
+    private AdminAuditActor BuildAuditActor()
+    {
+        return new AdminAuditActor(
+            GetCurrentUserId(),
+            User.Identity?.Name,
+            HttpContext.Connection.RemoteIpAddress?.ToString(),
+            Request.Headers.UserAgent.ToString());
+    }
+
+    private async Task<ApplicationAuditMetadata> GetApplicationAuditMetadataAsync(object app)
+    {
+        var applicationId = await GetApplicationGuidAsync(app);
+        return await _clientApplications.GetMetadataAsync(applicationId);
     }
 
     private async Task<ClientFormViewModel> BuildFormViewModelAsync(object app)
@@ -301,8 +451,12 @@ public sealed class ClientsController : Controller
             RedirectUris = string.Join(Environment.NewLine, redirectUris),
             PostLogoutRedirectUris = string.Join(Environment.NewLine, postLogoutRedirectUris),
             Scopes = string.Join(Environment.NewLine, ExtractScopes(permissions)),
-            GrantTypes = string.Join(Environment.NewLine, ExtractGrantTypes(permissions)),
-            RequiredClaims = string.Join(Environment.NewLine, ExtractRequiredClaims(permissions).Select(claim => string.IsNullOrWhiteSpace(claim.Value) ? claim.Type : $"{claim.Type}={claim.Value}")),
+            RedirectUriItems = redirectUris.Select(uri => uri.ToString()).ToList(),
+            PostLogoutRedirectUriItems = postLogoutRedirectUris.Select(uri => uri.ToString()).ToList(),
+            ScopeItems = ExtractScopes(permissions).ToList(),
+            GrantTypeItems = ExtractGrantTypes(permissions).ToList(),
+            SecretItems = await BuildSecretInputItemsAsync(app),
+            RequiredClaimItems = ExtractRequiredClaims(app).ToList(),
             AllowAuthorizationCode = permissions.Contains(Permissions.GrantTypes.AuthorizationCode),
             AllowRefreshToken = permissions.Contains(Permissions.GrantTypes.RefreshToken),
             AllowClientCredentials = permissions.Contains(Permissions.GrantTypes.ClientCredentials),
@@ -324,21 +478,27 @@ public sealed class ClientsController : Controller
         var allowedScopes = ExtractScopes(permissions).ToArray();
         var availableScopes = await BuildAvailableScopesAsync(allowedScopes);
 
+        var metadata = await GetApplicationAuditMetadataAsync(app);
+
         return new ClientDetailsViewModel
         {
             ClientId = await _applicationManager.GetClientIdAsync(app) ?? string.Empty,
             DisplayName = await _applicationManager.GetDisplayNameAsync(app) ?? string.Empty,
             ClientType = await _applicationManager.GetClientTypeAsync(app) ?? string.Empty,
             ConsentType = await _applicationManager.GetConsentTypeAsync(app) ?? string.Empty,
+            CreatedAt = metadata.CreatedAt,
+            UpdatedAt = metadata.UpdatedAt,
+            IsEnabled = metadata.IsEnabled,
             RedirectUris = (await _applicationManager.GetRedirectUrisAsync(app)).ToArray(),
             PostLogoutRedirectUris = (await _applicationManager.GetPostLogoutRedirectUrisAsync(app)).ToArray(),
             AllowedScopes = allowedScopes,
             GrantTypes = ExtractGrantTypes(permissions).ToArray(),
-            Secrets = ExtractSecrets(permissions).ToArray(),
-            RequiredClaims = ExtractRequiredClaims(permissions).ToArray(),
             Endpoints = ExtractEndpoints(permissions).ToArray(),
             RequirePkce = requirements.Contains(Requirements.Features.ProofKeyForCodeExchange),
-            AvailableScopes = availableScopes
+            AvailableScopes = availableScopes,
+            Secrets = await BuildSecretViewModelsAsync(app),
+            RequiredClaims = ExtractRequiredClaims(app).ToArray(),
+            Branding = ExtractClientBranding(app)
         };
     }
 
@@ -398,19 +558,10 @@ public sealed class ClientsController : Controller
         descriptor.ClientType = model.ClientType;
         descriptor.ConsentType = model.ConsentType;
 
-        var existingSecretPermissions = descriptor.Permissions
-            .Where(permission => permission.StartsWith(ClientSecretPermissionPrefix, StringComparison.Ordinal))
-            .ToArray();
-
         descriptor.RedirectUris.Clear();
         descriptor.PostLogoutRedirectUris.Clear();
         descriptor.Permissions.Clear();
         descriptor.Requirements.Clear();
-
-        foreach (var permission in existingSecretPermissions)
-        {
-            descriptor.Permissions.Add(permission);
-        }
 
         foreach (var uri in Split(model.RedirectUris))
         {
@@ -425,7 +576,7 @@ public sealed class ClientsController : Controller
         AddEndpointPermissions(descriptor, model);
         AddGrantTypePermissions(descriptor, model);
         AddScopePermissions(descriptor, Split(model.Scopes));
-        AddRequiredClaimPermissions(descriptor, ParseRequiredClaims(model.RequiredClaims));
+        SetRequiredClaimProperties(descriptor, model.RequiredClaimItems);
 
         if (model.RequirePkce && model.AllowAuthorizationCode)
         {
@@ -463,21 +614,20 @@ public sealed class ClientsController : Controller
 
     private static void AddGrantTypePermissions(OpenIddictApplicationDescriptor descriptor, ClientFormViewModel model)
     {
-        foreach (var grantType in Split(model.GrantTypes))
+        if (model.AllowAuthorizationCode)
         {
-            var normalizedGrantType = NormalizeGrantType(grantType);
+            descriptor.Permissions.Add(Permissions.GrantTypes.AuthorizationCode);
+            descriptor.Permissions.Add(Permissions.ResponseTypes.Code);
+        }
 
-            if (string.IsNullOrWhiteSpace(normalizedGrantType))
-            {
-                continue;
-            }
+        if (model.AllowRefreshToken)
+        {
+            descriptor.Permissions.Add(Permissions.GrantTypes.RefreshToken);
+        }
 
-            descriptor.Permissions.Add(Permissions.Prefixes.GrantType + normalizedGrantType);
-
-            if (string.Equals(normalizedGrantType, GrantTypes.AuthorizationCode, StringComparison.Ordinal))
-            {
-                descriptor.Permissions.Add(Permissions.ResponseTypes.Code);
-            }
+        if (model.AllowClientCredentials)
+        {
+            descriptor.Permissions.Add(Permissions.GrantTypes.ClientCredentials);
         }
     }
 
@@ -492,21 +642,6 @@ public sealed class ClientsController : Controller
         }
     }
 
-    private static void AddRequiredClaimPermissions(OpenIddictApplicationDescriptor descriptor, IEnumerable<ClientRequiredClaimViewModel> claims)
-    {
-        foreach (var claim in claims
-            .Where(claim => !string.IsNullOrWhiteSpace(claim.Type))
-            .DistinctBy(claim => claim.Type + "\u001f" + claim.Value))
-        {
-            descriptor.Permissions.Add(RequiredClaimPermissionPrefix + EncodePart(claim.Type) + "=" + EncodePart(claim.Value));
-        }
-    }
-
-    private static void AddSecretMetadata(OpenIddictApplicationDescriptor descriptor, string displayName)
-    {
-        descriptor.Permissions.Add(ClientSecretPermissionPrefix + Guid.NewGuid().ToString("N") + "|" + EncodePart(displayName) + "|" + DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture));
-    }
-
     private static void RemovePermissionsByPrefix(OpenIddictApplicationDescriptor descriptor, string prefix)
     {
         foreach (var permission in descriptor.Permissions
@@ -514,44 +649,6 @@ public sealed class ClientsController : Controller
             .ToArray())
         {
             descriptor.Permissions.Remove(permission);
-        }
-    }
-
-    private static IEnumerable<ClientSecretViewModel> ExtractSecrets(IEnumerable<string> permissions)
-    {
-        return permissions
-            .Where(permission => permission.StartsWith(ClientSecretPermissionPrefix, StringComparison.Ordinal))
-            .Select(permission => permission[ClientSecretPermissionPrefix.Length..].Split('|'))
-            .Where(parts => parts.Length >= 3)
-            .Select(parts => new ClientSecretViewModel
-            {
-                Id = parts[0],
-                DisplayName = DecodePart(parts[1]),
-                CreatedAtUtc = DateTime.TryParse(parts[2], CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var createdAt)
-                    ? createdAt
-                    : DateTime.MinValue
-            })
-            .OrderByDescending(secret => secret.CreatedAtUtc);
-    }
-
-    private static IEnumerable<ClientRequiredClaimViewModel> ExtractRequiredClaims(IEnumerable<string> permissions)
-    {
-        foreach (var permission in permissions.Where(permission => permission.StartsWith(RequiredClaimPermissionPrefix, StringComparison.Ordinal)))
-        {
-            var value = permission[RequiredClaimPermissionPrefix.Length..];
-            var separator = value.IndexOf('=');
-
-            if (separator < 0)
-            {
-                yield return new ClientRequiredClaimViewModel { Type = DecodePart(value) };
-                continue;
-            }
-
-            yield return new ClientRequiredClaimViewModel
-            {
-                Type = DecodePart(value[..separator]),
-                Value = DecodePart(value[(separator + 1)..])
-            };
         }
     }
 
@@ -599,45 +696,6 @@ public sealed class ClientsController : Controller
         return ClientKind.WebApplication;
     }
 
-    private static IEnumerable<ClientRequiredClaimViewModel> ParseRequiredClaims(string? value)
-    {
-        foreach (var item in (value ?? string.Empty).Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
-        {
-            var separator = item.IndexOf('=');
-            if (separator < 0)
-            {
-                yield return new ClientRequiredClaimViewModel { Type = item.Trim(), Value = string.Empty };
-                continue;
-            }
-
-            yield return new ClientRequiredClaimViewModel
-            {
-                Type = item[..separator].Trim(),
-                Value = item[(separator + 1)..].Trim()
-            };
-        }
-    }
-
-    private static string NormalizeGrantType(string value)
-    {
-        var normalized = value.Trim().Replace("_", "", StringComparison.Ordinal).ToLowerInvariant();
-
-        return normalized switch
-        {
-            "authorizationcode" => GrantTypes.AuthorizationCode,
-            "authorization_code" => GrantTypes.AuthorizationCode,
-            "clientcredentials" => GrantTypes.ClientCredentials,
-            "client_credentials" => GrantTypes.ClientCredentials,
-            "refreshtoken" => GrantTypes.RefreshToken,
-            "refresh_token" => GrantTypes.RefreshToken,
-            _ => normalized
-        };
-    }
-
-    private static string EncodePart(string value) => Uri.EscapeDataString(value ?? string.Empty);
-
-    private static string DecodePart(string value) => Uri.UnescapeDataString(value ?? string.Empty);
-
     private static int GetScopeSortOrder(string scope)
     {
         return scope switch
@@ -658,6 +716,353 @@ public sealed class ClientsController : Controller
                 StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
     }
 
+
+    private sealed record GeneratedClientSecret(string Description, string Secret);
+
+    private GeneratedClientSecret? BuildPrimarySecretForOpenIddict(IEnumerable<ClientSecretInputViewModel> secretItems)
+    {
+        var item = secretItems
+            .Where(secret => !secret.Remove)
+            .Where(secret => !secret.IsExisting || !string.IsNullOrWhiteSpace(secret.PlainTextSecret))
+            .LastOrDefault();
+
+        if (item is null)
+        {
+            return null;
+        }
+
+        var plainSecret = string.IsNullOrWhiteSpace(item.PlainTextSecret)
+            ? _secretGenerator.GenerateSecret()
+            : item.PlainTextSecret.Trim();
+
+        var description = string.IsNullOrWhiteSpace(item.Description)
+            ? _localizer["DefaultSecretDescription"].Value
+            : item.Description.Trim();
+
+        return new GeneratedClientSecret(description, plainSecret);
+    }
+
+    private static DateTimeOffset? GetExpirationForPrimarySecret(IEnumerable<ClientSecretInputViewModel> secretItems)
+    {
+        var item = secretItems
+            .Where(secret => !secret.Remove)
+            .Where(secret => !secret.IsExisting || !string.IsNullOrWhiteSpace(secret.PlainTextSecret))
+            .LastOrDefault();
+
+        return item?.ExpiresAtUtc ?? (item is null ? null : CalculateExpiration(item.Expiration));
+    }
+
+    private async Task<List<GeneratedClientSecret>> SaveClientSecretsAsync(
+        object app,
+        IEnumerable<ClientSecretInputViewModel> secretItems)
+    {
+        var generatedSecrets = new List<GeneratedClientSecret>();
+
+        var submittedSecretIds = secretItems
+            .Where(secret => !secret.Remove && secret.Id.HasValue)
+            .Select(secret => secret.Id!.Value)
+            .ToHashSet();
+
+        foreach (var secretItem in secretItems.Where(secret => secret.Remove && secret.Id.HasValue))
+        {
+            await RevokeClientSecretAsync(app, secretItem.Id.Value, _localizer["RemovedByAdminReason"].Value);
+        }
+
+        await RevokeSecretsMissingFromFormAsync(app, submittedSecretIds);
+
+        foreach (var secretItem in secretItems.Where(secret => !secret.Remove))
+        {
+            if (secretItem.IsExisting && string.IsNullOrWhiteSpace(secretItem.PlainTextSecret))
+            {
+                continue;
+            }
+
+            var plainSecret = string.IsNullOrWhiteSpace(secretItem.PlainTextSecret)
+                ? _secretGenerator.GenerateSecret()
+                : secretItem.PlainTextSecret.Trim();
+
+            var description = string.IsNullOrWhiteSpace(secretItem.Description)
+                ? _localizer["DefaultSecretDescription"].Value
+                : secretItem.Description.Trim();
+
+            var expiresAtUtc = secretItem.ExpiresAtUtc ?? CalculateExpiration(secretItem.Expiration);
+            await CreateClientSecretAsync(app, description, plainSecret, expiresAtUtc);
+            generatedSecrets.Add(new GeneratedClientSecret(description, plainSecret));
+        }
+
+
+        return generatedSecrets;
+    }
+
+    private async Task CreateClientSecretAsync(object app, string description, string plainSecret, DateTimeOffset? expiresAtUtc)
+    {
+        var applicationId = await GetApplicationGuidAsync(app);
+        await _clientApplications.CreateSecretAsync(applicationId, description, plainSecret, expiresAtUtc);
+    }
+
+
+    private async Task RevokeSecretsMissingFromFormAsync(object app, HashSet<Guid> submittedSecretIds)
+    {
+        var applicationId = await GetApplicationGuidAsync(app);
+        await _clientApplications.RevokeSecretsMissingFromFormAsync(
+            applicationId,
+            submittedSecretIds,
+            _localizer["RemovedFromClientFormReason"].Value);
+    }
+
+    private async Task RevokeClientSecretAsync(object app, Guid secretId, string reason)
+    {
+        var applicationId = await GetApplicationGuidAsync(app);
+        await _clientApplications.RevokeSecretAsync(applicationId, secretId, reason);
+    }
+
+    private async Task RevokeAllClientSecretsAsync(object app, string reason)
+    {
+        var applicationId = await GetApplicationGuidAsync(app);
+        await _clientApplications.RevokeAllSecretsAsync(applicationId, reason);
+    }
+
+    private async Task<List<ClientSecretInputViewModel>> BuildSecretInputItemsAsync(object app)
+    {
+        var applicationId = await GetApplicationGuidAsync(app);
+        var secrets = await _clientApplications.ListActiveSecretsAsync(applicationId);
+
+        return secrets.Select(secret => new ClientSecretInputViewModel
+        {
+            Id = secret.Id,
+            Description = secret.Description,
+            IsExisting = true,
+            CreatedAt = secret.CreatedAtUtc.ToString("O"),
+            ExpiresAtUtc = secret.ExpiresAtUtc,
+            RevokedAtUtc = secret.RevokedAtUtc,
+            Expiration = ClientSecretExpiration.Never
+        }).ToList();
+    }
+
+    private async Task<ClientSecretViewModel[]> BuildSecretViewModelsAsync(object app)
+    {
+        var applicationId = await GetApplicationGuidAsync(app);
+        var secrets = await _clientApplications.ListAllSecretsAsync(applicationId);
+
+        return secrets.Select(secret => new ClientSecretViewModel
+        {
+            Id = secret.Id,
+            Description = secret.Description,
+            SecretPrefix = secret.SecretPrefix,
+            CreatedAtUtc = secret.CreatedAtUtc,
+            ExpiresAtUtc = secret.ExpiresAtUtc,
+            RevokedAtUtc = secret.RevokedAtUtc
+        }).ToArray();
+    }
+
+    private async Task<Guid> GetApplicationGuidAsync(object app)
+    {
+        var id = await _applicationManager.GetIdAsync(app);
+        if (Guid.TryParse(id, out var applicationId))
+        {
+            return applicationId;
+        }
+
+        throw new InvalidOperationException(_localizer["ApplicationIdInvalid"].Value);
+    }
+
+    private static DateTimeOffset? CalculateExpiration(ClientSecretExpiration expiration)
+    {
+        return expiration == ClientSecretExpiration.Never
+            ? null
+            : DateTimeOffset.UtcNow.AddMonths((int)expiration);
+    }
+
+    private async Task<ClientBrandingViewModel> BuildClientBrandingViewModelAsync(object app)
+    {
+        var clientId = await _applicationManager.GetClientIdAsync(app) ?? string.Empty;
+        var branding = ExtractClientBranding(app) ?? new ClientBrandingViewModel();
+
+        branding.ClientId = clientId;
+        branding.DisplayName = await _applicationManager.GetDisplayNameAsync(app) ?? string.Empty;
+
+        ApplyClientBrandingDefaults(branding);
+        branding.ProviderOptions = await BuildBrandingProviderOptionsAsync(branding.EnabledProviderSchemes);
+
+        return branding;
+    }
+
+    private async Task<List<ClientBrandingProviderOptionViewModel>> BuildBrandingProviderOptionsAsync(IEnumerable<string> enabledSchemes)
+    {
+        var enabled = enabledSchemes
+            .Where(x => !string.IsNullOrWhiteSpace(x))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        var providers = await _identityProviders.ListAsync();
+        return providers
+            .Where(provider => provider.IsEnabled)
+            .OrderBy(provider => provider.SortOrder)
+            .ThenBy(provider => provider.DisplayName)
+            .Select(provider => new ClientBrandingProviderOptionViewModel
+            {
+                Scheme = provider.Scheme,
+                DisplayName = provider.DisplayName,
+                ButtonText = string.IsNullOrWhiteSpace(provider.DisplayName) ? provider.Scheme : provider.DisplayName,
+                IsConfigured = provider.HasClientId && provider.HasClientSecret,
+                SortOrder = provider.SortOrder
+            })
+            .ToList();
+    }
+
+    private static void ApplyClientBrandingDefaults(ClientBrandingViewModel branding)
+    {
+        branding.PrimaryColor = NormalizeColor(branding.PrimaryColor, "#2563eb");
+        branding.SecondaryColor = NormalizeColor(branding.SecondaryColor, "#0f172a");
+        branding.BackgroundColor = NormalizeColor(branding.BackgroundColor, "#eff6ff");
+        branding.SurfaceColor = NormalizeColor(branding.SurfaceColor, "#ffffff");
+        branding.TextColor = NormalizeColor(branding.TextColor, "#111827");
+        branding.MutedTextColor = NormalizeColor(branding.MutedTextColor, "#64748b");
+        branding.BorderColor = NormalizeColor(branding.BorderColor, "#cbd5e1");
+        branding.SuccessColor = NormalizeColor(branding.SuccessColor, "#16a34a");
+        branding.WarningColor = NormalizeColor(branding.WarningColor, "#f59e0b");
+        branding.DangerColor = NormalizeColor(branding.DangerColor, "#dc2626");
+        branding.CardRadius = Math.Clamp(branding.CardRadius == 0 ? 28 : branding.CardRadius, 8, 48);
+        branding.ButtonRadius = Math.Clamp(branding.ButtonRadius == 0 ? 14 : branding.ButtonRadius, 6, 32);
+        branding.EnableLocalLogin = branding.EnableLocalLogin;
+        branding.EnabledProviderSchemes = branding.EnabledProviderSchemes
+            .Where(x => !string.IsNullOrWhiteSpace(x))
+            .Select(x => x.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        if (string.IsNullOrWhiteSpace(branding.Theme))
+        {
+            branding.Theme = "Light";
+        }
+    }
+
+    private static void SetClientBrandingProperties(OpenIddictApplicationDescriptor descriptor, ClientBrandingViewModel model)
+    {
+        var branding = new ClientBrandingViewModel
+        {
+            IsEnabled = model.IsEnabled,
+            TenantName = NormalizeNullable(model.TenantName),
+            LogoUrl = NormalizeNullable(model.LogoUrl),
+            FaviconUrl = NormalizeNullable(model.FaviconUrl),
+            PrimaryColor = NormalizeColor(model.PrimaryColor, "#2563eb"),
+            SecondaryColor = NormalizeColor(model.SecondaryColor, "#0f172a"),
+            BackgroundColor = NormalizeColor(model.BackgroundColor, "#eff6ff"),
+            SurfaceColor = NormalizeColor(model.SurfaceColor, "#ffffff"),
+            TextColor = NormalizeColor(model.TextColor, "#111827"),
+            MutedTextColor = NormalizeColor(model.MutedTextColor, "#64748b"),
+            BorderColor = NormalizeColor(model.BorderColor, "#cbd5e1"),
+            SuccessColor = NormalizeColor(model.SuccessColor, "#16a34a"),
+            WarningColor = NormalizeColor(model.WarningColor, "#f59e0b"),
+            DangerColor = NormalizeColor(model.DangerColor, "#dc2626"),
+            CardRadius = Math.Clamp(model.CardRadius, 8, 48),
+            ButtonRadius = Math.Clamp(model.ButtonRadius, 6, 32),
+            UseGradientButtons = model.UseGradientButtons,
+            ShowCreateAccountLink = model.ShowCreateAccountLink,
+            ShowForgotPasswordLink = model.ShowForgotPasswordLink,
+            EnableLocalLogin = model.EnableLocalLogin,
+            EnabledProviderSchemes = model.EnabledProviderSchemes
+                .Where(x => !string.IsNullOrWhiteSpace(x))
+                .Select(x => x.Trim())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList(),
+            Theme = string.Equals(model.Theme, "Dark", StringComparison.OrdinalIgnoreCase) ? "Dark" : "Light",
+            CustomCss = NormalizeNullable(model.CustomCss)
+        };
+
+        descriptor.Properties["auth2demo:branding"] = JsonSerializer.SerializeToElement(branding, new JsonSerializerOptions(JsonSerializerDefaults.Web));
+    }
+
+    private static ClientBrandingViewModel? ExtractClientBranding(object appOrDescriptor)
+    {
+        var json = TryGetPropertyJson(appOrDescriptor, "auth2demo:branding");
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            return null;
+        }
+
+        try
+        {
+            return JsonSerializer.Deserialize<ClientBrandingViewModel>(json, new JsonSerializerOptions(JsonSerializerDefaults.Web));
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static string? NormalizeNullable(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private static string NormalizeColor(string? value, string fallback) =>
+        !string.IsNullOrWhiteSpace(value) && value.Trim().StartsWith('#') ? value.Trim() : fallback;
+
+    private static void SetRequiredClaimProperties(OpenIddictApplicationDescriptor descriptor, IEnumerable<ClientRequiredClaimInputViewModel> claims)
+    {
+        var items = claims
+            .Where(claim => !claim.Remove)
+            .Where(claim => !string.IsNullOrWhiteSpace(claim.Type) && !string.IsNullOrWhiteSpace(claim.Value))
+            .Select(claim => new ClientRequiredClaimInputViewModel
+            {
+                Type = claim.Type.Trim(),
+                Value = claim.Value.Trim()
+            })
+            .ToArray();
+
+        descriptor.Properties["auth2demo:required_claims"] = JsonSerializer.SerializeToElement(items);
+    }
+
+    private static IEnumerable<ClientRequiredClaimInputViewModel> ExtractRequiredClaims(object appOrDescriptor)
+    {
+        var json = TryGetPropertyJson(appOrDescriptor, "auth2demo:required_claims");
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            return [];
+        }
+
+        try
+        {
+            return JsonSerializer.Deserialize<ClientRequiredClaimInputViewModel[]>(json) ?? [];
+        }
+        catch
+        {
+            return [];
+        }
+    }
+
+    private static string? TryGetPropertyJson(object appOrDescriptor, string name)
+    {
+        if (appOrDescriptor is OpenIddictApplicationDescriptor descriptor && descriptor.Properties.TryGetValue(name, out var descriptorValue))
+        {
+            return descriptorValue.GetRawText();
+        }
+
+        var property = appOrDescriptor.GetType().GetProperty("Properties")?.GetValue(appOrDescriptor);
+        return property switch
+        {
+            string value => TryExtractPropertyJson(value, name),
+            null => null,
+            _ => TryExtractPropertyJson(property.ToString(), name)
+        };
+    }
+
+    private static string? TryExtractPropertyJson(string? propertiesJson, string name)
+    {
+        if (string.IsNullOrWhiteSpace(propertiesJson))
+        {
+            return null;
+        }
+
+        try
+        {
+            using var document = JsonDocument.Parse(propertiesJson);
+            return document.RootElement.TryGetProperty(name, out var value) ? value.GetRawText() : null;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
     private static void NormalizeModel(ClientFormViewModel model)
     {
         model.ClientId = model.ClientId.Trim();
@@ -665,12 +1070,32 @@ public sealed class ClientsController : Controller
             ? model.ClientId
             : model.OriginalClientId.Trim();
         model.DisplayName = model.DisplayName.Trim();
+        model.RedirectUris = string.Join(Environment.NewLine, model.RedirectUriItems.Where(value => !string.IsNullOrWhiteSpace(value)).Select(value => value.Trim()));
+        model.PostLogoutRedirectUris = string.Join(Environment.NewLine, model.PostLogoutRedirectUriItems.Where(value => !string.IsNullOrWhiteSpace(value)).Select(value => value.Trim()));
+        model.Scopes = string.Join(Environment.NewLine, model.ScopeItems.Where(value => !string.IsNullOrWhiteSpace(value)).Select(value => value.Trim()));
+        model.AllowAuthorizationCode = model.GrantTypeItems.Contains(GrantTypes.AuthorizationCode, StringComparer.Ordinal);
+        model.AllowRefreshToken = model.GrantTypeItems.Contains(GrantTypes.RefreshToken, StringComparer.Ordinal);
+        model.AllowClientCredentials = model.GrantTypeItems.Contains(GrantTypes.ClientCredentials, StringComparer.Ordinal);
+
+        if (model.RedirectUriItems.Count == 0 && !string.IsNullOrWhiteSpace(model.RedirectUris))
+        {
+            model.RedirectUriItems = Split(model.RedirectUris).ToList();
+        }
+
+        if (model.PostLogoutRedirectUriItems.Count == 0 && !string.IsNullOrWhiteSpace(model.PostLogoutRedirectUris))
+        {
+            model.PostLogoutRedirectUriItems = Split(model.PostLogoutRedirectUris).ToList();
+        }
+
+        if (model.ScopeItems.Count == 0 && !string.IsNullOrWhiteSpace(model.Scopes))
+        {
+            model.ScopeItems = Split(model.Scopes).ToList();
+        }
 
         if (model.Kind is ClientKind.Spa or ClientKind.NativeApplication)
         {
             model.ClientType = ClientTypes.Public;
             model.GenerateSecret = false;
-            model.RegenerateSecret = false;
         }
         else if (string.IsNullOrWhiteSpace(model.ClientType))
         {
@@ -688,33 +1113,6 @@ public sealed class ClientsController : Controller
             model.RedirectUris = string.Empty;
             model.PostLogoutRedirectUris = string.Empty;
         }
-
-        if (string.IsNullOrWhiteSpace(model.GrantTypes))
-        {
-            var grantTypes = new List<string>();
-
-            if (model.AllowAuthorizationCode)
-            {
-                grantTypes.Add(GrantTypes.AuthorizationCode);
-            }
-
-            if (model.AllowRefreshToken)
-            {
-                grantTypes.Add(GrantTypes.RefreshToken);
-            }
-
-            if (model.AllowClientCredentials)
-            {
-                grantTypes.Add(GrantTypes.ClientCredentials);
-            }
-
-            model.GrantTypes = string.Join(Environment.NewLine, grantTypes);
-        }
-
-        var normalizedGrantTypes = Split(model.GrantTypes).Select(NormalizeGrantType).ToArray();
-        model.AllowAuthorizationCode = normalizedGrantTypes.Contains(GrantTypes.AuthorizationCode, StringComparer.Ordinal);
-        model.AllowRefreshToken = normalizedGrantTypes.Contains(GrantTypes.RefreshToken, StringComparer.Ordinal);
-        model.AllowClientCredentials = normalizedGrantTypes.Contains(GrantTypes.ClientCredentials, StringComparer.Ordinal);
 
         if (!model.AllowAuthorizationCode)
         {

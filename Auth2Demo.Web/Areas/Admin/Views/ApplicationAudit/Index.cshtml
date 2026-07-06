@@ -1,0 +1,81 @@
+@model IReadOnlyList<ApplicationAuditListItemViewModel>
+@{
+    ViewData["Title"] = T["ApplicationAudit"].Value;
+    var includeDeleted = (bool?)ViewData["IncludeDeleted"] ?? true;
+}
+
+@section AdminHeader {
+    <span class="page-kicker"><i class="bi bi-database-check"></i> @T["Administration"]</span>
+    <h1>@T["ApplicationAudit"]</h1>
+    <p>@T["ApplicationAuditDescription"]</p>
+}
+
+@section AdminActions {
+    <a class="btn ghost" asp-action="Index" asp-route-includeDeleted="@(!includeDeleted)">
+        <i class="bi @(includeDeleted ? "bi-eye" : "bi-eye-slash")"></i>
+        @(includeDeleted ? T["ShowActiveOnly"].Value : T["ShowDeletedToo"].Value)
+    </a>
+}
+
+<section class="admin-card">
+    <div class="admin-card-header">
+        <div>
+            <strong>@T["IdentityApplications"]</strong>
+            <span>@T["ApplicationAuditTableHelp"]</span>
+        </div>
+        <span class="admin-count-badge">@Model.Count</span>
+    </div>
+
+    <div class="table-wrap admin-table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>@T["ClientId"]</th>
+                    <th>@T["DisplayName"]</th>
+                    <th>@T["Status"]</th>
+                    <th>@T["CreatedAt"]</th>
+                    <th>@T["UpdatedAt"]</th>
+                    <th>@T["DeletedAt"]</th>
+                    <th>@T["AuditUser"]</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr class="@(item.IsDeleted ? "muted-row" : string.Empty)">
+                        <td>
+                            <strong>@item.ClientId</strong>
+                            <small>@item.Id</small>
+                        </td>
+                        <td>
+                            <span>@(string.IsNullOrWhiteSpace(item.DisplayName) ? "-" : item.DisplayName)</span>
+                            <small>@item.ClientType / @item.ConsentType</small>
+                        </td>
+                        <td>
+                            @if (item.IsDeleted)
+                            {
+                                <span class="badge badge-danger">@T["Deleted"]</span>
+                            }
+                            else if (item.IsEnabled)
+                            {
+                                <span class="badge badge-success">@T["Enabled"]</span>
+                            }
+                            else
+                            {
+                                <span class="badge badge-warning">@T["Disabled"]</span>
+                            }
+                        </td>
+                        <td>@item.CreatedAt?.ToString("yyyy-MM-dd HH:mm")</td>
+                        <td>@(item.UpdatedAt?.ToString("yyyy-MM-dd HH:mm") ?? "-")</td>
+                        <td>@(item.DeletedAt?.ToString("yyyy-MM-dd HH:mm") ?? "-")</td>
+                        <td>
+                            <small>@T["CreatedBy"]: @(item.CreatedByUserId?.ToString() ?? "-")</small>
+                            <small>@T["UpdatedBy"]: @(item.UpdatedByUserId?.ToString() ?? "-")</small>
+                            <small>@T["DeletedBy"]: @(item.DeletedByUserId?.ToString() ?? "-")</small>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</section>

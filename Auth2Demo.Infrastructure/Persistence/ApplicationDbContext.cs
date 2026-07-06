@@ -30,6 +30,7 @@ public sealed class ApplicationDbContext
     public DbSet<EmailTemplate> EmailTemplates => Set<EmailTemplate>();
     public DbSet<BrandingSettings> BrandingSettings => Set<BrandingSettings>();
     public DbSet<SecuritySettings> SecuritySettings => Set<SecuritySettings>();
+    public DbSet<IdentityApplicationSecret> IdentityApplicationSecrets => Set<IdentityApplicationSecret>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -59,8 +60,29 @@ public sealed class ApplicationDbContext
 
     private static void ConfigureOpenIddictTableNames(ModelBuilder builder)
     {
-        builder.Entity<OpenIddictEntityFrameworkCoreApplication<Guid>>()
-            .ToTable("IdentityApplications");
+        builder.Entity<OpenIddictEntityFrameworkCoreApplication<Guid>>(entity =>
+        {
+            entity.ToTable("IdentityApplications");
+            entity.Property<DateTimeOffset>("CreatedAt")
+                .HasColumnType("datetimeoffset")
+                .HasDefaultValueSql("SYSUTCDATETIME()");
+            entity.Property<DateTimeOffset?>("UpdatedAt")
+                .HasColumnType("datetimeoffset");
+            entity.Property<bool>("IsDeleted")
+                .HasColumnType("bit")
+                .HasDefaultValue(false);
+            entity.Property<DateTimeOffset?>("DeletedAt")
+                .HasColumnType("datetimeoffset");
+            entity.Property<Guid?>("CreatedByUserId")
+                .HasColumnType("uniqueidentifier");
+            entity.Property<Guid?>("UpdatedByUserId")
+                .HasColumnType("uniqueidentifier");
+            entity.Property<Guid?>("DeletedByUserId")
+                .HasColumnType("uniqueidentifier");
+            entity.Property<bool>("IsEnabled")
+                .HasColumnType("bit")
+                .HasDefaultValue(true);
+        });
 
         builder.Entity<OpenIddictEntityFrameworkCoreAuthorization<Guid>>()
             .ToTable("IdentityAuthorizations");
@@ -178,6 +200,25 @@ public sealed class ApplicationDbContext
         {
             entity.ToTable("IdentitySecuritySettings");
             entity.HasKey(x => x.Id);
+        });
+
+        builder.Entity<IdentityApplicationSecret>(entity =>
+        {
+            entity.ToTable("IdentityApplicationSecrets");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Description).HasMaxLength(200).IsRequired();
+            entity.Property(x => x.SecretHash).IsRequired();
+            entity.Property(x => x.SecretPrefix).HasMaxLength(16).IsRequired();
+            entity.Property(x => x.RevokedReason).HasMaxLength(300);
+            entity.HasIndex(x => x.ApplicationId);
+            entity.HasIndex(x => new { x.ApplicationId, x.RevokedAtUtc, x.ExpiresAtUtc });
+            entity.HasOne<OpenIddictEntityFrameworkCoreApplication<Guid>>()
+                .WithMany()
+                .HasForeignKey(x => x.ApplicationId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.Ignore(x => x.IsRevoked);
+            entity.Ignore(x => x.IsExpired);
+            entity.Ignore(x => x.IsActive);
         });
     }
 }

@@ -2247,4 +2247,394 @@
   <data name="AuditPasswordResetSucceeded" xml:space="preserve">
     <value>Usuário redefiniu a senha com sucesso.</value>
   </data>
+  <data name="ClientCreatePageDescription" xml:space="preserve">
+    <value>Cadastre uma aplicação OAuth/OIDC com secrets, claims, grant types, redirect URIs e scopes usando o novo modelo profissional de clients.</value>
+  </data>
+  <data name="EditClientTitle" xml:space="preserve">
+    <value>Editar client {0}</value>
+  </data>
+  <data name="ClientEditPageDescription" xml:space="preserve">
+    <value>Atualize a configuração do client, fluxos permitidos, claims obrigatórias, redirects e scopes. Secrets existentes continuam protegidas e não são exibidas novamente.</value>
+  </data>
+  <data name="AppRegistration" xml:space="preserve">
+    <value>App registration</value>
+  </data>
+  <data name="CreateNewClient" xml:space="preserve">
+    <value>Criar novo client</value>
+  </data>
+  <data name="ClientFormIntro" xml:space="preserve">
+    <value>Configure identificação, fluxos OAuth/OIDC, secrets, claims obrigatórias, redirects e scopes em um único fluxo.</value>
+  </data>
+  <data name="AzureLike" xml:space="preserve">
+    <value>Azure-like</value>
+  </data>
+  <data name="ClientIdentificationHelp" xml:space="preserve">
+    <value>Defina o identificador público do client e como ele será apresentado aos usuários.</value>
+  </data>
+  <data name="ClientIdPlaceholder" xml:space="preserve">
+    <value>ex: rareles-web</value>
+  </data>
+  <data name="DisplayNamePlaceholder" xml:space="preserve">
+    <value>ex: Rareles Web</value>
+  </data>
+  <data name="ClientIdHelp" xml:space="preserve">
+    <value>Identificador usado pelo aplicativo cliente nas chamadas OAuth/OIDC.</value>
+  </data>
+  <data name="DisplayNameHelp" xml:space="preserve">
+    <value>Nome exibido no consentimento e na administração.</value>
+  </data>
+  <data name="ApplicationType" xml:space="preserve">
+    <value>Tipo de aplicação</value>
+  </data>
+  <data name="ApplicationTypeHelp" xml:space="preserve">
+    <value>Web usa secret; SPA/Mobile normalmente são públicos; M2M usa client credentials.</value>
+  </data>
+  <data name="ClientAuthentication" xml:space="preserve">
+    <value>Autenticação do client</value>
+  </data>
+  <data name="ConfidentialWithClientSecret" xml:space="preserve">
+    <value>Confidential com client secret</value>
+  </data>
+  <data name="PublicWithoutClientSecret" xml:space="preserve">
+    <value>Public sem client secret</value>
+  </data>
+  <data name="ConsentExplicitOption" xml:space="preserve">
+    <value>Explicit - mostra tela de permissão</value>
+  </data>
+  <data name="ConsentImplicitOption" xml:space="preserve">
+    <value>Implicit - não solicita permissão</value>
+  </data>
+  <data name="ConsentExternalOption" xml:space="preserve">
+    <value>External - autorização prévia</value>
+  </data>
+  <data name="ConsentSystematicOption" xml:space="preserve">
+    <value>Systematic - sempre solicita permissão</value>
+  </data>
+  <data name="CertificatesAndSecrets" xml:space="preserve">
+    <value>Certificates &amp; secrets</value>
+  </data>
+  <data name="ClientSecrets" xml:space="preserve">
+    <value>Client secrets</value>
+  </data>
+  <data name="ClientSecretsFormHelp" xml:space="preserve">
+    <value>Crie uma ou mais secrets armazenadas na tabela IdentityApplicationSecrets. O valor completo só será exibido uma vez após salvar.</value>
+  </data>
+  <data name="Expiration" xml:space="preserve">
+    <value>Expiração</value>
+  </data>
+  <data name="Value" xml:space="preserve">
+    <value>Valor</value>
+  </data>
+  <data name="SecretDescriptionPlaceholder" xml:space="preserve">
+    <value>ex: PRD, Homolog, Local</value>
+  </data>
+  <data name="NeverExpires" xml:space="preserve">
+    <value>Nunca expira</value>
+  </data>
+  <data name="SixMonths" xml:space="preserve">
+    <value>6 meses</value>
+  </data>
+  <data name="TwelveMonths" xml:space="preserve">
+    <value>12 meses</value>
+  </data>
+  <data name="TwentyFourMonths" xml:space="preserve">
+    <value>24 meses</value>
+  </data>
+  <data name="SecretValueAutoPlaceholder" xml:space="preserve">
+    <value>Deixe vazio para gerar automaticamente</value>
+  </data>
+  <data name="RemoveSecret" xml:space="preserve">
+    <value>Remover secret</value>
+  </data>
+  <data name="AddSecret" xml:space="preserve">
+    <value>Adicionar secret</value>
+  </data>
+  <data name="ExistingSecretsHiddenHelp" xml:space="preserve">
+    <value>Secrets existentes ficam ocultas. Para trocar uma secret, adicione uma nova e revogue a antiga na tela de detalhes.</value>
+  </data>
+  <data name="RequiredClaims" xml:space="preserve">
+    <value>Required claims</value>
+  </data>
+  <data name="RequiredUserClaims" xml:space="preserve">
+    <value>Claims obrigatórias do usuário</value>
+  </data>
+  <data name="RequiredClaimsHelp" xml:space="preserve">
+    <value>Use quando somente usuários com uma claim específica puderem autorizar este client.</value>
+  </data>
+  <data name="ClaimTypePlaceholder" xml:space="preserve">
+    <value>ex: role</value>
+  </data>
+  <data name="ClaimValuePlaceholder" xml:space="preserve">
+    <value>ex: Admin</value>
+  </data>
+  <data name="RemoveClaim" xml:space="preserve">
+    <value>Remover claim</value>
+  </data>
+  <data name="AddClaim" xml:space="preserve">
+    <value>Adicionar claim</value>
+  </data>
+  <data name="AllowedFlows" xml:space="preserve">
+    <value>Fluxos permitidos</value>
+  </data>
+  <data name="AllowedFlowsHelp" xml:space="preserve">
+    <value>Selecione quais fluxos OAuth/OIDC este client poderá usar.</value>
+  </data>
+  <data name="RemoveGrantType" xml:space="preserve">
+    <value>Remover grant type</value>
+  </data>
+  <data name="AddGrantType" xml:space="preserve">
+    <value>Adicionar grant type</value>
+  </data>
+  <data name="RequirePkceForAuthorizationCode" xml:space="preserve">
+    <value>Exigir PKCE para authorization_code</value>
+  </data>
+  <data name="AllowedEndpoints" xml:space="preserve">
+    <value>Endpoints permitidos</value>
+  </data>
+  <data name="EndSessionEndpoint" xml:space="preserve">
+    <value>Logout / End session endpoint</value>
+  </data>
+  <data name="RedirectUrisHelp" xml:space="preserve">
+    <value>Configure as URLs de callback permitidas para login e logout.</value>
+  </data>
+  <data name="PostLogoutUris" xml:space="preserve">
+    <value>Post Logout URIs</value>
+  </data>
+  <data name="RemoveRedirectUri" xml:space="preserve">
+    <value>Remover Redirect URI</value>
+  </data>
+  <data name="AddRedirectUri" xml:space="preserve">
+    <value>Adicionar Redirect URI</value>
+  </data>
+  <data name="RemovePostLogoutUri" xml:space="preserve">
+    <value>Remover Post Logout URI</value>
+  </data>
+  <data name="AddPostLogoutUri" xml:space="preserve">
+    <value>Adicionar Post Logout URI</value>
+  </data>
+  <data name="ApiPermissions" xml:space="preserve">
+    <value>API permissions</value>
+  </data>
+  <data name="RemoveScope" xml:space="preserve">
+    <value>Remover scope</value>
+  </data>
+  <data name="AddScope" xml:space="preserve">
+    <value>Adicionar scope</value>
+  </data>
+  <data name="RemoveItem" xml:space="preserve">
+    <value>Remover item</value>
+  </data>
+  <data name="CreateClient" xml:space="preserve">
+    <value>Criar client</value>
+  </data>
+  <data name="ClientDetailsIntro" xml:space="preserve">
+    <value>Gerencie o client OAuth/OIDC, secrets, claims obrigatórias, redirect URIs, grant types e scopes permitidos.</value>
+  </data>
+  <data name="ApplicationClientId" xml:space="preserve">
+    <value>Application / Client ID</value>
+  </data>
+  <data name="EditConfiguration" xml:space="preserve">
+    <value>Editar configuração</value>
+  </data>
+  <data name="CopyNowSecretNotShownAgain" xml:space="preserve">
+    <value>Copie agora. Por segurança, ela não será exibida novamente.</value>
+  </data>
+  <data name="CopySecret" xml:space="preserve">
+    <value>Copiar secret</value>
+  </data>
+  <data name="Secrets" xml:space="preserve">
+    <value>Secrets</value>
+  </data>
+  <data name="ActivePlural" xml:space="preserve">
+    <value>ativas</value>
+  </data>
+  <data name="AllowedPlural" xml:space="preserve">
+    <value>permitidos</value>
+  </data>
+  <data name="LoginCallbacks" xml:space="preserve">
+    <value>login callbacks</value>
+  </data>
+  <data name="RequiredPlural" xml:space="preserve">
+    <value>obrigatórias</value>
+  </data>
+  <data name="ClientSecretsDetailsHelp" xml:space="preserve">
+    <value>Crie várias secrets por client, com expiração e revogação individual, no mesmo estilo do Azure App registrations. O valor completo só aparece no momento da criação.</value>
+  </data>
+  <data name="Expires" xml:space="preserve">
+    <value>Expira</value>
+  </data>
+  <data name="SecretDescriptionPlaceholderLong" xml:space="preserve">
+    <value>Ex.: PRD, Homolog, Local development</value>
+  </data>
+  <data name="NewClientSecret" xml:space="preserve">
+    <value>New client secret</value>
+  </data>
+  <data name="NoSecretsRegistered" xml:space="preserve">
+    <value>Nenhuma secret cadastrada.</value>
+  </data>
+  <data name="CreateSecretForConfidentialHelp" xml:space="preserve">
+    <value>Crie uma secret para clients confidenciais ou machine-to-machine.</value>
+  </data>
+  <data name="SecretId" xml:space="preserve">
+    <value>Secret ID</value>
+  </data>
+  <data name="CreatedAtUtc" xml:space="preserve">
+    <value>Criada em UTC</value>
+  </data>
+  <data name="CopySecretId" xml:space="preserve">
+    <value>Copiar Secret ID</value>
+  </data>
+  <data name="ConfirmRevokeSecret" xml:space="preserve">
+    <value>Revogar esta secret?</value>
+  </data>
+  <data name="Revoke" xml:space="preserve">
+    <value>Revogar</value>
+  </data>
+  <data name="RequiredClaimsTitle" xml:space="preserve">
+    <value>Claims obrigatórias</value>
+  </data>
+  <data name="RequiredClaimsDetailsHelp" xml:space="preserve">
+    <value>O usuário precisa possuir estas claims para usar este client no fluxo de autorização.</value>
+  </data>
+  <data name="NoRequiredClaimConfigured" xml:space="preserve">
+    <value>Nenhuma claim obrigatória configurada.</value>
+  </data>
+  <data name="ScopesAllowedForThisClient" xml:space="preserve">
+    <value>Scopes permitidos para este client</value>
+  </data>
+  <data name="SelectOnlyScopesThisClientCanRequest" xml:space="preserve">
+    <value>Marque somente os scopes que este aplicativo pode solicitar.</value>
+  </data>
+  <data name="RegeneratePrimarySecret" xml:space="preserve">
+    <value>Regenerar secret principal</value>
+  </data>
+  <data name="RegeneratePrimarySecretHelp" xml:space="preserve">
+    <value>Revoga todas as secrets ativas e cria uma nova. Atualize imediatamente os sistemas clientes.</value>
+  </data>
+  <data name="ConfirmRegenerateClientSecret" xml:space="preserve">
+    <value>Regenerar a secret deste client?</value>
+  </data>
+  <data name="DeleteClientHelp" xml:space="preserve">
+    <value>Remove esta aplicação e impede novos logins usando este client.</value>
+  </data>
+  <data name="ConfirmDeleteClient" xml:space="preserve">
+    <value>Tem certeza que deseja excluir este client?</value>
+  </data>
+  <data name="Copied" xml:space="preserve">
+    <value>Copiado</value>
+  </data>
+  <data name="CopyValuePrompt" xml:space="preserve">
+    <value>Copie o valor:</value>
+  </data>
+  <data name="ClientCreatedButCouldNotBeLoaded" xml:space="preserve">
+    <value>O client foi criado, mas não pôde ser carregado.</value>
+  </data>
+  <data name="NewSecretDefaultDescription" xml:space="preserve">
+    <value>new secret</value>
+  </data>
+  <data name="ClientSecretAddedSuccessfully" xml:space="preserve">
+    <value>Client secret adicionada com sucesso.</value>
+  </data>
+  <data name="RevokedByAdmin" xml:space="preserve">
+    <value>Revoked by admin.</value>
+  </data>
+  <data name="ClientSecretRevokedSuccessfully" xml:space="preserve">
+    <value>Client secret revogada com sucesso.</value>
+  </data>
+  <data name="SecretRegeneratedReason" xml:space="preserve">
+    <value>Secret regenerated.</value>
+  </data>
+  <data name="RegeneratedSecretDefaultDescription" xml:space="preserve">
+    <value>regenerated</value>
+  </data>
+  <data name="ClientChangedToPublicReason" xml:space="preserve">
+    <value>Client changed to public.</value>
+  </data>
+  <data name="SecretReplacedReason" xml:space="preserve">
+    <value>Secret replaced.</value>
+  </data>
+  <data name="RemovedByAdminReason" xml:space="preserve">
+    <value>Removed by admin.</value>
+  </data>
+  <data name="DefaultSecretDescription" xml:space="preserve">
+    <value>default</value>
+  </data>
+  <data name="RemovedFromClientFormReason" xml:space="preserve">
+    <value>Removed from client form.</value>
+  </data>
+  <data name="ApplicationIdInvalid" xml:space="preserve">
+    <value>Application id is invalid.</value>
+  </data>
+  <data name="ClientSecretRotatedReason" xml:space="preserve">
+    <value>Secret rotacionada pelo administrador.</value>
+  </data>
+  <data name="OnlyConfidentialClientsCanHaveSecrets" xml:space="preserve">
+    <value>Somente clients confidenciais podem possuir secrets.</value>
+  </data>
+  <data name="ApplicationAudit" xml:space="preserve">
+    <value>Auditoria de aplicações</value>
+  </data>
+  <data name="ApplicationAuditDescription" xml:space="preserve">
+    <value>Revise o ciclo de vida dos clients, soft delete e metadados de auditoria.</value>
+  </data>
+  <data name="ApplicationAuditTableHelp" xml:space="preserve">
+    <value>Metadados administrativos gravados em IdentityApplications.</value>
+  </data>
+  <data name="ApplicationSecretsAudit" xml:space="preserve">
+    <value>Auditoria de secrets</value>
+  </data>
+  <data name="ApplicationSecretsAuditDescription" xml:space="preserve">
+    <value>Revise secrets geradas, ativas, expiradas e revogadas dos clients.</value>
+  </data>
+  <data name="ApplicationSecretsAuditTableHelp" xml:space="preserve">
+    <value>Histórico gravado em IdentityApplicationSecrets.</value>
+  </data>
+  <data name="IdentityApplications" xml:space="preserve">
+    <value>IdentityApplications</value>
+  </data>
+  <data name="IdentityApplicationSecrets" xml:space="preserve">
+    <value>IdentityApplicationSecrets</value>
+  </data>
+  <data name="ShowActiveOnly" xml:space="preserve">
+    <value>Mostrar somente ativos</value>
+  </data>
+  <data name="ShowDeletedToo" xml:space="preserve">
+    <value>Mostrar excluídos também</value>
+  </data>
+  <data name="ShowAll" xml:space="preserve">
+    <value>Mostrar todos</value>
+  </data>
+  <data name="AuditUser" xml:space="preserve">
+    <value>Usuário de auditoria</value>
+  </data>
+  <data name="CreatedBy" xml:space="preserve">
+    <value>Criado por</value>
+  </data>
+  <data name="UpdatedBy" xml:space="preserve">
+    <value>Atualizado por</value>
+  </data>
+  <data name="DeletedBy" xml:space="preserve">
+    <value>Excluído por</value>
+  </data>
+  <data name="Deleted" xml:space="preserve">
+    <value>Excluído</value>
+  </data>
+  <data name="Revoked" xml:space="preserve">
+    <value>Revogada</value>
+  </data>
+  <data name="Expired" xml:space="preserve">
+    <value>Expirada</value>
+  </data>
+  <data name="SecretPrefix" xml:space="preserve">
+    <value>Prefixo da secret</value>
+  </data>
+  <data name="RevokedReason" xml:space="preserve">
+    <value>Motivo da revogação</value>
+  </data>
+  <data name="PasswordLoginDisabledForThisApplication" xml:space="preserve">
+    <value>O login com senha está desabilitado para esta aplicação.</value>
+  </data>
+  <data name="ExternalProviderDisabledForThisApplication" xml:space="preserve">
+    <value>Este provedor está desabilitado para esta aplicação.</value>
+  </data>
 </root>

@@ -3,13 +3,13 @@
     ViewData["Title"] = T["Roles"].Value;
 }
 
-<div class="page-heading">
-    <div>
-        <span class="page-kicker">@T["Permissions"]</span>
-        <h1>@T["Roles"]</h1>
-        <p>@T["TextCrieRolesPersonalizadasEAtribuaPermissoesAosUsuarios"]</p>
-    </div>
-</div>
+@section AdminHeader {
+    <span class="admin-page-kicker">@T["Permissions"]</span>
+    <h1>@T["Roles"]</h1>
+    <p>@T["TextCrieRolesPersonalizadasEAtribuaPermissoesAosUsuarios"]</p>
+}
+
+
 
 @if (TempData["Success"] is string success)
 {

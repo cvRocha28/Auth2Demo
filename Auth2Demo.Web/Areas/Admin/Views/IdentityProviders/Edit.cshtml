@@ -4,14 +4,15 @@
     ViewData["Title"] = Model.Id is null ? T["NewProvider"].Value : T["EditProvider"].Value;
 }
 
-<div class="page-heading">
-    <div>
-        <span class="page-kicker">@T["IdentityProvider"]</span>
-        <h1>@ViewData["Title"]</h1>
-        <p>@T["TextCadastreOsDadosQueSeraoUsadosParaExibir"]</p>
-    </div>
+@section AdminHeader {
+    <span class="admin-page-kicker">@T["IdentityProvider"]</span>
+    <h1>@ViewData["Title"]</h1>
+    <p>@T["TextCadastreOsDadosQueSeraoUsadosParaExibir"]</p>
+}
+
+@section AdminActions {
     <a class="btn btn-outline" asp-action="Index">@T["Back"]</a>
-</div>
+}
 
 <form asp-action="Save" method="post" class="card pro-form">
     @Html.AntiForgeryToken()

@@ -3,13 +3,13 @@
     ViewData["Title"] = T["Mfa"].Value;
 }
 
-<div class="page-heading">
-    <div>
-        <span class="page-kicker">@T["Authentication"]</span>
-        <h1>@T["Mfa"]</h1>
-        <p>@T["TextControleAdministrativoDosMetodosDeSegundoFatorDos"]</p>
-    </div>
-</div>
+@section AdminHeader {
+    <span class="admin-page-kicker">@T["Authentication"]</span>
+    <h1>@T["Mfa"]</h1>
+    <p>@T["TextControleAdministrativoDosMetodosDeSegundoFatorDos"]</p>
+}
+
+
 
 <div class="grid three quick-grid">
     <div class="card"><h2>@Model.TotalUsers</h2><p class="muted">@T["TextUsuariosTotais"]</p></div>

@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-using Auth2Demo.Domain.Identity;
+using Auth2Demo.Application.Identity.Clients;
 
 namespace Auth2Demo.Web.Areas.Admin.Models;
 

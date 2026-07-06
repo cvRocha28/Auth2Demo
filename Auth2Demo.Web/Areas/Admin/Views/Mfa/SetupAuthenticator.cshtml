@@ -3,14 +3,15 @@
     ViewData["Title"] = T["ConfigurarAuthenticator"].Value;
 }
 
-<div class="page-heading">
-    <div>
-        <span class="page-kicker">@T["Authentication"]</span>
-        <h1>@T["ConfigurarMfa"]</h1>
-        <p>@Model.DisplayName — @Model.Email</p>
-    </div>
+@section AdminHeader {
+    <span class="admin-page-kicker">@T["Authentication"]</span>
+    <h1>@T["ConfigurarMfa"]</h1>
+    <p>@Model.DisplayName — @Model.Email</p>
+}
+
+@section AdminActions {
     <a class="btn" asp-action="Details" asp-route-id="@Model.UserId">@T["Back"]</a>
-</div>
+}
 
 <div class="card warning-card">
     <h2>@T["ComoAtivar"]</h2>

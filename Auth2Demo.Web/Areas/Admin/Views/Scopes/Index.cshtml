@@ -3,14 +3,15 @@
     ViewData["Title"] = T["TextApisScopes"].Value;
 }
 
-<div class="page-heading">
-    <div>
-        <span class="page-kicker">@T["RecursosProtegidos"]</span>
-        <h1>@T["TextApisScopes"]</h1>
-        <p>@T["TextDefinaOsScopesQueOsClientsPodemSolicitar"]</p>
-    </div>
+@section AdminHeader {
+    <span class="admin-page-kicker">@T["RecursosProtegidos"]</span>
+    <h1>@T["TextApisScopes"]</h1>
+    <p>@T["TextDefinaOsScopesQueOsClientsPodemSolicitar"]</p>
+}
+
+@section AdminActions {
     <a class="btn" asp-action="Create">@T["NewScopeApi"]</a>
-</div>
+}
 
 <div class="table-wrap">
     <table>

@@ -6,15 +6,13 @@
     ViewData["Title"] = T["Dashboard"].Value;
 }
 
-<div class="page-heading">
-    <div>
-        <span class="page-kicker">@T["TextAdministracao"]</span>
+@section AdminHeader {
+    <span class="admin-page-kicker">@T["TextAdministracao"]</span>
+    <h1>@T["Dashboard"]</h1>
+    <p>@T["TextVisaoOperacionalDoServidorDeIdentidadeUsuariosLogins"]</p>
+}
 
-        <h1>@T["Dashboard"]</h1>
 
-        <p>@T["TextVisaoOperacionalDoServidorDeIdentidadeUsuariosLogins"]</p>
-    </div>
-</div>
 
 <div class="grid four">
     <div class="card stat-card">

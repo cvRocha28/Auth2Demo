@@ -4,14 +4,15 @@
     var roles = Model.AvailableRoles.OrderBy(x => x).ToList();
 }
 
-<div class="page-heading">
-    <div>
-        <span class="page-kicker">@T["Users"]</span>
-        <h1>@T["EditUser"]</h1>
-        <p>@T["TextAtualizeDadosDaContaEMarqueApenasAs"]</p>
-    </div>
+@section AdminHeader {
+    <span class="admin-page-kicker">@T["Users"]</span>
+    <h1>@T["EditUser"]</h1>
+    <p>@T["TextAtualizeDadosDaContaEMarqueApenasAs"]</p>
+}
+
+@section AdminActions {
     <a class="btn btn-outline" asp-action="Index">@T["Back"]</a>
-</div>
+}
 
 <form method="post" class="card form-card pro-form">
     <input type="hidden" asp-for="Id" />

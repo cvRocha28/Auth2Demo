@@ -1,0 +1,78 @@
+@model IReadOnlyList<ApplicationSecretAuditListItemViewModel>
+@{
+    ViewData["Title"] = T["ApplicationSecretsAudit"].Value;
+    var activeOnly = (bool?)ViewData["ActiveOnly"] ?? false;
+}
+
+@section AdminHeader {
+    <span class="page-kicker"><i class="bi bi-key"></i> @T["Administration"]</span>
+    <h1>@T["ApplicationSecretsAudit"]</h1>
+    <p>@T["ApplicationSecretsAuditDescription"]</p>
+}
+
+@section AdminActions {
+    <a class="btn ghost" asp-action="Index" asp-route-activeOnly="@(!activeOnly)">
+        <i class="bi @(activeOnly ? "bi-list-ul" : "bi-shield-check")"></i>
+        @(activeOnly ? T["ShowAll"].Value : T["ShowActiveOnly"].Value)
+    </a>
+}
+
+<section class="admin-card">
+    <div class="admin-card-header">
+        <div>
+            <strong>@T["IdentityApplicationSecrets"]</strong>
+            <span>@T["ApplicationSecretsAuditTableHelp"]</span>
+        </div>
+        <span class="admin-count-badge">@Model.Count</span>
+    </div>
+
+    <div class="table-wrap admin-table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>@T["ClientId"]</th>
+                    <th>@T["Description"]</th>
+                    <th>@T["SecretPrefix"]</th>
+                    <th>@T["CreatedAt"]</th>
+                    <th>@T["Expiration"]</th>
+                    <th>@T["Status"]</th>
+                    <th>@T["RevokedReason"]</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr class="@(item.IsActive ? string.Empty : "muted-row")">
+                        <td>
+                            <strong>@item.ClientId</strong>
+                            <small>@item.ApplicationId</small>
+                        </td>
+                        <td>
+                            <span>@item.Description</span>
+                            <small>@item.Id</small>
+                        </td>
+                        <td><code>@(string.IsNullOrWhiteSpace(item.SecretPrefix) ? "***" : item.SecretPrefix + "****************")</code></td>
+                        <td>@item.CreatedAtUtc.ToString("yyyy-MM-dd HH:mm")</td>
+                        <td>@(item.ExpiresAtUtc?.ToString("yyyy-MM-dd HH:mm") ?? T["NeverExpires"].Value)</td>
+                        <td>
+                            @if (item.IsActive)
+                            {
+                                <span class="badge badge-success">@T["Active"]</span>
+                            }
+                            else if (item.RevokedAtUtc is not null)
+                            {
+                                <span class="badge badge-warning">@T["Revoked"]</span>
+                                <small>@item.RevokedAtUtc?.ToString("yyyy-MM-dd HH:mm")</small>
+                            }
+                            else
+                            {
+                                <span class="badge badge-warning">@T["Expired"]</span>
+                            }
+                        </td>
+                        <td>@(string.IsNullOrWhiteSpace(item.RevokedReason) ? "-" : item.RevokedReason)</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</section>

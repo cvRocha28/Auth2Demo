@@ -4,19 +4,17 @@
     ViewData["Title"] = T["EmailTemplates"].Value;
 }
 
-<div class="page-heading">
-    <div>
-        <span class="page-kicker">@T["Customization"]</span>
+@section AdminHeader {
+    <span class="admin-page-kicker">@T["Customization"]</span>
+    <h1>@T["EmailTemplates"]</h1>
+    <p>@T["TextCentralParaMensagensDeConfirmacaoRecuperacaoMfaE"]</p>
+}
 
-        <h1>@T["EmailTemplates"]</h1>
-
-        <p>@T["TextCentralParaMensagensDeConfirmacaoRecuperacaoMfaE"]</p>
-    </div>
-
+@section AdminActions {
     <a class="btn" asp-action="Edit">
-        @T["NewTemplate"]
-    </a>
-</div>
+            @T["NewTemplate"]
+        </a>
+}
 
 <div class="table-wrap">
     <table>

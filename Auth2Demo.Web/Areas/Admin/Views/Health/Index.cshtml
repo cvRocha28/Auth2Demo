@@ -4,15 +4,13 @@
     ViewData["Title"] = T["Health"].Value;
 }
 
-<div class="page-heading">
-    <div>
-        <span class="page-kicker">@T["Operations"]</span>
+@section AdminHeader {
+    <span class="admin-page-kicker">@T["Operations"]</span>
+    <h1>@T["Health"]</h1>
+    <p>@T["TextStatusBasicoDosComponentesDoServidor"]</p>
+}
 
-        <h1>@T["Health"]</h1>
 
-        <p>@T["TextStatusBasicoDosComponentesDoServidor"]</p>
-    </div>
-</div>
 
 <div class="grid three">
     <div class="card stat-card">

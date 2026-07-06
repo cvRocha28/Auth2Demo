@@ -3,29 +3,26 @@
     ViewData["Title"] = T["MyAccount"];
     var user = Model.User;
     var initial = string.IsNullOrWhiteSpace(user.DisplayName) ? "U" : user.DisplayName[..1].ToUpperInvariant();
+    var confirmedClass = user.EmailConfirmed ? "is-ok" : "is-warning";
+    var mfaClass = Model.HasMfa ? "is-ok" : "is-warning";
+    var externalClass = Model.HasExternalLogin ? "is-ok" : "is-warning";
+    var trustedDevices = Model.Devices.Count(x => x.IsTrusted);
 }
-<div class="portal-account profile-home">
-    <div class="page-heading">
-        <div>
-            <span class="page-kicker">@T["Profile"]</span>
-            <h1>@T["MyAccount"]</h1>
-            <p>@T["ManageAccountText"]</p>
-        </div>
-    </div>
 
+<div class="profile-page-shell">
     @if (TempData["Success"]?.ToString() is { } successKey)
     {
-        <div class="alert success">@T[successKey]</div>
+        <div class="alert success profile-alert"><i class="bi bi-check-circle" aria-hidden="true"></i> @T[successKey]</div>
     }
     @if (TempData["Error"]?.ToString() is { } errorKey)
     {
-        <div class="alert">@T[errorKey]</div>
+        <div class="alert profile-alert"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i> @T[errorKey]</div>
     }
 
-    <section class="profile-hero-card">
-        <div class="profile-cover"></div>
-        <div class="profile-hero-content">
-            <div class="profile-avatar-xl">
+    <section class="profile-pro-hero">
+        <div class="profile-pro-cover"></div>
+        <div class="profile-pro-main">
+            <div class="profile-pro-avatar" aria-hidden="true">
                 @if (!string.IsNullOrWhiteSpace(user.AvatarUrl))
                 {
                     <img src="@user.AvatarUrl" alt='@T["ProfilePicture"].Value' referrerpolicy="no-referrer" />
@@ -35,141 +32,236 @@
                     <span>@initial</span>
                 }
             </div>
-            <div class="profile-main-info">
-                <span class="page-kicker">@T["ProfileOverview"]</span>
+
+            <div class="profile-pro-identity">
+                <span class="page-kicker">@T["Profile"]</span>
                 <h1>@user.DisplayName</h1>
-                <p>@user.Email</p>
-                <div class="profile-badges">
-                    <span class="badge">@(user.EmailConfirmed ? T["EmailConfirmed"] : T["EmailPending"])</span>
-                    <span class="badge">@user.Status</span>
+                <div class="profile-pro-email"><i class="bi bi-envelope" aria-hidden="true"></i> @user.Email</div>
+
+                <div class="profile-pro-badges">
+                    <span class="profile-status-pill @confirmedClass"><i class="bi @(user.EmailConfirmed ? "bi-patch-check" : "bi-clock")" aria-hidden="true"></i> @(user.EmailConfirmed ? T["EmailConfirmed"] : T["EmailPending"])</span>
+                    <span class="profile-status-pill @mfaClass"><i class="bi bi-shield-lock" aria-hidden="true"></i> @(Model.HasMfa ? T["MfaEnabled"] : T["MfaDisabled"])</span>
                     @if (Model.IsAdmin)
                     {
-                        <span class="badge">@T["AdminProfile"]</span>
+                        <span class="profile-status-pill is-admin"><i class="bi bi-stars" aria-hidden="true"></i> @T["AdminProfile"]</span>
                     }
                 </div>
             </div>
-            <div class="profile-actions">
-                <a class="btn btn-large" asp-controller="Account" asp-action="ManageMfa">@T["OpenMfaSettings"]</a>
+
+            <div class="profile-pro-actions">
+                <a class="btn" asp-controller="Account" asp-action="ManageMfa"><i class="bi bi-shield-lock" aria-hidden="true"></i> @T["OpenMfaSettings"]</a>
                 @if (Model.IsAdmin)
                 {
-                    <a class="btn btn-outline" asp-area="Admin" asp-controller="Dashboard" asp-action="Index">@T["OpenAdminPanel"]</a>
+                    <a class="btn btn-outline" asp-area="Admin" asp-controller="Dashboard" asp-action="Index"><i class="bi bi-speedometer2" aria-hidden="true"></i> @T["OpenAdminPanel"]</a>
                 }
             </div>
         </div>
     </section>
 
-    <div class="grid three profile-metrics">
-        <div class="card stat-card"><span>@T["LastLogin"]</span><h2>@(user.LastLoginAt?.ToLocalTime().ToString("HH:mm") ?? "-")</h2><p>@(user.LastLoginAt?.ToLocalTime().ToString("dd/MM/yyyy") ?? T["NoRecord"])</p></div>
-        <div class="card stat-card"><span>@T["Mfa"]</span><h2>@(Model.HasMfa ? T["Active"] : T["Pending"])</h2><p>@T["MfaProfileHint"]</p></div>
-        <div class="card stat-card"><span>@T["Devices"]</span><h2>@Model.Devices.Count</h2><p>@T["TrustedDevicesFormat", Model.Devices.Count(x => x.IsTrusted)]</p></div>
+    <div class="profile-pro-metrics">
+        <article class="profile-metric-card">
+            <span><i class="bi bi-clock-history" aria-hidden="true"></i> @T["LastLogin"]</span>
+            <strong>@(user.LastLoginAt?.ToLocalTime().ToString("HH:mm") ?? "-")</strong>
+            <small>@(user.LastLoginAt?.ToLocalTime().ToString("dd/MM/yyyy") ?? T["NoRecord"].Value)</small>
+        </article>
+        <article class="profile-metric-card">
+            <span><i class="bi bi-shield-check" aria-hidden="true"></i> @T["Mfa"]</span>
+            <strong>@(Model.HasMfa ? T["Active"] : T["Pending"])</strong>
+            <small>@T["MfaProfileHint"]</small>
+        </article>
+        <article class="profile-metric-card">
+            <span><i class="bi bi-laptop" aria-hidden="true"></i> @T["Devices"]</span>
+            <strong>@Model.Devices.Count</strong>
+            <small>@T["TrustedDevicesFormat", trustedDevices]</small>
+        </article>
+        <article class="profile-metric-card">
+            <span><i class="bi bi-key" aria-hidden="true"></i> @T["Passkeys"]</span>
+            <strong>@Model.Passkeys.Count</strong>
+            <small>@T["MfaPrepared"]</small>
+        </article>
     </div>
 
-    <div class="grid two profile-grid-main">
-        <section class="card quick-grid">
-            <h2>@T["EditProfile"]</h2>
-            <p class="muted">@T["EditProfileText"]</p>
-            <form asp-controller="Perfil" asp-action="AlterarDisplayName" method="post" class="pro-form">
-                @Html.AntiForgeryToken()
-                <div class="form-row">
-                    <label for="displayName">@T["DisplayName"]</label>
-                    <input id="displayName" name="displayName" maxlength="100" required value="@user.DisplayName" />
-                    <span class="hint">@T["DisplayNameHint"]</span>
-                </div>
-                <button class="btn" type="submit">@T["SaveDisplayName"]</button>
-            </form>
-        </section>
-
-        <section class="card quick-grid">
-            <h2>@T["LanguagePreference"]</h2>
-            <p class="muted">@T["LanguagePreferenceText"]</p>
-            <form asp-controller="Perfil" asp-action="AlterarIdioma" method="post" class="profile-language-form">
-                @Html.AntiForgeryToken()
-                <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
-                <div class="form-row">
-                    <label for="locale">@T["LanguagePreference"]</label>
-                    <select id="locale" name="locale">
-                        <option value="pt-BR" selected="@(Model.CurrentLocale.Equals("pt-BR", StringComparison.OrdinalIgnoreCase))">@T["Portuguese"]</option>
-                        <option value="en-US" selected="@(Model.CurrentLocale.Equals("en-US", StringComparison.OrdinalIgnoreCase))">@T["English"]</option>
-                    </select>
-                </div>
-                <button class="btn" type="submit">@T["Save"]</button>
-            </form>
-        </section>
-    </div>
-
-    <div class="grid two profile-grid-main">
-        <section class="card quick-grid">
-            <h2>@T["AccountInformation"]</h2>
-            <dl class="profile-details">
-                <dt>@T["Email"]</dt><dd>@user.Email</dd>
-                <dt>@T["Username"]</dt><dd>@user.UserName</dd>
-                <dt>@T["Department"]</dt><dd>@(user.Department ?? T["NotInformed"].Value)</dd>
-                <dt>@T["JobTitle"]</dt><dd>@(user.JobTitle ?? T["NotInformed"].Value)</dd>
-                <dt>@T["TimeZone"]</dt><dd>@(user.TimeZone ?? T["NotInformed"].Value)</dd>
-                <dt>@T["CreatedAt"]</dt><dd>@user.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</dd>
-            </dl>
-        </section>
-
-        <section class="card quick-grid">
-            <h2>@T["SecurityCenter"]</h2>
-            <div class="security-checks">
-                <div class="security-check @(user.EmailConfirmed ? "ok" : "warn")"><span>✉️</span><div><strong>@T["Email"]</strong><small>@(user.EmailConfirmed ? T["EmailConfirmed"] : T["EmailPending"])</small></div></div>
-                <div class="security-check @(Model.HasMfa ? "ok" : "warn")"><span>🔐</span><div><strong>@T["Mfa"]</strong><small>@(Model.HasMfa ? T["MfaEnabled"] : T["MfaDisabled"])</small></div></div>
-                <div class="security-check @(Model.HasExternalLogin ? "ok" : "warn")"><span>🌐</span><div><strong>@T["ExternalLogins"]</strong><small>@(Model.HasExternalLogin ? T["ExternalLoginLinked"] : T["NoExternalLogin"])</small></div></div>
-            </div>
-            <div class="form-actions">
-                <a class="btn btn-large" asp-controller="Account" asp-action="ManageMfa">@T["ConfigureMfa"]</a>
-            </div>
-        </section>
-    </div>
-
-    @if (Model.IsAdmin)
-    {
-        <section class="card quick-grid">
-            <h2>@T["AdminShortcuts"]</h2>
-            <p class="muted">@T["AdminShortcutsText"]</p>
-            <div class="grid three quick-grid">
-                <a class="quick-card" asp-area="Admin" asp-controller="Users" asp-action="Index"><strong>@T["Users"]</strong><span>@T["ManageUsersText"]</span></a>
-                <a class="quick-card" asp-area="Admin" asp-controller="Clients" asp-action="Index"><strong>@T["Clients"]</strong><span>@T["ManageClientsText"]</span></a>
-                <a class="quick-card" asp-area="Admin" asp-controller="AuditLogs" asp-action="Index"><strong>@T["AuditLogs"]</strong><span>@T["AuditLogsText"]</span></a>
-            </div>
-        </section>
-    }
-
-    <div class="grid two quick-grid">
-        <section class="card">
-            <h2>@T["ExternalLogins"]</h2>
-            @if (Model.ExternalLogins.Any())
+    <div class="profile-pro-layout">
+        <aside class="profile-pro-sidebar">
+            <a href="#profile-general"><i class="bi bi-person" aria-hidden="true"></i> @T["EditProfile"]</a>
+            <a href="#profile-security"><i class="bi bi-shield-lock" aria-hidden="true"></i> @T["SecurityCenter"]</a>
+            <a href="#profile-access"><i class="bi bi-box-arrow-in-right" aria-hidden="true"></i> @T["ExternalLogins"]</a>
+            <a href="#profile-sessions"><i class="bi bi-activity" aria-hidden="true"></i> @T["RecentSessions"]</a>
+            @if (Model.IsAdmin)
             {
-                foreach (var login in Model.ExternalLogins)
-                {
-                    <div class="metric-line"><span>@login.LoginProvider</span><strong>@T["Linked"]</strong></div>
-                }
+                <a href="#profile-admin"><i class="bi bi-grid" aria-hidden="true"></i> @T["AdminShortcuts"]</a>
             }
-            else { <p class="muted">@T["NoExternalLogin"]</p> }
-        </section>
-        <section class="card">
-            <h2>@T["MfaAndPasskeys"]</h2>
-            <div class="metric-line"><span>@T["MfaMethods"]</span><strong>@Model.MfaMethods.Count</strong></div>
-            <div class="metric-line"><span>@T["Passkeys"]</span><strong>@Model.Passkeys.Count</strong></div>
-            <p class="muted">@T["MfaPrepared"]</p>
-        </section>
-    </div>
+        </aside>
 
-    <div class="grid two quick-grid">
-        <section class="card"><h2>@T["RecentSessions"]</h2>@if (!Model.Sessions.Any()) { <p class="muted">@T["NoRecentSessions"]</p> } @foreach(var s in Model.Sessions){<div class="metric-line"><span>@(s.DeviceName ?? T["NotInformed"].Value)<br/><small class="muted">@s.IpAddress</small></span><strong>@s.LastSeenAt.ToLocalTime().ToString("dd/MM HH:mm")</strong></div>}</section>
-        <section class="card"><h2>@T["Devices"]</h2>@if (!Model.Devices.Any()) { <p class="muted">@T["NoDevices"]</p> } @foreach(var d in Model.Devices){<div class="metric-line"><span>@d.Name<br/><small class="muted">@d.Browser @d.OperatingSystem</small></span><strong>@(d.IsTrusted ? T["Trusted"] : T["New"])</strong></div>}</section>
-    </div>
+        <main class="profile-pro-content">
+            <section id="profile-general" class="profile-pro-card">
+                <div class="profile-card-header">
+                    <div>
+                        <span class="page-kicker">@T["General"]</span>
+                        <h2>@T["EditProfile"]</h2>
+                        <p>@T["EditProfileText"]</p>
+                    </div>
+                </div>
 
-    <section class="card quick-grid">
-        <h2>@T["SecurityHistory"]</h2>
-        @if (!Model.AuditLogs.Any())
-        {
-            <p class="muted">@T["NoSecurityHistory"]</p>
-        }
-        @foreach(var a in Model.AuditLogs)
-        {
-            <div class="metric-line"><span>@a.EventType<br/><small class="muted">@a.Description</small></span><strong>@a.CreatedAt.ToLocalTime().ToString("dd/MM HH:mm")</strong></div>
-        }
-    </section>
+                <div class="profile-two-columns">
+                    <form asp-controller="Perfil" asp-action="AlterarDisplayName" method="post" class="profile-form-panel">
+                        @Html.AntiForgeryToken()
+                        <label for="displayName">@T["DisplayName"]</label>
+                        <div class="profile-inline-field">
+                            <input id="displayName" name="displayName" maxlength="100" required value="@user.DisplayName" />
+                            <button class="btn" type="submit"><i class="bi bi-check2" aria-hidden="true"></i> @T["SaveDisplayName"]</button>
+                        </div>
+                        <span class="hint">@T["DisplayNameHint"]</span>
+                    </form>
+
+                    <form asp-controller="Perfil" asp-action="AlterarIdioma" method="post" class="profile-form-panel">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
+                        <label for="locale">@T["LanguagePreference"]</label>
+                        <div class="profile-inline-field">
+                            <select id="locale" name="locale">
+                                <option value="pt-BR" selected="@(Model.CurrentLocale.Equals("pt-BR", StringComparison.OrdinalIgnoreCase))">@T["Portuguese"]</option>
+                                <option value="en-US" selected="@(Model.CurrentLocale.Equals("en-US", StringComparison.OrdinalIgnoreCase))">@T["English"]</option>
+                            </select>
+                            <button class="btn btn-outline" type="submit"><i class="bi bi-translate" aria-hidden="true"></i> @T["Save"]</button>
+                        </div>
+                    </form>
+                </div>
+
+                <dl class="profile-pro-details">
+                    <dt>@T["Email"]</dt><dd>@user.Email</dd>
+                    <dt>@T["Username"]</dt><dd>@user.UserName</dd>
+                    <dt>@T["Department"]</dt><dd>@(user.Department ?? T["NotInformed"].Value)</dd>
+                    <dt>@T["JobTitle"]</dt><dd>@(user.JobTitle ?? T["NotInformed"].Value)</dd>
+                    <dt>@T["TimeZone"]</dt><dd>@(user.TimeZone ?? T["NotInformed"].Value)</dd>
+                    <dt>@T["CreatedAt"]</dt><dd>@user.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</dd>
+                </dl>
+            </section>
+
+            <section id="profile-security" class="profile-pro-card">
+                <div class="profile-card-header">
+                    <div>
+                        <span class="page-kicker">@T["SecurityCenter"]</span>
+                        <h2>@T["SecurityCenter"]</h2>
+                        <p>@T["ManageAccountText"]</p>
+                    </div>
+                    <a class="btn btn-outline" asp-controller="Account" asp-action="ManageMfa"><i class="bi bi-gear" aria-hidden="true"></i> @T["ConfigureMfa"]</a>
+                </div>
+
+                <div class="profile-security-grid">
+                    <div class="profile-security-item @confirmedClass">
+                        <i class="bi bi-envelope-check" aria-hidden="true"></i>
+                        <div><strong>@T["Email"]</strong><span>@(user.EmailConfirmed ? T["EmailConfirmed"] : T["EmailPending"])</span></div>
+                    </div>
+                    <div class="profile-security-item @mfaClass">
+                        <i class="bi bi-shield-lock" aria-hidden="true"></i>
+                        <div><strong>@T["Mfa"]</strong><span>@(Model.HasMfa ? T["MfaEnabled"] : T["MfaDisabled"])</span></div>
+                    </div>
+                    <div class="profile-security-item @externalClass">
+                        <i class="bi bi-globe2" aria-hidden="true"></i>
+                        <div><strong>@T["ExternalLogins"]</strong><span>@(Model.HasExternalLogin ? T["ExternalLoginLinked"] : T["NoExternalLogin"])</span></div>
+                    </div>
+                </div>
+            </section>
+
+            @if (Model.IsAdmin)
+            {
+                <section id="profile-admin" class="profile-pro-card">
+                    <div class="profile-card-header">
+                        <div>
+                            <span class="page-kicker">@T["AdminShortcuts"]</span>
+                            <h2>@T["AdminShortcuts"]</h2>
+                            <p>@T["AdminShortcutsText"]</p>
+                        </div>
+                    </div>
+
+                    <div class="profile-shortcuts-grid">
+                        <a class="profile-shortcut-card" asp-area="Admin" asp-controller="Users" asp-action="Index"><i class="bi bi-people" aria-hidden="true"></i><strong>@T["Users"]</strong><span>@T["ManageUsersText"]</span></a>
+                        <a class="profile-shortcut-card" asp-area="Admin" asp-controller="Clients" asp-action="Index"><i class="bi bi-window-sidebar" aria-hidden="true"></i><strong>@T["Clients"]</strong><span>@T["ManageClientsText"]</span></a>
+                        <a class="profile-shortcut-card" asp-area="Admin" asp-controller="AuditLogs" asp-action="Index"><i class="bi bi-clipboard-data" aria-hidden="true"></i><strong>@T["AuditLogs"]</strong><span>@T["AuditLogsText"]</span></a>
+                    </div>
+                </section>
+            }
+
+            <div id="profile-access" class="profile-pro-grid-two">
+                <section class="profile-pro-card">
+                    <div class="profile-card-header compact"><div><span class="page-kicker">@T["ExternalLogins"]</span><h2>@T["ExternalLogins"]</h2></div></div>
+                    <div class="profile-list">
+                        @if (Model.ExternalLogins.Any())
+                        {
+                            foreach (var login in Model.ExternalLogins)
+                            {
+                                <div class="profile-list-row"><span><i class="bi bi-link-45deg" aria-hidden="true"></i> @login.LoginProvider</span><strong>@T["Linked"]</strong></div>
+                            }
+                        }
+                        else
+                        {
+                            <p class="muted">@T["NoExternalLogin"]</p>
+                        }
+                    </div>
+                </section>
+
+                <section class="profile-pro-card">
+                    <div class="profile-card-header compact"><div><span class="page-kicker">@T["MfaAndPasskeys"]</span><h2>@T["MfaAndPasskeys"]</h2></div></div>
+                    <div class="profile-list">
+                        <div class="profile-list-row"><span>@T["MfaMethods"]</span><strong>@Model.MfaMethods.Count</strong></div>
+                        <div class="profile-list-row"><span>@T["Passkeys"]</span><strong>@Model.Passkeys.Count</strong></div>
+                    </div>
+                </section>
+            </div>
+
+            <div id="profile-sessions" class="profile-pro-grid-two">
+                <section class="profile-pro-card">
+                    <div class="profile-card-header compact"><div><span class="page-kicker">@T["RecentSessions"]</span><h2>@T["RecentSessions"]</h2></div></div>
+                    <div class="profile-list">
+                        @if (!Model.Sessions.Any())
+                        {
+                            <p class="muted">@T["NoRecentSessions"]</p>
+                        }
+                        @foreach (var s in Model.Sessions)
+                        {
+                            <div class="profile-list-row">
+                                <span><strong>@(s.DeviceName ?? T["NotInformed"].Value)</strong><small>@s.IpAddress</small></span>
+                                <strong>@s.LastSeenAt.ToLocalTime().ToString("dd/MM HH:mm")</strong>
+                            </div>
+                        }
+                    </div>
+                </section>
+
+                <section class="profile-pro-card">
+                    <div class="profile-card-header compact"><div><span class="page-kicker">@T["Devices"]</span><h2>@T["Devices"]</h2></div></div>
+                    <div class="profile-list">
+                        @if (!Model.Devices.Any())
+                        {
+                            <p class="muted">@T["NoDevices"]</p>
+                        }
+                        @foreach (var d in Model.Devices)
+                        {
+                            <div class="profile-list-row">
+                                <span><strong>@d.Name</strong><small>@d.Browser @d.OperatingSystem</small></span>
+                                <strong>@(d.IsTrusted ? T["Trusted"] : T["New"])</strong>
+                            </div>
+                        }
+                    </div>
+                </section>
+            </div>
+
+            <section class="profile-pro-card">
+                <div class="profile-card-header compact"><div><span class="page-kicker">@T["SecurityHistory"]</span><h2>@T["SecurityHistory"]</h2></div></div>
+                <div class="profile-list">
+                    @if (!Model.AuditLogs.Any())
+                    {
+                        <p class="muted">@T["NoSecurityHistory"]</p>
+                    }
+                    @foreach (var a in Model.AuditLogs)
+                    {
+                        <div class="profile-list-row">
+                            <span><strong>@a.EventType</strong><small>@a.Description</small></span>
+                            <strong>@a.CreatedAt.ToLocalTime().ToString("dd/MM HH:mm")</strong>
+                        </div>
+                    }
+                </div>
+            </section>
+        </main>
+    </div>
 </div>

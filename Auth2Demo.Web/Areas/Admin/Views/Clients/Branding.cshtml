@@ -1,0 +1,472 @@
+@model ClientBrandingViewModel
+
+@{
+    ViewData["Title"] = "Client branding";
+    var clientTitle = string.IsNullOrWhiteSpace(Model.DisplayName) ? Model.ClientId : Model.DisplayName;
+
+    var colorFields = new[]
+    {
+        new { Name = nameof(Model.PrimaryColor), Label = "Primary", Description = "Main action, links and focus rings.", Value = Model.PrimaryColor },
+        new { Name = nameof(Model.SecondaryColor), Label = "Secondary", Description = "Gradient end color and accent highlights.", Value = Model.SecondaryColor },
+        new { Name = nameof(Model.BackgroundColor), Label = "Background", Description = "Authentication page background.", Value = Model.BackgroundColor },
+        new { Name = nameof(Model.SurfaceColor), Label = "Surface", Description = "Cards, inputs and panels.", Value = Model.SurfaceColor },
+        new { Name = nameof(Model.TextColor), Label = "Text", Description = "Headings and primary text.", Value = Model.TextColor },
+        new { Name = nameof(Model.MutedTextColor), Label = "Muted text", Description = "Descriptions and secondary text.", Value = Model.MutedTextColor },
+        new { Name = nameof(Model.BorderColor), Label = "Border", Description = "Card and input borders.", Value = Model.BorderColor },
+        new { Name = nameof(Model.SuccessColor), Label = "Success", Description = "Trust badges and positive states.", Value = Model.SuccessColor },
+        new { Name = nameof(Model.WarningColor), Label = "Warning", Description = "Warnings and attention states.", Value = Model.WarningColor },
+        new { Name = nameof(Model.DangerColor), Label = "Danger", Description = "Errors and deny actions.", Value = Model.DangerColor }
+    };
+}
+@section AdminHeader {
+    <span class="admin-page-kicker">Client customization</span>
+    <h1>Branding - @clientTitle</h1>
+    <p>Configure the exact visual identity used by login, register and authorization screens for this client.</p>
+    <div class="admin-page-meta">
+        <span><strong>Client ID:</strong> <code>@Model.ClientId</code></span>
+        <span><strong>Status:</strong> @(Model.IsEnabled ? "Enabled" : "Using global branding")</span>
+    </div>
+}
+
+@section AdminActions {
+    <a class="btn ghost" asp-action="Details" asp-route-clientId="@Model.ClientId"><i class="bi bi-arrow-left"></i> Back to client</a>
+}
+
+@if (TempData["Success"] is string success)
+{
+    <div class="alert success">@success</div>
+}
+
+<form method="post" class="branding-studio" id="clientBrandingForm">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="ClientId" />
+    <input type="hidden" asp-for="DisplayName" />
+
+    <section class="card branding-studio-panel">
+        <div class="branding-studio-head">
+            <div>
+                <span class="page-kicker">Brand studio</span>
+                <h2>Client visual identity</h2>
+                <p class="muted">Use design tokens instead of isolated colors. The same configuration powers login, register and authorization screens.</p>
+            </div>
+            <label class="studio-switch">
+                <input asp-for="IsEnabled" data-preview-token="IsEnabled" />
+                <span></span>
+                <strong>Enable custom branding</strong>
+            </label>
+        </div>
+
+        <div class="preset-strip" aria-label="Brand presets">
+            <button type="button" class="preset-chip" data-preset="auth2demo"><i class="bi bi-shield-lock"></i> Auth2Demo</button>
+            <button type="button" class="preset-chip" data-preset="corporate"><i class="bi bi-bank"></i> Corporate Blue</button>
+            <button type="button" class="preset-chip" data-preset="slate"><i class="bi bi-columns-gap"></i> Slate</button>
+            <button type="button" class="preset-chip" data-preset="emerald"><i class="bi bi-check2-shield"></i> Emerald Trust</button>
+            <button type="button" class="preset-chip" data-preset="indigo"><i class="bi bi-gem"></i> Indigo Pro</button>
+            <button type="button" class="preset-chip" data-preset="dark"><i class="bi bi-moon-stars"></i> Dark Enterprise</button>
+        </div>
+
+        <div class="branding-tabs" role="tablist">
+            <button type="button" class="branding-tab active" data-tab-target="general">General</button>
+            <button type="button" class="branding-tab" data-tab-target="colors">Colors</button>
+            <button type="button" class="branding-tab" data-tab-target="appearance">Appearance</button>
+            <button type="button" class="branding-tab" data-tab-target="authentication">Authentication Methods</button>
+            <button type="button" class="branding-tab" data-tab-target="advanced">Advanced</button>
+        </div>
+
+        <div class="branding-tab-panel active" data-tab-panel="general">
+            <div class="grid two">
+                <div class="form-row">
+                    <label asp-for="TenantName">Display name</label>
+                    <input asp-for="TenantName" placeholder="Auth2Demo, Internal Portal, Partner App" data-preview-token="TenantName" />
+                    <small>Name shown in authentication experiences.</small>
+                    <span asp-validation-for="TenantName"></span>
+                </div>
+                <div class="form-row">
+                    <label asp-for="Theme">Theme</label>
+                    <select asp-for="Theme" data-preview-token="Theme">
+                        <option value="Light">Light</option>
+                        <option value="Dark">Dark</option>
+                    </select>
+                    <small>Controls default contrast and background behavior.</small>
+                </div>
+                <div class="form-row">
+                    <label asp-for="LogoUrl">Logo URL</label>
+                    <input asp-for="LogoUrl" placeholder="https://cdn.example.com/logo.svg" data-preview-token="LogoUrl" />
+                    <small>Use PNG/SVG with transparent background for best result.</small>
+                    <span asp-validation-for="LogoUrl"></span>
+                </div>
+                <div class="form-row">
+                    <label asp-for="FaviconUrl">Favicon URL</label>
+                    <input asp-for="FaviconUrl" placeholder="https://cdn.example.com/favicon.ico" />
+                    <small>Browser icon used when this branding is active.</small>
+                    <span asp-validation-for="FaviconUrl"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="branding-tab-panel" data-tab-panel="colors">
+            <div class="token-grid">
+                @foreach (var color in colorFields)
+                {
+                    <div class="form-row token-color-field" data-color-field>
+                        <label for="@color.Name">@color.Label</label>
+                        <div class="token-color-control">
+                            <input class="token-color-picker" type="color" value="@color.Value" data-color-picker aria-label="@color.Label picker" />
+                            <input id="@color.Name" name="@color.Name" class="token-color-text" value="@color.Value" maxlength="7" data-color-text data-preview-token="@color.Name" />
+                            <button class="token-copy-button" type="button" data-copy-color title="Copy color"><i class="bi bi-copy"></i></button>
+                        </div>
+                        <small>@color.Description</small>
+                        <span class="field-validation-valid" data-valmsg-for="@color.Name" data-valmsg-replace="true"></span>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="branding-tab-panel" data-tab-panel="appearance">
+            <div class="grid two">
+                <div class="form-row range-row">
+                    <label asp-for="CardRadius">Card radius <strong><span data-range-value="CardRadius">@Model.CardRadius</span>px</strong></label>
+                    <input asp-for="CardRadius" type="range" min="8" max="48" data-preview-token="CardRadius" />
+                    <span asp-validation-for="CardRadius"></span>
+                </div>
+                <div class="form-row range-row">
+                    <label asp-for="ButtonRadius">Button radius <strong><span data-range-value="ButtonRadius">@Model.ButtonRadius</span>px</strong></label>
+                    <input asp-for="ButtonRadius" type="range" min="6" max="32" data-preview-token="ButtonRadius" />
+                    <span asp-validation-for="ButtonRadius"></span>
+                </div>
+            </div>
+
+            <div class="option-grid">
+                <label class="option-card">
+                    <input asp-for="UseGradientButtons" data-preview-token="UseGradientButtons" />
+                    <span><i class="bi bi-palette2"></i></span>
+                    <strong>Gradient buttons</strong>
+                    <small>Use primary + secondary gradient for main actions.</small>
+                </label>
+                <label class="option-card">
+                    <input asp-for="ShowCreateAccountLink" data-preview-token="ShowCreateAccountLink" />
+                    <span><i class="bi bi-person-plus"></i></span>
+                    <strong>Show create account</strong>
+                    <small>Keep registration links visible while preserving ReturnUrl.</small>
+                </label>
+                <label class="option-card">
+                    <input asp-for="ShowForgotPasswordLink" data-preview-token="ShowForgotPasswordLink" />
+                    <span><i class="bi bi-key"></i></span>
+                    <strong>Show forgot password</strong>
+                    <small>Display password recovery link on login.</small>
+                </label>
+            </div>
+        </div>
+
+
+        <div class="branding-tab-panel" data-tab-panel="authentication">
+            <div class="auth-methods-panel">
+                <div class="auth-methods-header">
+                    <div>
+                        <h3>Authentication methods</h3>
+                        <p class="muted">Choose which sign-in options this client can show. External providers come from enabled IdentityProviders.</p>
+                    </div>
+                    <span class="method-count"><strong data-method-count>0</strong> enabled</span>
+                </div>
+
+                <label class="auth-method-card local-method-card">
+                    <input asp-for="EnableLocalLogin" data-preview-token="EnableLocalLogin" data-auth-method="local" />
+                    <span class="auth-method-icon"><i class="bi bi-person-lock"></i></span>
+                    <span class="auth-method-copy">
+                        <strong>Username / Email + Password</strong>
+                        <small>Show the local email and password form.</small>
+                    </span>
+                    <span class="auth-method-status">Built-in</span>
+                </label>
+
+                <div class="auth-method-section-title">
+                    <strong>External providers</strong>
+                    <small>Only enabled and configured providers can be used on the real login screen.</small>
+                </div>
+
+                @if (Model.ProviderOptions.Count == 0)
+                {
+                    <div class="empty-state small-empty-state">
+                        <strong>No enabled identity providers found.</strong>
+                        <span>Enable providers in Administration / Authentication / Identity Providers.</span>
+                    </div>
+                }
+                else
+                {
+                    <div class="auth-method-grid">
+                        @foreach (var provider in Model.ProviderOptions)
+                        {
+                            var isChecked = Model.EnabledProviderSchemes.Contains(provider.Scheme, StringComparer.OrdinalIgnoreCase);
+                            <label class="auth-method-card provider-method-card @(provider.IsConfigured ? null : "is-not-configured")">
+                                <input type="checkbox"
+                                       name="EnabledProviderSchemes"
+                                       value="@provider.Scheme"
+                                       checked="@(isChecked ? "checked" : null)"
+                                       disabled="@(provider.IsConfigured ? null : "disabled")"
+                                       data-preview-token="Provider"
+                                       data-auth-provider
+                                       data-provider-name="@provider.DisplayName"
+                                       data-provider-scheme="@provider.Scheme" />
+                                <span class="auth-method-icon provider-icon">@provider.DisplayName.Substring(0, 1)</span>
+                                <span class="auth-method-copy">
+                                    <strong>@provider.DisplayName</strong>
+                                    <small>@(provider.IsConfigured ? provider.Scheme : "Provider missing client id or secret")</small>
+                                </span>
+                                <span class="auth-method-status">@(provider.IsConfigured ? "Available" : "Not configured")</span>
+                            </label>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="branding-tab-panel" data-tab-panel="advanced">
+            <div class="form-row">
+                <label asp-for="CustomCss">Custom CSS</label>
+                <textarea asp-for="CustomCss" rows="12" class="code-editor" placeholder=".auth-card { border-radius: 28px; }" data-preview-token="CustomCss"></textarea>
+                <small>Advanced override. Keep this small and prefer tokens above whenever possible.</small>
+                <span asp-validation-for="CustomCss"></span>
+            </div>
+        </div>
+
+        <div class="actions-row sticky-actions">
+            <button class="btn" type="submit"><i class="bi bi-save"></i> Save client branding</button>
+            <a class="btn ghost" asp-action="Details" asp-route-clientId="@Model.ClientId">Cancel</a>
+        </div>
+    </section>
+
+    <aside class="branding-live-panel">
+        <div class="card branding-preview-card pro-preview-card">
+            <div class="preview-toolbar">
+                <div>
+                    <span class="page-kicker">Live preview</span>
+                    <strong>Same authentication components</strong>
+                </div>
+                <div class="preview-device-switch">
+                    <button type="button" class="active" data-device="desktop"><i class="bi bi-display"></i></button>
+                    <button type="button" data-device="mobile"><i class="bi bi-phone"></i></button>
+                </div>
+            </div>
+
+            <div class="studio-preview-stage" id="brandingPreviewStage">
+                <div class="studio-preview-window" id="brandingPreviewWindow">
+                    <div class="auth-card form-card auth-tenant-card preview-auth-card">
+                        <div class="auth-header auth-tenant-header">
+                            <div class="auth-badge" id="previewLogoBadge">
+                                @if (!string.IsNullOrWhiteSpace(Model.LogoUrl))
+                                {
+                                    <img src="@Model.LogoUrl" alt="Logo preview" />
+                                }
+                                else
+                                {
+                                    <i class="bi bi-shield-lock" aria-hidden="true"></i>
+                                }
+                            </div>
+                            <h1 id="previewTenantName">@(string.IsNullOrWhiteSpace(Model.TenantName) ? clientTitle : Model.TenantName)</h1>
+                            <p>Sign in to continue securely.</p>
+                        </div>
+                        <div class="auth-form preview-auth-form">
+                            <div id="previewLocalLogin">
+                            <div class="form-row">
+                                <label>Email</label>
+                                <div class="input-wrap"><span class="input-icon"><i class="bi bi-envelope"></i></span><input class="with-icon" value="you@example.com" readonly /></div>
+                            </div>
+                            <div class="form-row">
+                                <label>Password</label>
+                                <div class="input-wrap"><span class="input-icon"><i class="bi bi-key"></i></span><input class="with-icon" value="••••••••••" readonly /></div>
+                            </div>
+                            <div class="login-options-row">
+                                <label class="check"><input type="checkbox" /> <span>Remember access</span></label>
+                                <a class="forgot-password-link" id="previewForgotLink">Forgot password?</a>
+                            </div>
+                            <button class="btn btn-block" type="button">Login</button>
+                            </div>
+                            <div id="previewProviderArea">
+                                <div class="external-login-divider"><span>or continue with</span></div>
+                                <div class="external-login-list" id="previewProviderList"></div>
+                            </div>
+                            <div class="alert" id="previewNoMethods" style="display:none">No authentication method enabled.</div>
+                            <p class="form-footer" id="previewCreateAccount">Don't have an account? <a>Create account</a></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="preview-note">
+                <i class="bi bi-info-circle"></i>
+                Preview uses the same classes and tokens as the real login screen. Save to apply to this client.
+            </div>
+        </div>
+    </aside>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        (() => {
+            const form = document.getElementById('clientBrandingForm');
+            const stage = document.getElementById('brandingPreviewStage');
+            const win = document.getElementById('brandingPreviewWindow');
+            const logoBadge = document.getElementById('previewLogoBadge');
+            const tenantName = document.getElementById('previewTenantName');
+            const forgotLink = document.getElementById('previewForgotLink');
+            const createAccount = document.getElementById('previewCreateAccount');
+            const localLogin = document.getElementById('previewLocalLogin');
+            const providerArea = document.getElementById('previewProviderArea');
+            const providerList = document.getElementById('previewProviderList');
+            const noMethods = document.getElementById('previewNoMethods');
+            const methodCount = document.querySelector('[data-method-count]');
+            const customStyle = document.createElement('style');
+            document.head.appendChild(customStyle);
+
+            const presets = {
+                auth2demo: {
+                    TenantName: 'Auth2Demo', PrimaryColor: '#2563EB', SecondaryColor: '#0F172A', BackgroundColor: '#EFF6FF', SurfaceColor: '#FFFFFF', TextColor: '#0F172A', MutedTextColor: '#64748B', BorderColor: '#CBD5E1', SuccessColor: '#16A34A', WarningColor: '#F59E0B', DangerColor: '#DC2626', Theme: 'Light', CardRadius: 28, ButtonRadius: 14, UseGradientButtons: true
+                },
+                corporate: {
+                    TenantName: 'Corporate ID', PrimaryColor: '#1D4ED8', SecondaryColor: '#1E40AF', BackgroundColor: '#F8FAFC', SurfaceColor: '#FFFFFF', TextColor: '#0B1220', MutedTextColor: '#5B677A', BorderColor: '#D9E2EF', SuccessColor: '#15803D', WarningColor: '#B45309', DangerColor: '#B91C1C', Theme: 'Light', CardRadius: 22, ButtonRadius: 10, UseGradientButtons: false
+                },
+                slate: {
+                    TenantName: 'Slate Portal', PrimaryColor: '#334155', SecondaryColor: '#0F172A', BackgroundColor: '#F1F5F9', SurfaceColor: '#FFFFFF', TextColor: '#0F172A', MutedTextColor: '#64748B', BorderColor: '#CBD5E1', SuccessColor: '#16A34A', WarningColor: '#D97706', DangerColor: '#DC2626', Theme: 'Light', CardRadius: 24, ButtonRadius: 12, UseGradientButtons: false
+                },
+                emerald: {
+                    TenantName: 'Emerald Trust', PrimaryColor: '#047857', SecondaryColor: '#064E3B', BackgroundColor: '#ECFDF5', SurfaceColor: '#FFFFFF', TextColor: '#0F172A', MutedTextColor: '#64748B', BorderColor: '#A7F3D0', SuccessColor: '#059669', WarningColor: '#D97706', DangerColor: '#DC2626', Theme: 'Light', CardRadius: 26, ButtonRadius: 14, UseGradientButtons: true
+                },
+                indigo: {
+                    TenantName: 'Indigo Pro', PrimaryColor: '#4F46E5', SecondaryColor: '#1E1B4B', BackgroundColor: '#EEF2FF', SurfaceColor: '#FFFFFF', TextColor: '#111827', MutedTextColor: '#64748B', BorderColor: '#C7D2FE', SuccessColor: '#16A34A', WarningColor: '#F59E0B', DangerColor: '#DC2626', Theme: 'Light', CardRadius: 30, ButtonRadius: 16, UseGradientButtons: true
+                },
+                dark: {
+                    TenantName: 'Dark Enterprise', PrimaryColor: '#60A5FA', SecondaryColor: '#2563EB', BackgroundColor: '#020617', SurfaceColor: '#0F172A', TextColor: '#E5E7EB', MutedTextColor: '#94A3B8', BorderColor: '#1F2937', SuccessColor: '#22C55E', WarningColor: '#FBBF24', DangerColor: '#F87171', Theme: 'Dark', CardRadius: 30, ButtonRadius: 14, UseGradientButtons: true
+                }
+            };
+
+            function setValue(name, value) {
+                const input = form.querySelector(`[name="${name}"]`);
+                if (!input) return;
+                if (input.type === 'checkbox') input.checked = !!value;
+                else input.value = value;
+                input.dispatchEvent(new Event('input', { bubbles: true }));
+                input.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+
+            function getValue(name) {
+                const input = form.querySelector(`[name="${name}"]`);
+                if (!input) return '';
+                return input.type === 'checkbox' ? input.checked : input.value;
+            }
+
+            function selectedProviders() {
+                return Array.from(form.querySelectorAll('[data-auth-provider]:checked'))
+                    .map(input => ({ scheme: input.dataset.providerScheme || input.value, name: input.dataset.providerName || input.value }));
+            }
+
+            function renderPreviewProviders(providers) {
+                providerList.innerHTML = providers.map(provider => {
+                    const initial = (provider.name || provider.scheme || '?').substring(0, 1).toUpperCase();
+                    const label = (provider.name || provider.scheme || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                    return `<button class="btn btn-outline btn-block external-btn" type="button"><span class="provider-dot">${initial}</span> ${label}</button>`;
+                }).join('');
+            }
+
+            function updatePreview() {
+                const primary = getValue('PrimaryColor') || '#2563EB';
+                const secondary = getValue('SecondaryColor') || '#0F172A';
+                const bg = getValue('BackgroundColor') || '#EFF6FF';
+                const surface = getValue('SurfaceColor') || '#FFFFFF';
+                const text = getValue('TextColor') || '#111827';
+                const muted = getValue('MutedTextColor') || '#64748B';
+                const border = getValue('BorderColor') || '#CBD5E1';
+                const cardRadius = getValue('CardRadius') || '28';
+                const buttonRadius = getValue('ButtonRadius') || '14';
+                const useGradient = getValue('UseGradientButtons');
+                const theme = getValue('Theme');
+                const logo = getValue('LogoUrl');
+                const name = getValue('TenantName') || '@clientTitle';
+
+                stage.style.setProperty('--primary', primary);
+                stage.style.setProperty('--primary-2', secondary);
+                stage.style.setProperty('--bg', bg);
+                stage.style.setProperty('--surface', surface);
+                stage.style.setProperty('--surface-2', surface);
+                stage.style.setProperty('--text', text);
+                stage.style.setProperty('--muted', muted);
+                stage.style.setProperty('--line', border);
+                stage.style.setProperty('--auth-card-radius', `${cardRadius}px`);
+                stage.style.setProperty('--auth-button-radius', `${buttonRadius}px`);
+                stage.style.setProperty('--auth-button-background', useGradient ? `linear-gradient(135deg, ${primary}, ${secondary})` : primary);
+                stage.dataset.theme = theme;
+                tenantName.textContent = name;
+                const localEnabled = getValue('EnableLocalLogin');
+                const providers = selectedProviders();
+                renderPreviewProviders(providers);
+                localLogin.style.display = localEnabled ? '' : 'none';
+                providerArea.style.display = providers.length ? '' : 'none';
+                noMethods.style.display = (!localEnabled && providers.length === 0) ? '' : 'none';
+                if (methodCount) methodCount.textContent = (providers.length + (localEnabled ? 1 : 0)).toString();
+                forgotLink.style.display = (localEnabled && getValue('ShowForgotPasswordLink')) ? '' : 'none';
+                createAccount.style.display = (localEnabled && getValue('ShowCreateAccountLink')) ? '' : 'none';
+                logoBadge.innerHTML = logo ? `<img src="${logo.replace(/"/g, '&quot;')}" alt="${name.replace(/"/g, '&quot;')}" />` : '<i class="bi bi-shield-lock" aria-hidden="true"></i>';
+                customStyle.textContent = `#brandingPreviewStage ${getValue('CustomCss') || ''}`;
+            }
+
+            form.querySelectorAll('[data-color-field]').forEach(field => {
+                const picker = field.querySelector('[data-color-picker]');
+                const text = field.querySelector('[data-color-text]');
+                const sync = source => {
+                    const value = source.value.trim();
+                    if (/^#[0-9a-fA-F]{6}$/.test(value)) {
+                        picker.value = value;
+                        text.value = value.toUpperCase();
+                        updatePreview();
+                    }
+                };
+                picker.addEventListener('input', () => sync(picker));
+                text.addEventListener('input', () => sync(text));
+            });
+
+            form.querySelectorAll('[data-preview-token]').forEach(input => {
+                input.addEventListener('input', updatePreview);
+                input.addEventListener('change', updatePreview);
+            });
+
+            form.querySelectorAll('[data-range-value]').forEach(label => {
+                const name = label.dataset.rangeValue;
+                const input = form.querySelector(`[name="${name}"]`);
+                if (input) input.addEventListener('input', () => label.textContent = input.value);
+            });
+
+            document.querySelectorAll('[data-tab-target]').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('[data-tab-target]').forEach(x => x.classList.remove('active'));
+                    document.querySelectorAll('[data-tab-panel]').forEach(x => x.classList.remove('active'));
+                    tab.classList.add('active');
+                    document.querySelector(`[data-tab-panel="${tab.dataset.tabTarget}"]`)?.classList.add('active');
+                });
+            });
+
+            document.querySelectorAll('[data-preset]').forEach(button => {
+                button.addEventListener('click', () => {
+                    const preset = presets[button.dataset.preset];
+                    Object.entries(preset).forEach(([name, value]) => setValue(name, value));
+                });
+            });
+
+            document.querySelectorAll('[data-copy-color]').forEach(button => {
+                button.addEventListener('click', async () => {
+                    const value = button.closest('[data-color-field]')?.querySelector('[data-color-text]')?.value;
+                    if (value && navigator.clipboard) await navigator.clipboard.writeText(value);
+                });
+            });
+
+            document.querySelectorAll('[data-device]').forEach(button => {
+                button.addEventListener('click', () => {
+                    document.querySelectorAll('[data-device]').forEach(x => x.classList.remove('active'));
+                    button.classList.add('active');
+                    win.classList.toggle('is-mobile', button.dataset.device === 'mobile');
+                });
+            });
+
+            updatePreview();
+        })();
+    </script>
+}

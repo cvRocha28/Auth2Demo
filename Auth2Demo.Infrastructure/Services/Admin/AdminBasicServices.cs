@@ -2,17 +2,11 @@ using Auth2Demo.Application.Services.Admin;
 using Auth2Demo.Domain.Identity;
 using Auth2Demo.Domain.Security;
 using Auth2Demo.Infrastructure.Identity;
+using Auth2Demo.Infrastructure.Repositories.Admin;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using OpenIddict.Abstractions;
 
 namespace Auth2Demo.Infrastructure.Services.Admin;
 
-public interface IAdminAuditLogService
-{
-    Task<IReadOnlyList<AuditLog>> SearchAsync(string? q, string? category);
-    Task<IReadOnlyList<string>> GetCategoriesAsync();
-}
 
 public sealed class AdminAuditLogService : IAdminAuditLogService
 {
@@ -34,11 +28,6 @@ public sealed class AdminAuditLogService : IAdminAuditLogService
     }
 }
 
-public interface IAdminBrandingService
-{
-    Task<BrandingSettings> GetAsync();
-    Task SaveAsync(BrandingSettings model);
-}
 
 public sealed class AdminBrandingService : IAdminBrandingService
 {
@@ -64,29 +53,22 @@ public sealed class AdminBrandingService : IAdminBrandingService
     }
 }
 
-public interface IAdminDashboardService
-{
-    Task<AdminDashboardData> GetAsync();
-}
 
 public sealed class AdminDashboardService : IAdminDashboardService
 {
-    private readonly UserManager<ApplicationUser> _users;
-    private readonly IOpenIddictApplicationManager _apps;
-    private readonly IOpenIddictScopeManager _scopes;
+    private readonly IAdminUserRepository _users;
+    private readonly IAdminOpenIddictMetricsRepository _openIddictMetrics;
     private readonly IAdminAuditLogRepository _auditLogs;
     private readonly IAdminDashboardRepository _dashboard;
 
     public AdminDashboardService(
-        UserManager<ApplicationUser> users,
-        IOpenIddictApplicationManager apps,
-        IOpenIddictScopeManager scopes,
+        IAdminUserRepository users,
+        IAdminOpenIddictMetricsRepository openIddictMetrics,
         IAdminAuditLogRepository auditLogs,
         IAdminDashboardRepository dashboard)
     {
         _users = users;
-        _apps = apps;
-        _scopes = scopes;
+        _openIddictMetrics = openIddictMetrics;
         _auditLogs = auditLogs;
         _dashboard = dashboard;
     }
@@ -96,10 +78,10 @@ public sealed class AdminDashboardService : IAdminDashboardService
         var today = DateTimeOffset.UtcNow.Date;
 
         return new AdminDashboardData(
-            await _users.Users.CountAsync(),
-            await _users.Users.CountAsync(x => x.CreatedAt >= today),
-            await _apps.CountAsync(),
-            await _scopes.CountAsync(),
+            await _users.CountAsync(),
+            await _users.CountCreatedFromAsync(today),
+            (int)await _openIddictMetrics.CountApplicationsAsync(),
+            (int)await _openIddictMetrics.CountScopesAsync(),
             await _dashboard.CountEnabledIdentityProvidersAsync(),
             await _auditLogs.CountLoginEventsFromAsync(today),
             await _auditLogs.CountFailedLoginEventsFromAsync(today),
@@ -110,11 +92,6 @@ public sealed class AdminDashboardService : IAdminDashboardService
     }
 }
 
-public interface IAdminDeviceService
-{
-    Task<IReadOnlyList<UserDevice>> ListAsync();
-    Task ToggleTrustedAsync(Guid id);
-}
 
 public sealed class AdminDeviceService : IAdminDeviceService
 {
@@ -136,12 +113,6 @@ public sealed class AdminDeviceService : IAdminDeviceService
     }
 }
 
-public interface IAdminEmailTemplateService
-{
-    Task<IReadOnlyList<EmailTemplate>> ListAsync();
-    Task<EmailTemplate> GetForEditAsync(Guid id);
-    Task SaveAsync(EmailTemplate model);
-}
 
 public sealed class AdminEmailTemplateService : IAdminEmailTemplateService
 {
@@ -174,10 +145,6 @@ public sealed class AdminEmailTemplateService : IAdminEmailTemplateService
     }
 }
 
-public interface IAdminHealthService
-{
-    Task<AdminHealthData> GetAsync();
-}
 
 public sealed class AdminHealthService : IAdminHealthService
 {
@@ -201,11 +168,6 @@ public sealed class AdminHealthService : IAdminHealthService
     }
 }
 
-public interface IAdminSecuritySettingsService
-{
-    Task<SecuritySettings> GetAsync();
-    Task SaveAsync(SecuritySettings model);
-}
 
 public sealed class AdminSecuritySettingsService : IAdminSecuritySettingsService
 {
@@ -231,11 +193,6 @@ public sealed class AdminSecuritySettingsService : IAdminSecuritySettingsService
     }
 }
 
-public interface IAdminSessionService
-{
-    Task<IReadOnlyList<UserSession>> ListAsync();
-    Task RevokeAsync(Guid id);
-}
 
 public sealed class AdminSessionService : IAdminSessionService
 {
@@ -257,10 +214,6 @@ public sealed class AdminSessionService : IAdminSessionService
     }
 }
 
-public interface IAdminPasskeyService
-{
-    Task<IReadOnlyList<PasskeyCredential>> ListAsync();
-}
 
 public sealed class AdminPasskeyService : IAdminPasskeyService
 {
@@ -277,21 +230,15 @@ public sealed class AdminPasskeyService : IAdminPasskeyService
     }
 }
 
-public interface IAdminPermissionService
-{
-    Task<AdminPermissionIndexData> GetIndexAsync();
-    Task CreateAsync(string name, string displayName, string category, string? description);
-    Task ToggleAsync(Guid roleId, Guid permissionId);
-}
 
 public sealed class AdminPermissionService : IAdminPermissionService
 {
     private readonly IAdminPermissionRepository _permissions;
-    private readonly RoleManager<ApplicationRole> _roles;
+    private readonly IAdminRoleRepository _roles;
 
     public AdminPermissionService(
         IAdminPermissionRepository permissions,
-        RoleManager<ApplicationRole> roles)
+        IAdminRoleRepository roles)
     {
         _permissions = permissions;
         _roles = roles;
@@ -300,10 +247,7 @@ public sealed class AdminPermissionService : IAdminPermissionService
     public async Task<AdminPermissionIndexData> GetIndexAsync()
     {
         return new AdminPermissionIndexData(
-            await _roles.Roles
-                .OrderBy(x => x.Name)
-                .Select(x => new AdminPermissionRoleData(x.Id, x.Name))
-                .ToListAsync(),
+            await _roles.ListPermissionRolesAsync(),
             await _permissions.GetRolePermissionsAsync(),
             await _permissions.GetPermissionsAsync());
     }
@@ -347,22 +291,20 @@ public interface IAdminRoleService
 
 public sealed class AdminRoleService : IAdminRoleService
 {
-    private readonly RoleManager<ApplicationRole> _roleManager;
-    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly IAdminRoleRepository _roles;
+    private readonly IAdminUserRepository _users;
 
     public AdminRoleService(
-        RoleManager<ApplicationRole> roleManager,
-        UserManager<ApplicationUser> userManager)
+        IAdminRoleRepository roles,
+        IAdminUserRepository users)
     {
-        _roleManager = roleManager;
-        _userManager = userManager;
+        _roles = roles;
+        _users = users;
     }
 
     public async Task<IReadOnlyList<ApplicationRole>> ListAsync()
     {
-        return await _roleManager.Roles
-            .OrderBy(x => x.Name)
-            .ToListAsync();
+        return await _roles.ListAsync();
     }
 
     public async Task<(bool Success, string Message)> CreateAsync(string name, string? description)
@@ -374,26 +316,26 @@ public sealed class AdminRoleService : IAdminRoleService
 
         name = name.Trim();
 
-        if (await _roleManager.RoleExistsAsync(name))
+        if (await _roles.ExistsAsync(name))
         {
             return (false, "RoleAlreadyExists");
         }
 
-        var result = await _roleManager.CreateAsync(new ApplicationRole
+        var result = await _roles.CreateAsync(new ApplicationRole
         {
             Id = Guid.NewGuid(),
             Name = name,
             Description = description?.Trim()
         });
 
-        return result.Succeeded
+        return result.Success
             ? (true, "RoleCreatedSuccessfully")
             : (false, string.Join("; ", result.Errors.Select(x => x.Description)));
     }
 
     public async Task<(bool NotFound, bool Success, string Message)> DeleteAsync(Guid id)
     {
-        var role = await _roleManager.FindByIdAsync(id.ToString());
+        var role = await _roles.FindByIdAsync(id);
 
         if (role is null)
         {
@@ -405,16 +347,16 @@ public sealed class AdminRoleService : IAdminRoleService
             return (false, false, "SystemRolesCannotBeDeleted");
         }
 
-        var usersInRole = await _userManager.GetUsersInRoleAsync(role.Name!);
+        var usersInRole = await _users.GetUsersInRoleAsync(role.Name!);
 
         if (usersInRole.Count > 0)
         {
             return (false, false, "RemoveUsersFromRoleBeforeDeleting");
         }
 
-        var result = await _roleManager.DeleteAsync(role);
+        var result = await _roles.DeleteAsync(role);
 
-        return result.Succeeded
+        return result.Success
             ? (false, true, "RoleDeletedSuccessfully")
             : (false, false, string.Join("; ", result.Errors.Select(x => x.Description)));
     }
@@ -432,39 +374,25 @@ public interface IAdminUserService
 
 public sealed class AdminUserService : IAdminUserService
 {
-    private readonly UserManager<ApplicationUser> _userManager;
-    private readonly RoleManager<ApplicationRole> _roleManager;
+    private readonly IAdminUserRepository _users;
+    private readonly IAdminRoleRepository _roles;
 
     public AdminUserService(
-        UserManager<ApplicationUser> userManager,
-        RoleManager<ApplicationRole> roleManager)
+        IAdminUserRepository users,
+        IAdminRoleRepository roles)
     {
-        _userManager = userManager;
-        _roleManager = roleManager;
+        _users = users;
+        _roles = roles;
     }
 
-    public async Task<IReadOnlyList<ApplicationUser>> SearchAsync(string? q)
+    public Task<IReadOnlyList<ApplicationUser>> SearchAsync(string? q)
     {
-        var query = _userManager.Users.AsNoTracking();
-
-        if (!string.IsNullOrWhiteSpace(q))
-        {
-            query = query.Where(x =>
-                x.Email!.Contains(q) ||
-                x.DisplayName.Contains(q));
-        }
-
-        return await query
-            .OrderByDescending(x => x.CreatedAt)
-            .Take(100)
-            .ToListAsync();
+        return _users.SearchAsync(q, 100);
     }
 
-    public async Task<IReadOnlyList<string>> GetRoleNamesAsync()
+    public Task<IReadOnlyList<string>> GetRoleNamesAsync()
     {
-        return await _roleManager.Roles
-            .Select(x => x.Name!)
-            .ToListAsync();
+        return _roles.ListNamesAsync();
     }
 
     public async Task<(bool Success, IEnumerable<IdentityError> Errors)> CreateAsync(AdminUserCreateData model)
@@ -479,9 +407,9 @@ public sealed class AdminUserService : IAdminUserService
             Status = UserStatus.Active
         };
 
-        var result = await _userManager.CreateAsync(user, model.Password);
+        var result = await _users.CreateAsync(user, model.Password);
 
-        if (!result.Succeeded)
+        if (!result.Success)
         {
             return (false, result.Errors);
         }
@@ -491,29 +419,29 @@ public sealed class AdminUserService : IAdminUserService
             return (true, Array.Empty<IdentityError>());
         }
 
-        var rolesResult = await _userManager.AddToRolesAsync(
+        var rolesResult = await _users.AddToRolesAsync(
             user,
             model.Roles.Distinct(StringComparer.OrdinalIgnoreCase));
 
-        if (rolesResult.Succeeded)
+        if (rolesResult.Success)
         {
             return (true, Array.Empty<IdentityError>());
         }
 
-        await _userManager.DeleteAsync(user);
+        await _users.DeleteAsync(user);
         return (false, rolesResult.Errors);
     }
 
     public async Task<AdminUserEditData?> GetForEditAsync(Guid id)
     {
-        var user = await _userManager.FindByIdAsync(id.ToString());
+        var user = await _users.FindByIdAsync(id);
 
         if (user is null)
         {
             return null;
         }
 
-        var roles = await _userManager.GetRolesAsync(user);
+        var roles = await _users.GetRolesAsync(user);
 
         return new AdminUserEditData
         {
@@ -528,7 +456,7 @@ public sealed class AdminUserService : IAdminUserService
 
     public async Task<(bool NotFound, bool Success, IEnumerable<IdentityError> Errors)> UpdateAsync(AdminUserEditData model)
     {
-        var user = await _userManager.FindByIdAsync(model.Id.ToString());
+        var user = await _users.FindByIdAsync(model.Id);
 
         if (user is null)
         {
@@ -542,23 +470,23 @@ public sealed class AdminUserService : IAdminUserService
         user.EmailConfirmed = model.EmailConfirmed;
         user.UpdatedAt = DateTimeOffset.UtcNow;
 
-        var result = await _userManager.UpdateAsync(user);
+        var result = await _users.UpdateAsync(user);
 
-        if (!result.Succeeded)
+        if (!result.Success)
         {
             return (false, false, result.Errors);
         }
 
-        var current = await _userManager.GetRolesAsync(user);
+        var current = await _users.GetRolesAsync(user);
         var selected = model.Roles.Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
         var rolesToRemove = current.Except(selected, StringComparer.OrdinalIgnoreCase).ToArray();
         var rolesToAdd = selected.Except(current, StringComparer.OrdinalIgnoreCase).ToArray();
 
         if (rolesToRemove.Length > 0)
         {
-            var removeResult = await _userManager.RemoveFromRolesAsync(user, rolesToRemove);
+            var removeResult = await _users.RemoveFromRolesAsync(user, rolesToRemove);
 
-            if (!removeResult.Succeeded)
+            if (!removeResult.Success)
             {
                 return (false, false, removeResult.Errors);
             }
@@ -566,9 +494,9 @@ public sealed class AdminUserService : IAdminUserService
 
         if (rolesToAdd.Length > 0)
         {
-            var addResult = await _userManager.AddToRolesAsync(user, rolesToAdd);
+            var addResult = await _users.AddToRolesAsync(user, rolesToAdd);
 
-            if (!addResult.Succeeded)
+            if (!addResult.Success)
             {
                 return (false, false, addResult.Errors);
             }
@@ -579,7 +507,7 @@ public sealed class AdminUserService : IAdminUserService
 
     public async Task<bool> ToggleBlockAsync(Guid id)
     {
-        var user = await _userManager.FindByIdAsync(id.ToString());
+        var user = await _users.FindByIdAsync(id);
 
         if (user is null)
         {
@@ -591,20 +519,12 @@ public sealed class AdminUserService : IAdminUserService
             : UserStatus.Blocked;
 
         user.UpdatedAt = DateTimeOffset.UtcNow;
-        await _userManager.UpdateAsync(user);
+        await _users.UpdateAsync(user);
 
         return true;
     }
 }
 
-public interface IAdminIdentityProviderService
-{
-    Task<IReadOnlyList<IdentityProviderListItemData>> ListAsync();
-    Task<IdentityProviderEditData?> GetForEditAsync(Guid id);
-    Task<SaveIdentityProviderResult> SaveAsync(IdentityProviderEditData model);
-    Task<(bool NotFound, string Message)> ToggleAsync(Guid id);
-    Task<DeleteIdentityProviderResult> DeleteAsync(Guid id);
-}
 
 public sealed class AdminIdentityProviderService : IAdminIdentityProviderService
 {
@@ -770,22 +690,19 @@ public interface IAdminMfaService
 public sealed class AdminMfaService : IAdminMfaService
 {
     private readonly IAdminMfaRepository _mfa;
-    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly IAdminUserRepository _users;
 
     public AdminMfaService(
         IAdminMfaRepository mfa,
-        UserManager<ApplicationUser> userManager)
+        IAdminUserRepository users)
     {
         _mfa = mfa;
-        _userManager = userManager;
+        _users = users;
     }
 
     public async Task<AdminMfaIndexData> GetIndexAsync()
     {
-        var users = await _userManager.Users
-            .AsNoTracking()
-            .OrderBy(x => x.Email)
-            .ToListAsync();
+        var users = await _users.ListForMfaAsync();
 
         var methods = await _mfa.ListMethodsAsync();
         var rows = new List<AdminMfaUserRowData>();
@@ -801,7 +718,7 @@ public sealed class AdminMfaService : IAdminMfaService
                 DisplayName = user.DisplayName,
                 Status = user.Status,
                 TwoFactorEnabled = user.TwoFactorEnabled,
-                RecoveryCodesLeft = await _userManager.CountRecoveryCodesAsync(user),
+                RecoveryCodesLeft = await _users.CountRecoveryCodesAsync(user),
                 LastLoginAt = user.LastLoginAt,
                 LastMfaUsedAt = userMethods
                     .Where(x => x.LastUsedAt.HasValue)
@@ -826,7 +743,7 @@ public sealed class AdminMfaService : IAdminMfaService
 
     public async Task<AdminMfaDetailsData?> GetDetailsAsync(Guid userId)
     {
-        var user = await _userManager.FindByIdAsync(userId.ToString());
+        var user = await _users.FindByIdAsync(userId);
 
         if (user is null)
         {
@@ -839,9 +756,9 @@ public sealed class AdminMfaService : IAdminMfaService
             Email = user.Email ?? user.UserName ?? string.Empty,
             DisplayName = user.DisplayName,
             Status = user.Status,
-            TwoFactorEnabled = await _userManager.GetTwoFactorEnabledAsync(user),
-            RecoveryCodesLeft = await _userManager.CountRecoveryCodesAsync(user),
-            HasAuthenticator = !string.IsNullOrWhiteSpace(await _userManager.GetAuthenticatorKeyAsync(user)),
+            TwoFactorEnabled = await _users.GetTwoFactorEnabledAsync(user),
+            RecoveryCodesLeft = await _users.CountRecoveryCodesAsync(user),
+            HasAuthenticator = !string.IsNullOrWhiteSpace(await _users.GetAuthenticatorKeyAsync(user)),
             Methods = await _mfa.ListMethodsByUserAsync(user.Id)
         };
     }

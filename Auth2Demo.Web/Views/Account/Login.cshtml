@@ -1,20 +1,27 @@
 @using Auth2Demo.Web.Models.Account
+@using Auth2Demo.Web.Services.Branding
+@inject IBrandingResolver BrandingResolver
 @model LoginViewModel
 
 @{
     ViewData["Title"] = T["Login"].Value;
     var externalProviders = Model.ExternalProviders;
+    var branding = await BrandingResolver.ResolveAsync(Context);
 }
 
-<div class="auth-card form-card">
-    <div class="auth-tabs">
-        <a class="auth-tab active" asp-action="Login">@T["Login"]</a>
-        <a class="auth-tab" asp-action="Register">@T["CreateAccount"]</a>
-    </div>
-
-    <div class="auth-header">
-        <div class="auth-badge">🔐</div>
-        <h1>@T["Login"]</h1>
+<div class="auth-card form-card auth-tenant-card">
+    <div class="auth-header auth-tenant-header">
+        <div class="auth-badge">
+            @if (branding.HasLogo)
+            {
+                <img src="@branding.LogoUrl" alt="@branding.TenantName" />
+            }
+            else
+            {
+                <i class="bi bi-shield-lock" aria-hidden="true"></i>
+            }
+        </div>
+        <h1>@branding.TenantName</h1>
         <p>@T["TextAcesseComSeuEMailESenhaPara"]</p>
     </div>
 
@@ -28,103 +35,105 @@
         <div class="alert">@TempData["Error"]</div>
     }
 
-    <form method="post" class="auth-form">
-        @Html.AntiForgeryToken()
+    @if (Model.EnableLocalLogin)
+    {
+            <form method="post" class="auth-form">
+                @Html.AntiForgeryToken()
 
-        <input type="hidden" asp-for="ReturnUrl" />
+                <input type="hidden" asp-for="ReturnUrl" />
 
-        <div asp-validation-summary="ModelOnly" class="validation"></div>
+                <div asp-validation-summary="ModelOnly" class="validation"></div>
 
-        @if (Model.ShowResendEmailConfirmation)
-        {
-            <div class="confirm-email-panel">
-                <div class="confirm-email-icon">📩</div>
+                @if (Model.ShowResendEmailConfirmation)
+                {
+                    <div class="confirm-email-panel">
+                        <div class="confirm-email-icon"><i class="bi bi-envelope-check" aria-hidden="true"></i></div>
 
-                <div class="confirm-email-content">
-                    <strong>@T["EmailNotConfirmed"]</strong>
-                    <p>@T["TemporaryConfirmationLinkNotice"]</p>
+                        <div class="confirm-email-content">
+                            <strong>@T["EmailNotConfirmed"]</strong>
+                            <p>@T["TemporaryConfirmationLinkNotice"]</p>
 
-                    <div class="confirm-email-actions">
-                        <a class="btn btn-outline btn-small"
-                           asp-action="EmailConfirmationSent"
-                           asp-route-email="@Model.Email">
-                            @T["ResendConfirmationEmail"]
-                        </a>
+                            <div class="confirm-email-actions">
+                                <a class="btn btn-outline btn-small"
+                                   asp-action="EmailConfirmationSent"
+                                   asp-route-email="@Model.Email"
+                                   asp-route-returnUrl="@Model.ReturnUrl">
+                                    @T["ResendConfirmationEmail"]
+                                </a>
 
-                        @if (ViewData["EmailConfirmationLink"] is string confirmationLink && !string.IsNullOrWhiteSpace(confirmationLink))
-                        {
-                            <a class="btn btn-small"
-                               href="@confirmationLink">
-                                @T["ConfirmEmail"]
-                            </a>
-                        }
-                    </div>
+                                @if (ViewData["EmailConfirmationLink"] is string confirmationLink && !string.IsNullOrWhiteSpace(confirmationLink))
+                                {
+                                    <a class="btn btn-small" href="@confirmationLink">@T["ConfirmEmail"]</a>
+                                }
+                            </div>
 
-                    @if (ViewData["EmailConfirmationLink"] is string debugConfirmationLink && !string.IsNullOrWhiteSpace(debugConfirmationLink))
-                    {
-                        <div class="confirmation-debug-link">
-                            <label>@T["TemporaryConfirmationLink"]</label>
-                            <input value="@debugConfirmationLink" readonly />
+                            @if (ViewData["EmailConfirmationLink"] is string debugConfirmationLink && !string.IsNullOrWhiteSpace(debugConfirmationLink))
+                            {
+                                <div class="confirmation-debug-link">
+                                    <label>@T["TemporaryConfirmationLink"]</label>
+                                    <input value="@debugConfirmationLink" readonly />
+                                </div>
+                            }
                         </div>
+                    </div>
+                }
+
+                <div class="form-row">
+                    <label asp-for="Email">@T["Email"]</label>
+                    <div class="input-wrap">
+                        <span class="input-icon"><i class="bi bi-envelope" aria-hidden="true"></i></span>
+                        <input class="with-icon" asp-for="Email" placeholder="admin@auth2demo.local" autocomplete="username" />
+                    </div>
+                    <span asp-validation-for="Email"></span>
+                </div>
+
+                <div class="form-row">
+                    <label asp-for="Password">@T["Password"]</label>
+                    <div class="input-wrap">
+                        <span class="input-icon"><i class="bi bi-key" aria-hidden="true"></i></span>
+                        <input class="with-icon" asp-for="Password" placeholder='@T["DigiteSuaSenha"].Value' autocomplete="current-password" />
+                    </div>
+                    <span asp-validation-for="Password"></span>
+                </div>
+
+                <div class="login-options-row">
+                    <label class="check">
+                        <input asp-for="RememberMe" />
+                        <span>@T["LembrarAcesso"]</span>
+                    </label>
+
+                    @if (branding.ShowForgotPasswordLink)
+                    {
+                        <a class="forgot-password-link"
+                           asp-action="ForgotPassword"
+                           asp-route-returnUrl="@Model.ReturnUrl">
+                            @T["ForgotPasswordQuestion"]
+                        </a>
                     }
                 </div>
-            </div>
-        }
 
-        <div class="form-row">
-            <label asp-for="Email">@T["Email"]</label>
-            <div class="input-wrap">
-                <span class="input-icon">✉</span>
-                <input class="with-icon"
-                       asp-for="Email"
-                       placeholder="admin@auth2demo.local"
-                       autocomplete="username" />
-            </div>
-            <span asp-validation-for="Email"></span>
+                <button class="btn btn-block" type="submit">@T["Login"]</button>
+            </form>
+    }
+    else
+    {
+        <div class="alert info auth-method-disabled">
+            <strong>Password login is disabled for this application.</strong>
+            <span>Use one of the enabled sign-in providers below.</span>
         </div>
-
-        <div class="form-row">
-            <label asp-for="Password">@T["Password"]</label>
-            <div class="input-wrap">
-                <span class="input-icon">🔑</span>
-                <input class="with-icon"
-                       asp-for="Password"
-                       placeholder='@T["DigiteSuaSenha"].Value'
-                       autocomplete="current-password" />
-            </div>
-            <span asp-validation-for="Password"></span>
-        </div>
-
-        <div class="login-options-row">
-            <label class="check">
-                <input asp-for="RememberMe" />
-                <span>@T["LembrarAcesso"]</span>
-            </label>
-
-            <a class="forgot-password-link"
-               asp-action="ForgotPassword">
-                @T["ForgotPasswordQuestion"]
-            </a>
-        </div>
-
-        <button class="btn btn-block" type="submit">@T["Login"]</button>
-    </form>
+    }
 
     @if (externalProviders.Count > 0)
     {
-        <div class="external-login-divider">
-            <span>@T["OuContinueCom"]</span>
-        </div>
+        <div class="external-login-divider"><span>@T["OuContinueCom"]</span></div>
 
         <div class="external-login-list">
             @foreach (var provider in externalProviders)
             {
                 <form asp-controller="Account" asp-action="ExternalLogin" method="post">
                     @Html.AntiForgeryToken()
-
                     <input type="hidden" name="provider" value="@provider.Scheme" />
                     <input type="hidden" name="returnUrl" value="@(Model?.ReturnUrl)" />
-
                     <button class="btn btn-outline btn-block external-btn" type="submit">
                         <span class="provider-dot">@provider.DisplayName.Substring(0, 1)</span>
                         @provider.ButtonText
@@ -134,10 +143,18 @@
         </div>
     }
 
-    <p class="form-footer">
-        @T["TextNaoTemUmaConta"]
-        <a asp-action="Register">@T["CreateAccount"]</a>
-    </p>
+    @if (!Model.EnableLocalLogin && externalProviders.Count == 0)
+    {
+        <div class="alert">No authentication method is enabled for this application. Contact the administrator.</div>
+    }
+
+    @if (branding.ShowCreateAccountLink && Model.EnableLocalLogin)
+    {
+        <p class="form-footer">
+            @T["TextNaoTemUmaConta"]
+            <a asp-action="Register" asp-route-returnUrl="@Model.ReturnUrl">@T["CreateAccount"]</a>
+        </p>
+    }
 </div>
 
 @section Scripts {

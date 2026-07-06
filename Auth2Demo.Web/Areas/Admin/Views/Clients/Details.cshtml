@@ -3,252 +3,385 @@
     ViewData["Title"] = $"Client {Model.ClientId}";
 }
 
-<div class="page-heading">
-    <div>
-        <span class="page-kicker">@T["OpenIddict"]</span>
-        <h1>@T["Client"] @Model.ClientId</h1>
-        <p>@T["TextConfigurePermissoesScopesRedirectsEDadosDoAplicativo"]</p>
-    </div>
-    <div class="actions-row">
-        <a class="btn" asp-action="Edit" asp-route-clientId="@Model.ClientId">@T["Edit"]</a>
-        <a class="btn ghost" asp-action="Index">@T["Back"]</a>
-    </div>
-</div>
-
-@if (TempData["GeneratedSecret"] is string generatedSecret)
-{
-    <div class="alert">
-        <strong>@T["ClientSecretGenerated"]</strong>
-        <pre>@generatedSecret</pre>
-        <p>@T["TextCopieAgoraDepoisEleNaoSeraExibidoNovamente"]</p>
+@section AdminHeader {
+    <span class="admin-page-kicker">@T["AppRegistration"]</span>
+    <h1>@(string.IsNullOrWhiteSpace(Model.DisplayName) ? Model.ClientId : Model.DisplayName)</h1>
+    <p>@T["ClientDetailsIntro"]</p>
+    <div class="admin-page-meta">
+        <span><strong>@T["ApplicationClientId"]:</strong> <code>@Model.ClientId</code></span>
+        <span><strong>@T["Type"]:</strong> @Model.ClientType</span>
+        <span><strong>@T["Consent"]:</strong> @Model.ConsentType</span>
     </div>
 }
 
+@section AdminActions {
+    <a class="btn" asp-action="Edit" asp-route-clientId="@Model.ClientId"><i class="bi bi-pencil-square"></i> @T["EditConfiguration"]</a>
+    <a class="btn ghost" asp-action="Index"><i class="bi bi-arrow-left"></i> @T["Back"]</a>
+}
+
+
+
+@if (TempData["GeneratedSecret"] is string generatedSecret)
+{
+    var secretValue = generatedSecret.Contains(':')
+        ? generatedSecret[(generatedSecret.IndexOf(':') + 1)..].Trim()
+        : generatedSecret;
+
+    <div class="alert secret-alert professional-secret-alert">
+        <strong>@T["ClientSecretGenerated"]</strong>
+        <p>@T["CopyNowSecretNotShownAgain"]</p>
+
+        <div class="generated-secret-copy-row">
+            <pre>@generatedSecret</pre>
+
+            <button type="button"
+                    class="btn generated-secret-copy-button"
+                    data-copy="@secretValue"
+                    title="@T["CopySecret"]">
+                <i class="bi bi-copy"></i>
+                @T["CopySecret"]
+            </button>
+        </div>
+    </div>
+}
 @if (TempData["Success"] is string success)
 {
     <div class="alert success">@success</div>
 }
 
-<div class="client-grid">
-    <section class="card client-summary-card">
-        <div class="section-title">
-            <div>
-                <span class="page-kicker">@T["General"]</span>
-                <h2>@T["ClientInformation"]</h2>
-            </div>
-        </div>
-
-        <dl class="details-list">
-            <dt>@T["ClientId"]</dt>
-            <dd><code>@Model.ClientId</code></dd>
-
-            <dt>@T["DisplayName"]</dt>
-            <dd>@Model.DisplayName</dd>
-
-            <dt>@T["Type"]</dt>
-            <dd><span class="badge">@Model.ClientType</span></dd>
-
-            <dt>@T["Consent"]</dt>
-            <dd><span class="badge">@Model.ConsentType</span></dd>
-
-            <dt>@T["Pkce"]</dt>
-            <dd><span class="badge">@(Model.RequirePkce ? T["Required"].Value : T["NotRequired"].Value)</span></dd>
-        </dl>
+<div class="azure-overview-grid professional-overview-grid">
+    <section class="card azure-stat-card">
+        <span class="page-kicker">@T["Secrets"]</span>
+        <strong>@Model.ActiveSecretCount</strong>
+        <small>@T["ActivePlural"]</small>
     </section>
-
-    <section class="card client-summary-card">
-        <div class="section-title">
-            <div>
-                <span class="page-kicker">@T["Flow"]</span>
-                <h2>@T["GrantsEEndpoints"]</h2>
-            </div>
-        </div>
-
-        <h3>@T["GrantTypes"]</h3>
-        @if (Model.GrantTypes.Count == 0)
-        {
-            <p class="muted">@T["NoGrantTypeAllowed"]</p>
-        }
-        else
-        {
-            foreach (var grant in Model.GrantTypes)
-            {
-                <span class="badge">@grant</span>
-            }
-        }
-
-        <h3>@T["Endpoints"]</h3>
-        @if (Model.Endpoints.Count == 0)
-        {
-            <p class="muted">@T["NoEndpointAllowed"]</p>
-        }
-        else
-        {
-            foreach (var endpoint in Model.Endpoints)
-            {
-                <span class="badge">@endpoint</span>
-            }
-        }
+    <section class="card azure-stat-card">
+        <span class="page-kicker">@T["Scopes"]</span>
+        <strong>@Model.AllowedScopes.Count</strong>
+        <small>@T["AllowedPlural"]</small>
     </section>
-
-    <section class="card client-summary-card">
-        <div class="section-title">
-            <div>
-                <span class="page-kicker">@T["OAuthOidc"]</span>
-                <h2>@T["RedirectUris"]</h2>
-            </div>
-        </div>
-
-        <h3>@T["LoginCallback"]</h3>
-        @if (Model.RedirectUris.Count == 0)
-        {
-            <p class="muted">@T["NoRedirectUriRegistered"]</p>
-        }
-        else
-        {
-            <ul class="uri-list">
-                @foreach (var uri in Model.RedirectUris)
-                {
-                    <li><code>@uri</code></li>
-                }
-            </ul>
-        }
-
-        <h3>@T["LogoutCallback"]</h3>
-        @if (Model.PostLogoutRedirectUris.Count == 0)
-        {
-            <p class="muted">@T["NoPostLogoutRedirectUriRegistered"]</p>
-        }
-        else
-        {
-            <ul class="uri-list">
-                @foreach (var uri in Model.PostLogoutRedirectUris)
-                {
-                    <li><code>@uri</code></li>
-                }
-            </ul>
-        }
+    <section class="card azure-stat-card">
+        <span class="page-kicker">@T["RedirectUris"]</span>
+        <strong>@Model.RedirectUris.Count</strong>
+        <small>@T["LoginCallbacks"]</small>
+    </section>
+    <section class="card azure-stat-card">
+        <span class="page-kicker">@T["Claims"]</span>
+        <strong>@Model.RequiredClaims.Count</strong>
+        <small>@T["RequiredPlural"]</small>
     </section>
 </div>
 
-<section class="card scopes-card">
-    <div class="section-title">
-        <div>
-            <span class="page-kicker">@T["AllowedScopes"]</span>
-            <h2>@T["ScopesPermitidosParaEsteClient"]</h2>
-            <p>@T["TextMarqueSomenteOsScopesQueEsteAplicativoPode"]</p>
-        </div>
-    </div>
+<div class="azure-client-layout professional-client-layout">
+    <aside class="card azure-side-nav professional-side-nav">
+        <a href="#overview">@T["Overview"]</a>
+        <a href="#secrets">@T["CertificatesAndSecrets"]</a>
+        <a href="#claims">@T["RequiredClaims"]</a>
+        <a href="#redirects">@T["RedirectUris"]</a>
+        <a href="#scopes">@T["ApiPermissions"]</a>
+        <a href="#branding">Branding</a>
+        <a href="#danger">@T["DangerZone"]</a>
+    </aside>
 
-    <form method="post" asp-action="UpdateScopes">
-        @Html.AntiForgeryToken()
-        <input type="hidden" name="ClientId" value="@Model.ClientId" />
+    <main class="azure-client-main">
+        <section id="overview" class="card client-summary-card professional-section-card">
+            <div class="section-title">
+                <div>
+                    <span class="page-kicker">@T["Overview"]</span>
+                    <h2>@T["ClientInformation"]</h2>
+                </div>
+            </div>
 
-        <div class="scope-options">
-            @foreach (var scope in Model.AvailableScopes)
+            <dl class="details-list azure-details-list professional-details-list">
+                <dt>@T["ApplicationClientId"]</dt>
+                <dd><code>@Model.ClientId</code></dd>
+                <dt>@T["Name"]</dt>
+                <dd>@Model.DisplayName</dd>
+                <dt>@T["Type"]</dt>
+                <dd><span class="badge">@Model.ClientType</span></dd>
+                <dt>@T["Consent"]</dt>
+                <dd><span class="badge">@Model.ConsentType</span></dd>
+                <dt>PKCE</dt>
+                <dd><span class="badge">@(Model.RequirePkce ? T["Required"].Value : T["NotRequired"].Value)</span></dd>
+                <dt>@T["Status"]</dt>
+                <dd><span class="badge @(Model.IsEnabled ? "success-badge" : "warning-badge")">@(Model.IsEnabled ? T["Enabled"].Value : T["Disabled"].Value)</span></dd>
+                <dt>@T["CreatedAt"]</dt>
+                <dd>@(Model.CreatedAt?.ToString("yyyy-MM-dd HH:mm") ?? "-")</dd>
+                <dt>@T["UpdatedAt"]</dt>
+                <dd>@(Model.UpdatedAt?.ToString("yyyy-MM-dd HH:mm") ?? "-")</dd>
+            </dl>
+
+            <div class="professional-info-grid">
+                <div>
+                    <h3>@T["GrantTypes"]</h3>
+                    <div class="badge-list">
+                        @if (Model.GrantTypes.Count == 0)
+                        {
+                            <p class="muted">@T["NoGrantTypeAllowed"]</p>
+                        }
+                        else
+                        {
+                            foreach (var grant in Model.GrantTypes)
+                            {
+                                <span class="badge">@grant</span>
+                            }
+                        }
+                    </div>
+                </div>
+                <div>
+                    <h3>@T["Endpoints"]</h3>
+                    <div class="badge-list">
+                        @if (Model.Endpoints.Count == 0)
+                        {
+                            <p class="muted">@T["NoEndpointAllowed"]</p>
+                        }
+                        else
+                        {
+                            foreach (var endpoint in Model.Endpoints)
+                            {
+                                <span class="badge">@endpoint</span>
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="secrets" class="card scopes-card professional-section-card">
+            <div class="section-title">
+                <div>
+                    <span class="page-kicker">@T["CertificatesAndSecrets"]</span>
+                    <h2>@T["ClientSecrets"]</h2>
+                    <p class="muted">@T["ClientSecretsDetailsHelp"]</p>
+                </div>
+            </div>
+
+            <form method="post" asp-action="AddSecret" asp-route-clientId="@Model.ClientId" class="professional-add-secret-form">
+                @Html.AntiForgeryToken()
+                <div>
+                    <label>@T["Description"]</label>
+                    <input name="displayName" placeholder="@T["SecretDescriptionPlaceholderLong"]" />
+                </div>
+                <div>
+                    <label>@T["Expires"]</label>
+                    <select name="expiration">
+                        <option value="Never">@T["NeverExpires"]</option>
+                        <option value="Months6">@T["SixMonths"]</option>
+                        <option value="Months12">@T["TwelveMonths"]</option>
+                        <option value="Months24">@T["TwentyFourMonths"]</option>
+                    </select>
+                </div>
+                <button class="btn" type="submit"><i class="bi bi-plus-lg"></i> @T["NewClientSecret"]</button>
+            </form>
+
+            @if (Model.Secrets.Count == 0)
             {
-                <label class="scope-option @(scope.IsAllowed ? "selected" : string.Empty)">
-                    <input type="checkbox" name="SelectedScopes" value="@scope.Name" checked="@scope.IsAllowed" />
-                    <span>
-                        <strong>@scope.Name</strong>
-                        <small>@scope.DisplayName</small>
-                    </span>
-                </label>
+                <div class="empty-state professional-empty-state">
+                    <strong>@T["NoSecretsRegistered"]</strong>
+                    <p>@T["CreateSecretForConfidentialHelp"]</p>
+                </div>
             }
-        </div>
+            else
+            {
+                <div class="table-wrap azure-table-wrap professional-secrets-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>@T["Description"]</th>
+                                <th>@T["Expires"]</th>
+                                <th>@T["Value"]</th>
+                                <th>@T["SecretId"]</th>
+                                <th>@T["Status"]</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var clientSecret in Model.Secrets)
+                            {
+                                <tr class="@(clientSecret.IsActive ? string.Empty : "muted-row")">
+                                    <td>
+                                        <strong>@clientSecret.Description</strong>
+                                        <small>@T["CreatedAtUtc"]: @clientSecret.CreatedAtUtc.ToString("yyyy-MM-dd HH:mm")</small>
+                                    </td>
+                                    <td>@clientSecret.ExpirationLabel</td>
+                                    <td><code class="secret-value-mask">@clientSecret.MaskedValue</code></td>
+                                    <td>
+                                        <div class="secret-id-cell">
+                                            <code>@clientSecret.SecretIdDisplay</code>
+                                            <button type="button" class="icon-copy-button" data-copy="@clientSecret.SecretIdDisplay" title="@T["CopySecretId"]"><i class="bi bi-copy"></i></button>
+                                        </div>
+                                    </td>
+                                    <td><span class="badge @(clientSecret.IsActive ? "success-badge" : "warning-badge")">@clientSecret.StatusLabel</span></td>
+                                    <td class="table-actions">
+                                        @if (clientSecret.IsActive)
+                                        {
+                                            <form method="post" asp-action="RevokeSecret" asp-route-clientId="@Model.ClientId" asp-route-secretId="@clientSecret.Id" onsubmit="return confirm('@T["ConfirmRevokeSecret"]');">
+                                                @Html.AntiForgeryToken()
+                                                <button class="btn ghost danger-text" type="submit">@T["Revoke"]</button>
+                                            </form>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </section>
 
-        <div class="actions-row">
-            <button class="btn" type="submit">@T["SaveScopes"]</button>
-        </div>
-    </form>
-</section>
+        <section id="claims" class="card scopes-card professional-section-card">
+            <div class="section-title">
+                <div>
+                    <span class="page-kicker">@T["RequiredClaims"]</span>
+                    <h2>@T["RequiredClaimsTitle"]</h2>
+                    <p class="muted">@T["RequiredClaimsDetailsHelp"]</p>
+                </div>
+            </div>
 
-
-<section class="card scopes-card">
-    <div class="section-title">
-        <div>
-            <span class="page-kicker">Secrets</span>
-            <h2>Client secrets</h2>
-            <p class="muted">Crie mais de uma secret para este client, no mesmo estilo de App registrations &gt; Certificates &amp; secrets.</p>
-        </div>
-    </div>
-
-    @if (Model.Secrets.Count == 0)
-    {
-        <p class="muted">Nenhuma secret registrada no histórico deste client.</p>
-    }
-    else
-    {
-        <div class="table-wrap">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Nome</th>
-                        <th>Criada em UTC</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var clientSecret in Model.Secrets)
+            @if (Model.RequiredClaims.Count == 0)
+            {
+                <p class="muted">@T["NoRequiredClaimConfigured"]</p>
+            }
+            else
+            {
+                <div class="badge-list professional-claim-list">
+                    @foreach (var claim in Model.RequiredClaims)
                     {
-                        <tr>
-                            <td>@clientSecret.DisplayName</td>
-                            <td>@clientSecret.CreatedAtUtc.ToString("yyyy-MM-dd HH:mm:ss")</td>
-                        </tr>
+                        <span class="badge">@claim.Type=@claim.Value</span>
                     }
-                </tbody>
-            </table>
-        </div>
-    }
+                </div>
+            }
+        </section>
 
-    <form method="post" asp-action="AddSecret" asp-route-clientId="@Model.ClientId" class="actions-row">
-        @Html.AntiForgeryToken()
-        <input name="displayName" placeholder="Ex.: Rareles local development" />
-        <button class="btn" type="submit">Adicionar secret</button>
-    </form>
-</section>
+        <section id="redirects" class="card client-summary-card professional-section-card">
+            <div class="section-title">
+                <div>
+                    <span class="page-kicker">@T["Authentication"]</span>
+                    <h2>@T["RedirectUris"]</h2>
+                </div>
+            </div>
 
-<section class="card scopes-card">
-    <div class="section-title">
-        <div>
-            <span class="page-kicker">Claims</span>
-            <h2>Claims obrigatórias</h2>
-            <p class="muted">O usuário precisa possuir estas claims para usar este client no fluxo de autorização.</p>
-        </div>
-    </div>
+            <div class="professional-info-grid">
+                <div>
+                    <h3>@T["LoginCallback"]</h3>
+                    @if (Model.RedirectUris.Count == 0)
+                    {
+                        <p class="muted">@T["NoRedirectUriRegistered"]</p>
+                    }
+                    else
+                    {
+                        <ul class="uri-list azure-uri-list professional-uri-list">
+                            @foreach (var uri in Model.RedirectUris)
+                            {
+                                <li><code>@uri</code></li>
+                            }
+                        </ul>
+                    }
+                </div>
+                <div>
+                    <h3>@T["LogoutCallback"]</h3>
+                    @if (Model.PostLogoutRedirectUris.Count == 0)
+                    {
+                        <p class="muted">@T["NoPostLogoutRedirectUriRegistered"]</p>
+                    }
+                    else
+                    {
+                        <ul class="uri-list azure-uri-list professional-uri-list">
+                            @foreach (var uri in Model.PostLogoutRedirectUris)
+                            {
+                                <li><code>@uri</code></li>
+                            }
+                        </ul>
+                    }
+                </div>
+            </div>
+        </section>
 
-    @if (Model.RequiredClaims.Count == 0)
-    {
-        <p class="muted">Nenhuma claim obrigatória configurada.</p>
-    }
-    else
-    {
-        foreach (var claim in Model.RequiredClaims)
-        {
-            <span class="badge">@claim.Type@(string.IsNullOrWhiteSpace(claim.Value) ? string.Empty : $"={claim.Value}")</span>
-        }
-    }
-</section>
+        <section id="scopes" class="card scopes-card professional-section-card">
+            <div class="section-title">
+                <div>
+                    <span class="page-kicker">@T["ApiPermissions"]</span>
+                    <h2>@T["ScopesAllowedForThisClient"]</h2>
+                    <p>@T["SelectOnlyScopesThisClientCanRequest"]</p>
+                </div>
+            </div>
 
-<section class="card danger-zone">
-    <div>
-        <span class="page-kicker">@T["Secret"]</span>
-        <h2>@T["RegenerateSecret"]</h2>
-        <p>@T["TextInvalidaOSecretAtualDepoisVocePrecisaAtualizar"]</p>
-    </div>
-    <form method="post" asp-action="RegenerateSecret" asp-route-clientId="@Model.ClientId" onsubmit='return confirm("@T["TextRegenerarOSecretDesteClientOSistemaCliente"].Value")'>
-        @Html.AntiForgeryToken()
-        <button class="btn" type="submit">@T["RegenerateSecret"]</button>
-    </form>
-</section>
+            <form method="post" asp-action="UpdateScopes">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="ClientId" value="@Model.ClientId" />
 
-<section class="card danger-zone">
-    <div>
-        <span class="page-kicker danger-text">@T["DangerZone"]</span>
-        <h2>@T["DeleteClient"]</h2>
-        <p>@T["TextRemoveEstaAplicacaoEImpedeNovosLoginsUsando"]</p>
-    </div>
-    <form method="post" asp-action="Delete" asp-route-clientId="@Model.ClientId" onsubmit='return confirm("@T["TextTemCertezaQueDesejaExcluirEsteClient"].Value")'>
-        @Html.AntiForgeryToken()
-        <button class="danger" type="submit">@T["DeleteClient"]</button>
-    </form>
-</section>
+                <div class="scope-options professional-scope-options">
+                    @foreach (var scope in Model.AvailableScopes)
+                    {
+                        <label class="scope-option @(scope.IsAllowed ? "selected" : string.Empty)">
+                            <input type="checkbox" name="SelectedScopes" value="@scope.Name" checked="@scope.IsAllowed" />
+                            <span>
+                                <strong>@scope.Name</strong>
+                                <small>@scope.DisplayName</small>
+                            </span>
+                        </label>
+                    }
+                </div>
+
+                <div class="actions-row">
+                    <button class="btn" type="submit">@T["SaveScopes"]</button>
+                </div>
+            </form>
+        </section>
+
+
+        <section id="branding" class="card client-summary-card professional-section-card">
+            <div class="section-title">
+                <div>
+                    <span class="page-kicker">Branding</span>
+                    <h2>Authentication screen layout</h2>
+                    <p class="muted">Configure a custom logo, colors, theme and CSS for this client when it sends users to the Auth2Demo login and consent screens.</p>
+                </div>
+                <a class="btn ghost" asp-action="Branding" asp-route-clientId="@Model.ClientId"><i class="bi bi-palette"></i> Configure branding</a>
+            </div>
+
+            <dl class="details-list azure-details-list professional-details-list">
+                <dt>Status</dt>
+                <dd><span class="badge @(Model.Branding?.IsEnabled == true ? "success-badge" : "warning-badge")">@(Model.Branding?.IsEnabled == true ? "Custom branding enabled" : "Using global branding")</span></dd>
+                <dt>Display name</dt>
+                <dd>@(string.IsNullOrWhiteSpace(Model.Branding?.TenantName) ? "Global default" : Model.Branding!.TenantName)</dd>
+                <dt>Theme</dt>
+                <dd>@(Model.Branding?.Theme ?? "Global default")</dd>
+                <dt>Primary color</dt>
+                <dd><code>@(Model.Branding?.PrimaryColor ?? "Global default")</code></dd>
+            </dl>
+        </section>
+
+        <section class="card danger-zone professional-danger-zone">
+            <div>
+                <span class="page-kicker danger-text">@T["DangerZone"]</span>
+                <h2>@T["DeleteClient"]</h2>
+                <p>@T["DeleteClientHelp"]</p>
+            </div>
+            <form method="post" asp-action="Delete" asp-route-clientId="@Model.ClientId" onsubmit="return confirm('@T["ConfirmDeleteClient"]');">
+                @Html.AntiForgeryToken()
+                <button class="danger" type="submit">@T["DeleteClient"]</button>
+            </form>
+        </section>
+    </main>
+</div>
+
+@section Scripts {
+    <script>
+        document.querySelectorAll('[data-copy]').forEach(button => {
+            button.addEventListener('click', async () => {
+                const value = button.getAttribute('data-copy');
+                if (!value) return;
+
+                try {
+                    await navigator.clipboard.writeText(value);
+                    const previous = button.innerHTML;
+                    button.innerHTML = '<i class="bi bi-check-lg" aria-hidden="true"></i> @T["Copied"]';
+                    setTimeout(() => button.innerHTML = previous, 1200);
+                } catch {
+                    window.prompt('@T["CopyValuePrompt"]', value);
+                }
+            });
+        });
+    </script>
+}

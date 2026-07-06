@@ -4,19 +4,17 @@
     ViewData["Title"] = T["IdentityProviders"].Value;
 }
 
-<div class="page-heading">
-    <div>
-        <span class="page-kicker">@T["Customization"]</span>
+@section AdminHeader {
+    <span class="admin-page-kicker">@T["Customization"]</span>
+    <h1>@T["IdentityProviders"]</h1>
+    <p>@T["TextGoogleMicrosoftEOidcCustomizado"]</p>
+}
 
-        <h1>@T["IdentityProviders"]</h1>
-
-        <p>@T["TextGoogleMicrosoftEOidcCustomizado"]</p>
-    </div>
-
+@section AdminActions {
     <a class="btn" asp-action="Create">
-        @T["NewProvider"]
-    </a>
-</div>
+            @T["NewProvider"]
+        </a>
+}
 
 @if (TempData["Success"] is not null)
 {
