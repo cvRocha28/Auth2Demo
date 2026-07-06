@@ -27,6 +27,10 @@ public sealed class ClientFormViewModel
 
     public string Scopes { get; set; } = "openid profile email roles offline_access";
 
+    public string GrantTypes { get; set; } = "authorization_code refresh_token";
+
+    public string RequiredClaims { get; set; } = string.Empty;
+
     public bool AllowAuthorizationCode { get; set; } = true;
 
     public bool AllowRefreshToken { get; set; } = true;

@@ -5,6 +5,7 @@ using Auth2Demo.Web.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
+using System.Globalization;
 using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using Auth2Demo.Web;
@@ -23,6 +24,9 @@ public sealed class ClientsController : Controller
         Scopes.Roles,
         Scopes.OfflineAccess
     ];
+
+    private const string RequiredClaimPermissionPrefix = "custom:required_claim:";
+    private const string ClientSecretPermissionPrefix = "custom:client_secret:";
 
     private readonly IOpenIddictApplicationManager _applicationManager;
     private readonly IOpenIddictScopeManager _scopeManager;
@@ -92,6 +96,7 @@ public sealed class ClientsController : Controller
         if (!string.IsNullOrWhiteSpace(secret))
         {
             descriptor.ClientSecret = secret;
+            AddSecretMetadata(descriptor, "Default secret");
         }
 
         await _applicationManager.CreateAsync(descriptor);
@@ -235,6 +240,32 @@ public sealed class ClientsController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    public async Task<IActionResult> AddSecret(string clientId, string? displayName)
+    {
+        var app = await _applicationManager.FindByClientIdAsync(clientId);
+
+        if (app is null)
+        {
+            return NotFound();
+        }
+
+        var descriptor = new OpenIddictApplicationDescriptor();
+        await _applicationManager.PopulateAsync(descriptor, app);
+
+        descriptor.ClientType = ClientTypes.Confidential;
+        descriptor.ClientSecret = _secretGenerator.GenerateSecret();
+        AddSecretMetadata(descriptor, string.IsNullOrWhiteSpace(displayName) ? "Client secret" : displayName.Trim());
+
+        await _applicationManager.UpdateAsync(app, descriptor);
+
+        TempData["GeneratedSecret"] = descriptor.ClientSecret;
+        TempData["Success"] = "Secret created successfully. Copy it now because it will not be shown again.";
+
+        return RedirectToAction(nameof(Details), new { clientId });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(string clientId)
     {
         var app = await _applicationManager.FindByClientIdAsync(clientId);
@@ -270,6 +301,8 @@ public sealed class ClientsController : Controller
             RedirectUris = string.Join(Environment.NewLine, redirectUris),
             PostLogoutRedirectUris = string.Join(Environment.NewLine, postLogoutRedirectUris),
             Scopes = string.Join(Environment.NewLine, ExtractScopes(permissions)),
+            GrantTypes = string.Join(Environment.NewLine, ExtractGrantTypes(permissions)),
+            RequiredClaims = string.Join(Environment.NewLine, ExtractRequiredClaims(permissions).Select(claim => string.IsNullOrWhiteSpace(claim.Value) ? claim.Type : $"{claim.Type}={claim.Value}")),
             AllowAuthorizationCode = permissions.Contains(Permissions.GrantTypes.AuthorizationCode),
             AllowRefreshToken = permissions.Contains(Permissions.GrantTypes.RefreshToken),
             AllowClientCredentials = permissions.Contains(Permissions.GrantTypes.ClientCredentials),
@@ -301,6 +334,8 @@ public sealed class ClientsController : Controller
             PostLogoutRedirectUris = (await _applicationManager.GetPostLogoutRedirectUrisAsync(app)).ToArray(),
             AllowedScopes = allowedScopes,
             GrantTypes = ExtractGrantTypes(permissions).ToArray(),
+            Secrets = ExtractSecrets(permissions).ToArray(),
+            RequiredClaims = ExtractRequiredClaims(permissions).ToArray(),
             Endpoints = ExtractEndpoints(permissions).ToArray(),
             RequirePkce = requirements.Contains(Requirements.Features.ProofKeyForCodeExchange),
             AvailableScopes = availableScopes
@@ -363,10 +398,19 @@ public sealed class ClientsController : Controller
         descriptor.ClientType = model.ClientType;
         descriptor.ConsentType = model.ConsentType;
 
+        var existingSecretPermissions = descriptor.Permissions
+            .Where(permission => permission.StartsWith(ClientSecretPermissionPrefix, StringComparison.Ordinal))
+            .ToArray();
+
         descriptor.RedirectUris.Clear();
         descriptor.PostLogoutRedirectUris.Clear();
         descriptor.Permissions.Clear();
         descriptor.Requirements.Clear();
+
+        foreach (var permission in existingSecretPermissions)
+        {
+            descriptor.Permissions.Add(permission);
+        }
 
         foreach (var uri in Split(model.RedirectUris))
         {
@@ -381,6 +425,7 @@ public sealed class ClientsController : Controller
         AddEndpointPermissions(descriptor, model);
         AddGrantTypePermissions(descriptor, model);
         AddScopePermissions(descriptor, Split(model.Scopes));
+        AddRequiredClaimPermissions(descriptor, ParseRequiredClaims(model.RequiredClaims));
 
         if (model.RequirePkce && model.AllowAuthorizationCode)
         {
@@ -418,20 +463,21 @@ public sealed class ClientsController : Controller
 
     private static void AddGrantTypePermissions(OpenIddictApplicationDescriptor descriptor, ClientFormViewModel model)
     {
-        if (model.AllowAuthorizationCode)
+        foreach (var grantType in Split(model.GrantTypes))
         {
-            descriptor.Permissions.Add(Permissions.GrantTypes.AuthorizationCode);
-            descriptor.Permissions.Add(Permissions.ResponseTypes.Code);
-        }
+            var normalizedGrantType = NormalizeGrantType(grantType);
 
-        if (model.AllowRefreshToken)
-        {
-            descriptor.Permissions.Add(Permissions.GrantTypes.RefreshToken);
-        }
+            if (string.IsNullOrWhiteSpace(normalizedGrantType))
+            {
+                continue;
+            }
 
-        if (model.AllowClientCredentials)
-        {
-            descriptor.Permissions.Add(Permissions.GrantTypes.ClientCredentials);
+            descriptor.Permissions.Add(Permissions.Prefixes.GrantType + normalizedGrantType);
+
+            if (string.Equals(normalizedGrantType, GrantTypes.AuthorizationCode, StringComparison.Ordinal))
+            {
+                descriptor.Permissions.Add(Permissions.ResponseTypes.Code);
+            }
         }
     }
 
@@ -446,6 +492,21 @@ public sealed class ClientsController : Controller
         }
     }
 
+    private static void AddRequiredClaimPermissions(OpenIddictApplicationDescriptor descriptor, IEnumerable<ClientRequiredClaimViewModel> claims)
+    {
+        foreach (var claim in claims
+            .Where(claim => !string.IsNullOrWhiteSpace(claim.Type))
+            .DistinctBy(claim => claim.Type + "\u001f" + claim.Value))
+        {
+            descriptor.Permissions.Add(RequiredClaimPermissionPrefix + EncodePart(claim.Type) + "=" + EncodePart(claim.Value));
+        }
+    }
+
+    private static void AddSecretMetadata(OpenIddictApplicationDescriptor descriptor, string displayName)
+    {
+        descriptor.Permissions.Add(ClientSecretPermissionPrefix + Guid.NewGuid().ToString("N") + "|" + EncodePart(displayName) + "|" + DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture));
+    }
+
     private static void RemovePermissionsByPrefix(OpenIddictApplicationDescriptor descriptor, string prefix)
     {
         foreach (var permission in descriptor.Permissions
@@ -453,6 +514,44 @@ public sealed class ClientsController : Controller
             .ToArray())
         {
             descriptor.Permissions.Remove(permission);
+        }
+    }
+
+    private static IEnumerable<ClientSecretViewModel> ExtractSecrets(IEnumerable<string> permissions)
+    {
+        return permissions
+            .Where(permission => permission.StartsWith(ClientSecretPermissionPrefix, StringComparison.Ordinal))
+            .Select(permission => permission[ClientSecretPermissionPrefix.Length..].Split('|'))
+            .Where(parts => parts.Length >= 3)
+            .Select(parts => new ClientSecretViewModel
+            {
+                Id = parts[0],
+                DisplayName = DecodePart(parts[1]),
+                CreatedAtUtc = DateTime.TryParse(parts[2], CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var createdAt)
+                    ? createdAt
+                    : DateTime.MinValue
+            })
+            .OrderByDescending(secret => secret.CreatedAtUtc);
+    }
+
+    private static IEnumerable<ClientRequiredClaimViewModel> ExtractRequiredClaims(IEnumerable<string> permissions)
+    {
+        foreach (var permission in permissions.Where(permission => permission.StartsWith(RequiredClaimPermissionPrefix, StringComparison.Ordinal)))
+        {
+            var value = permission[RequiredClaimPermissionPrefix.Length..];
+            var separator = value.IndexOf('=');
+
+            if (separator < 0)
+            {
+                yield return new ClientRequiredClaimViewModel { Type = DecodePart(value) };
+                continue;
+            }
+
+            yield return new ClientRequiredClaimViewModel
+            {
+                Type = DecodePart(value[..separator]),
+                Value = DecodePart(value[(separator + 1)..])
+            };
         }
     }
 
@@ -499,6 +598,45 @@ public sealed class ClientsController : Controller
 
         return ClientKind.WebApplication;
     }
+
+    private static IEnumerable<ClientRequiredClaimViewModel> ParseRequiredClaims(string? value)
+    {
+        foreach (var item in (value ?? string.Empty).Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            var separator = item.IndexOf('=');
+            if (separator < 0)
+            {
+                yield return new ClientRequiredClaimViewModel { Type = item.Trim(), Value = string.Empty };
+                continue;
+            }
+
+            yield return new ClientRequiredClaimViewModel
+            {
+                Type = item[..separator].Trim(),
+                Value = item[(separator + 1)..].Trim()
+            };
+        }
+    }
+
+    private static string NormalizeGrantType(string value)
+    {
+        var normalized = value.Trim().Replace("_", "", StringComparison.Ordinal).ToLowerInvariant();
+
+        return normalized switch
+        {
+            "authorizationcode" => GrantTypes.AuthorizationCode,
+            "authorization_code" => GrantTypes.AuthorizationCode,
+            "clientcredentials" => GrantTypes.ClientCredentials,
+            "client_credentials" => GrantTypes.ClientCredentials,
+            "refreshtoken" => GrantTypes.RefreshToken,
+            "refresh_token" => GrantTypes.RefreshToken,
+            _ => normalized
+        };
+    }
+
+    private static string EncodePart(string value) => Uri.EscapeDataString(value ?? string.Empty);
+
+    private static string DecodePart(string value) => Uri.UnescapeDataString(value ?? string.Empty);
 
     private static int GetScopeSortOrder(string scope)
     {
@@ -550,6 +688,33 @@ public sealed class ClientsController : Controller
             model.RedirectUris = string.Empty;
             model.PostLogoutRedirectUris = string.Empty;
         }
+
+        if (string.IsNullOrWhiteSpace(model.GrantTypes))
+        {
+            var grantTypes = new List<string>();
+
+            if (model.AllowAuthorizationCode)
+            {
+                grantTypes.Add(GrantTypes.AuthorizationCode);
+            }
+
+            if (model.AllowRefreshToken)
+            {
+                grantTypes.Add(GrantTypes.RefreshToken);
+            }
+
+            if (model.AllowClientCredentials)
+            {
+                grantTypes.Add(GrantTypes.ClientCredentials);
+            }
+
+            model.GrantTypes = string.Join(Environment.NewLine, grantTypes);
+        }
+
+        var normalizedGrantTypes = Split(model.GrantTypes).Select(NormalizeGrantType).ToArray();
+        model.AllowAuthorizationCode = normalizedGrantTypes.Contains(GrantTypes.AuthorizationCode, StringComparer.Ordinal);
+        model.AllowRefreshToken = normalizedGrantTypes.Contains(GrantTypes.RefreshToken, StringComparer.Ordinal);
+        model.AllowClientCredentials = normalizedGrantTypes.Contains(GrantTypes.ClientCredentials, StringComparer.Ordinal);
 
         if (!model.AllowAuthorizationCode)
         {

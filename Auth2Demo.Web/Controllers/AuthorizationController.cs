@@ -18,6 +18,8 @@ namespace Auth2Demo.Web.Controllers;
 
 public sealed class AuthorizationController : Controller
 {
+    private const string RequiredClaimPermissionPrefix = "custom:required_claim:";
+
     private readonly IOpenIddictApplicationManager _applicationManager;
     private readonly IOpenIddictAuthorizationManager _authorizationManager;
     private readonly IOpenIddictScopeManager _scopeManager;
@@ -60,6 +62,14 @@ public sealed class AuthorizationController : Controller
 
         var application = await _applicationManager.FindByClientIdAsync(request.ClientId)
             ?? throw new InvalidOperationException(string.Format(_localizer["InvalidClientFormat"].Value, request.ClientId));
+
+        var applicationPermissions = await _applicationManager.GetPermissionsAsync(application);
+        var missingClaim = GetMissingRequiredClaim(User, applicationPermissions);
+
+        if (!string.IsNullOrWhiteSpace(missingClaim))
+        {
+            return Forbid(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+        }
 
         var applicationId = await _applicationManager.GetIdAsync(application)
             ?? throw new InvalidOperationException(_localizer["ApplicationIdNotFound"].Value);
@@ -221,6 +231,55 @@ public sealed class AuthorizationController : Controller
 
         return SignOut(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
     }
+
+    private static string? GetMissingRequiredClaim(ClaimsPrincipal principal, IEnumerable<string> permissions)
+    {
+        foreach (var requiredClaim in ExtractRequiredClaims(permissions))
+        {
+            var hasClaim = principal.Claims.Any(claim =>
+                IsSameClaimType(claim.Type, requiredClaim.Type) &&
+                (string.IsNullOrWhiteSpace(requiredClaim.Value) || string.Equals(claim.Value, requiredClaim.Value, StringComparison.OrdinalIgnoreCase)));
+
+            if (!hasClaim)
+            {
+                return string.IsNullOrWhiteSpace(requiredClaim.Value)
+                    ? requiredClaim.Type
+                    : $"{requiredClaim.Type}={requiredClaim.Value}";
+            }
+        }
+
+        return null;
+    }
+
+    private static IEnumerable<(string Type, string Value)> ExtractRequiredClaims(IEnumerable<string> permissions)
+    {
+        foreach (var permission in permissions.Where(permission => permission.StartsWith(RequiredClaimPermissionPrefix, StringComparison.Ordinal)))
+        {
+            var value = permission[RequiredClaimPermissionPrefix.Length..];
+            var separator = value.IndexOf('=');
+
+            if (separator < 0)
+            {
+                yield return (DecodePart(value), string.Empty);
+                continue;
+            }
+
+            yield return (DecodePart(value[..separator]), DecodePart(value[(separator + 1)..]));
+        }
+    }
+
+    private static bool IsSameClaimType(string actualType, string requiredType)
+    {
+        return string.Equals(actualType, requiredType, StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(actualType, "http://schemas.microsoft.com/ws/2008/06/identity/claims/role", StringComparison.OrdinalIgnoreCase) &&
+               string.Equals(requiredType, Claims.Role, StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(actualType, "http://schemas.microsoft.com/ws/2008/06/identity/claims/role", StringComparison.OrdinalIgnoreCase) &&
+               string.Equals(requiredType, "role", StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(actualType, Claims.Role, StringComparison.OrdinalIgnoreCase) &&
+               string.Equals(requiredType, "role", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string DecodePart(string value) => Uri.UnescapeDataString(value ?? string.Empty);
 
     private async Task<ClaimsPrincipal> CreatePrincipalAsync(ApplicationUser user, OpenIddictRequest request)
     {

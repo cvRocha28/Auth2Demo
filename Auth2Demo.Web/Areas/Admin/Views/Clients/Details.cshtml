@@ -15,11 +15,11 @@
     </div>
 </div>
 
-@if (TempData["GeneratedSecret"] is string secret)
+@if (TempData["GeneratedSecret"] is string generatedSecret)
 {
     <div class="alert">
         <strong>@T["ClientSecretGenerated"]</strong>
-        <pre>@secret</pre>
+        <pre>@generatedSecret</pre>
         <p>@T["TextCopieAgoraDepoisEleNaoSeraExibidoNovamente"]</p>
     </div>
 }
@@ -161,6 +161,72 @@
             <button class="btn" type="submit">@T["SaveScopes"]</button>
         </div>
     </form>
+</section>
+
+
+<section class="card scopes-card">
+    <div class="section-title">
+        <div>
+            <span class="page-kicker">Secrets</span>
+            <h2>Client secrets</h2>
+            <p class="muted">Crie mais de uma secret para este client, no mesmo estilo de App registrations &gt; Certificates &amp; secrets.</p>
+        </div>
+    </div>
+
+    @if (Model.Secrets.Count == 0)
+    {
+        <p class="muted">Nenhuma secret registrada no histórico deste client.</p>
+    }
+    else
+    {
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Criada em UTC</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var clientSecret in Model.Secrets)
+                    {
+                        <tr>
+                            <td>@clientSecret.DisplayName</td>
+                            <td>@clientSecret.CreatedAtUtc.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+
+    <form method="post" asp-action="AddSecret" asp-route-clientId="@Model.ClientId" class="actions-row">
+        @Html.AntiForgeryToken()
+        <input name="displayName" placeholder="Ex.: Rareles local development" />
+        <button class="btn" type="submit">Adicionar secret</button>
+    </form>
+</section>
+
+<section class="card scopes-card">
+    <div class="section-title">
+        <div>
+            <span class="page-kicker">Claims</span>
+            <h2>Claims obrigatórias</h2>
+            <p class="muted">O usuário precisa possuir estas claims para usar este client no fluxo de autorização.</p>
+        </div>
+    </div>
+
+    @if (Model.RequiredClaims.Count == 0)
+    {
+        <p class="muted">Nenhuma claim obrigatória configurada.</p>
+    }
+    else
+    {
+        foreach (var claim in Model.RequiredClaims)
+        {
+            <span class="badge">@claim.Type@(string.IsNullOrWhiteSpace(claim.Value) ? string.Empty : $"={claim.Value}")</span>
+        }
+    }
 </section>
 
 <section class="card danger-zone">

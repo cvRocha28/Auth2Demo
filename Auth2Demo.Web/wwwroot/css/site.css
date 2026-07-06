@@ -1755,3 +1755,52 @@ code {
         flex-direction: column;
     }
 }
+
+.addable-list {
+    display: grid;
+    gap: .75rem;
+    margin-bottom: 1rem;
+}
+
+.addable-list-items {
+    display: grid;
+    gap: .5rem;
+}
+
+.addable-list-row {
+    align-items: center;
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.10);
+    border-radius: 12px;
+    display: flex;
+    gap: .75rem;
+    justify-content: space-between;
+    padding: .65rem .75rem;
+}
+
+.addable-list-row code {
+    overflow-wrap: anywhere;
+}
+
+.addable-list-actions {
+    align-items: center;
+    display: grid;
+    gap: .5rem;
+    grid-template-columns: minmax(180px, 240px) 1fr auto;
+}
+
+.addable-list-actions select,
+.addable-list-actions input {
+    min-height: 42px;
+}
+
+.addable-list-actions select:only-child,
+.addable-list-actions input:only-child {
+    grid-column: 1 / -1;
+}
+
+@media (max-width: 760px) {
+    .addable-list-actions {
+        grid-template-columns: 1fr;
+    }
+}
