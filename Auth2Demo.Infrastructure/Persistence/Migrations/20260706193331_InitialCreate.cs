@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Auth2Demo.Infrastructure.Persistence.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialMigration : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -16,6 +16,14 @@ namespace Auth2Demo.Infrastructure.Persistence.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false, defaultValueSql: "SYSUTCDATETIME()"),
+                    CreatedByUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    DeletedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    DeletedByUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    IsEnabled = table.Column<bool>(type: "bit", nullable: false, defaultValue: true),
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    UpdatedByUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     ApplicationType = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     ClientId = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
                     ClientSecret = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -379,6 +387,31 @@ namespace Auth2Demo.Infrastructure.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "IdentityApplicationSecrets",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ApplicationId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    SecretHash = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    SecretPrefix = table.Column<string>(type: "nvarchar(16)", maxLength: 16, nullable: false),
+                    CreatedAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    ExpiresAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    RevokedAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    RevokedReason = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_IdentityApplicationSecrets", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_IdentityApplicationSecrets_IdentityApplications_ApplicationId",
+                        column: x => x.ApplicationId,
+                        principalTable: "IdentityApplications",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "IdentityAuthorizations",
                 columns: table => new
                 {
@@ -549,6 +582,16 @@ namespace Auth2Demo.Infrastructure.Persistence.Migrations
                 filter: "[ClientId] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
+                name: "IX_IdentityApplicationSecrets_ApplicationId",
+                table: "IdentityApplicationSecrets",
+                column: "ApplicationId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_IdentityApplicationSecrets_ApplicationId_RevokedAtUtc_ExpiresAtUtc",
+                table: "IdentityApplicationSecrets",
+                columns: new[] { "ApplicationId", "RevokedAtUtc", "ExpiresAtUtc" });
+
+            migrationBuilder.CreateIndex(
                 name: "IX_IdentityAuditLogs_CreatedAt_Category",
                 table: "IdentityAuditLogs",
                 columns: new[] { "CreatedAt", "Category" });
@@ -676,6 +719,9 @@ namespace Auth2Demo.Infrastructure.Persistence.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "IdentityApplicationSecrets");
+
             migrationBuilder.DropTable(
                 name: "IdentityAuditLogs");
 

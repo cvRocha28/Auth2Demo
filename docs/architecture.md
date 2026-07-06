@@ -1,17 +1,5 @@
 # Architecture
 
-## Projects
+Clean Architecture with Domain, Application, Infrastructure and Web layers.
 
-- Auth2Demo.Domain
-- Auth2Demo.Application
-- Auth2Demo.Infrastructure
-- Auth2Demo.Web
-- Auth2Demo.UnitTests
-- Auth2Demo.IntegrationTests
-
-## Layers
-
-Domain contains business rules.
-Application contains use cases and services.
-Infrastructure contains persistence, repositories and integrations.
-Web contains MVC UI, Identity and OpenIddict endpoints.
+OpenIddict is responsible for OAuth2/OpenID Connect.

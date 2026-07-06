@@ -1,8 +1,8 @@
+using Auth2Demo.Application.Services.Admin;
 using Auth2Demo.Web.Areas.Admin.Models;
 using Auth2Demo.Web.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using OpenIddict.Abstractions;
 
 namespace Auth2Demo.Web.Areas.Admin.Controllers;
 
@@ -10,28 +10,23 @@ namespace Auth2Demo.Web.Areas.Admin.Controllers;
 [Authorize(Policy = AuthPolicies.ClientManager)]
 public sealed class ScopesController : Controller
 {
-    private readonly IOpenIddictScopeManager _scopeManager;
+    private readonly IScopeAdminService _scopes;
 
-    public ScopesController(IOpenIddictScopeManager scopeManager)
+    public ScopesController(IScopeAdminService scopes)
     {
-        _scopeManager = scopeManager;
+        _scopes = scopes;
     }
 
     public async Task<IActionResult> Index()
     {
-        var scopes = new List<ScopeListItemViewModel>();
+        var scopes = await _scopes.ListAsync();
 
-        await foreach (var scope in _scopeManager.ListAsync(100, 0))
+        return View(scopes.Select(scope => new ScopeListItemViewModel
         {
-            scopes.Add(new ScopeListItemViewModel
-            {
-                Name = await _scopeManager.GetNameAsync(scope) ?? string.Empty,
-                DisplayName = await _scopeManager.GetDisplayNameAsync(scope) ?? string.Empty,
-                Description = await _scopeManager.GetDescriptionAsync(scope)
-            });
-        }
-
-        return View(scopes.OrderBy(x => x.Name).ToArray());
+            Name = scope.Name,
+            DisplayName = scope.DisplayName,
+            Description = scope.Description
+        }).ToArray());
     }
 
     public IActionResult Create()
@@ -48,30 +43,14 @@ public sealed class ScopesController : Controller
             return View(model);
         }
 
-        var existingScope = await _scopeManager.FindByNameAsync(model.Name);
+        var resources = (model.Resources ?? string.Empty)
+            .Split([' ', ',', ';', '\r', '\n', '\t'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
-        if (existingScope is null)
-        {
-            var descriptor = new OpenIddictScopeDescriptor
-            {
-                Name = model.Name,
-                DisplayName = model.DisplayName,
-                Description = model.Description
-            };
-
-            var resources = model.Resources?
-                .Split(
-                    new[] { ' ', ',', ';', '\r', '\n', '\t' },
-                    StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                ?? Array.Empty<string>();
-
-            foreach (var resource in resources)
-            {
-                descriptor.Resources.Add(resource);
-            }
-
-            await _scopeManager.CreateAsync(descriptor);
-        }
+        await _scopes.CreateIfMissingAsync(new ScopeCreateData(
+            model.Name,
+            model.DisplayName,
+            model.Description,
+            resources));
 
         return RedirectToAction(nameof(Index));
     }

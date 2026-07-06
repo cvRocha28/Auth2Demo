@@ -4,13 +4,12 @@
     ViewData["Title"] = T["EditTemplate"].Value;
 }
 
-<div class="page-heading">
-    <div>
-        <span class="page-kicker">@T["Email"]</span>
+@section AdminHeader {
+    <span class="admin-page-kicker">@T["Email"]</span>
+    <h1>@T["EditTemplate"]</h1>
+}
 
-        <h1>@T["EditTemplate"]</h1>
-    </div>
-</div>
+
 
 <form method="post" class="card pro-form">
     <input type="hidden" asp-for="Id" />

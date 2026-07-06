@@ -1,15 +1,17 @@
 @model ClientFormViewModel
 @{
-    ViewData["Title"] = string.Format("{0} {1}", T["EditClient"].Value, Model.ClientId);
+    ViewData["Title"] = string.Format(T["EditClientTitle"].Value, Model.ClientId);
 }
 
-<div class="page-heading">
-    <div>
-        <span class="page-kicker">@T["OpenIddict"]</span>
-        <h1>@T["EditClient"]</h1>
-        <p>@T["TextAltereGrantsEndpointsRedirectsScopesEConsentimentoDo"]</p>
-    </div>
-    <a class="btn ghost" asp-action="Details" asp-route-clientId="@Model.OriginalClientId">@T["Back"]</a>
-</div>
+@section AdminHeader {
+    <span class="admin-page-kicker">@T["OpenIddict"]</span>
+    <h1>@T["EditClient"]</h1>
+    <p>@T["ClientEditPageDescription"]</p>
+}
+
+@section AdminActions {
+    <a class="btn ghost" asp-action="Details" asp-route-clientId="@Model.OriginalClientId"><i class="bi bi-card-list"></i> @T["Details"]</a>
+    <a class="btn ghost" asp-action="Index"><i class="bi bi-arrow-left"></i> @T["Back"]</a>
+}
 
 <partial name="_ClientForm" model="Model" />

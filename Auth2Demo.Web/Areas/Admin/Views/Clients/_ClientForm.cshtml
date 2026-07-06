@@ -1,245 +1,423 @@
 @model ClientFormViewModel
-@using Auth2Demo.Domain.Identity
+@using Auth2Demo.Application.Identity.Clients
+@using OpenIddict.Abstractions
 @using static OpenIddict.Abstractions.OpenIddictConstants
 
-<form method="post" class="card form-card pro-form">
+@{
+    var formAction = Model.IsEdit ? "Edit" : "Create";
+}
+
+<form method="post" asp-action="@formAction" class="card form-card pro-form client-form-builder professional-client-form">
     @Html.AntiForgeryToken()
-    <div asp-validation-summary="ModelOnly" class="validation"></div>
+
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div asp-validation-summary="All" class="validation"></div>
+    }
+
     <input type="hidden" asp-for="IsEdit" />
     <input type="hidden" asp-for="OriginalClientId" />
+    <input type="hidden" asp-for="RedirectUris" />
+    <input type="hidden" asp-for="PostLogoutRedirectUris" />
+    <input type="hidden" asp-for="Scopes" />
 
-    <div class="section-title">
+    <div class="client-form-hero">
         <div>
-            <span class="page-kicker">@T["General"]</span>
-            <h2>@T["Identification"]</h2>
+            <span class="page-kicker">@T["AppRegistration"]</span>
+            <h2>@(Model.IsEdit ? T["EditClient"].Value : T["CreateNewClient"].Value)</h2>
+            <p class="muted">@T["ClientFormIntro"]</p>
+        </div>
+        <div class="client-form-hero-badges">
+            <span class="badge">OAuth 2.0</span>
+            <span class="badge">OpenID Connect</span>
+            <span class="badge">@T["AzureLike"]</span>
         </div>
     </div>
 
-    <label asp-for="ClientId">@T["ClientId"]</label>
-    <input asp-for="ClientId" placeholder='@T["TextRarelesWeb"].Value' />
-    <span asp-validation-for="ClientId" class="validation"></span>
+    <div class="client-form-section">
+        <div class="section-title form-section-title">
+            <div>
+                <span class="page-kicker">@T["General"]</span>
+                <h2>@T["Identification"]</h2>
+                <p class="muted">@T["ClientIdentificationHelp"]</p>
+            </div>
+        </div>
 
-    <label asp-for="DisplayName">@T["DisplayName"]</label>
-    <input asp-for="DisplayName" placeholder='@T["Rareles"].Value' />
-    <span asp-validation-for="DisplayName" class="validation"></span>
+        <div class="form-grid two">
+            <div>
+                <label asp-for="ClientId">@T["ClientId"]</label>
+                <input asp-for="ClientId" placeholder="@T["ClientIdPlaceholder"]" />
+                <span asp-validation-for="ClientId" class="field-validation-error"></span>
+                <small class="hint">@T["ClientIdHelp"]</small>
+            </div>
+            <div>
+                <label asp-for="DisplayName">@T["DisplayName"]</label>
+                <input asp-for="DisplayName" placeholder="@T["DisplayNamePlaceholder"]" />
+                <span asp-validation-for="DisplayName" class="field-validation-error"></span>
+                <small class="hint">@T["DisplayNameHelp"]</small>
+            </div>
+        </div>
 
-    <label asp-for="Kind">@T["TextTipoDeAplicacao"]</label>
-    <select asp-for="Kind" asp-items="Html.GetEnumSelectList<ClientKind>()"></select>
-    <small class="muted">@T["TextWebUsaSecretSpaMobileNormalmenteEPublic"]</small>
-
-    <label asp-for="ClientType">@T["TextAutenticacaoDoClient"]</label>
-    <select asp-for="ClientType">
-        <option value="@ClientTypes.Confidential">@T["TextConfidentialComClientSecret"]</option>
-        <option value="@ClientTypes.Public">@T["TextPublicSemClientSecret"]</option>
-    </select>
-
-    <label asp-for="ConsentType">@T["Consent"]</label>
-    <select asp-for="ConsentType">
-        <option value="@ConsentTypes.Explicit">@T["TextExplicitMostraTelaDePermissao"]</option>
-        <option value="@ConsentTypes.Implicit">@T["TextImplicitNaoSolicitaPermissao"]</option>
-        <option value="@ConsentTypes.External">@T["TextExternalAutorizacaoPrecisaExistirPreviamente"]</option>
-        <option value="@ConsentTypes.Systematic">@T["TextSystematicSempreSolicitaPermissao"]</option>
-    </select>
-
-    <div class="section-title form-section-title">
-        <div>
-            <span class="page-kicker">@T["GrantTypes"]</span>
-            <h2>@T["FluxosPermitidos"]</h2>
-            <p class="muted">Adicione os fluxos permitidos usando presets ou digite um grant type customizado.</p>
+        <div class="form-grid three client-kind-grid">
+            <div>
+                <label asp-for="Kind">@T["ApplicationType"]</label>
+                <select asp-for="Kind" class="js-client-kind" asp-items="Html.GetEnumSelectList<ClientKind>()"></select>
+                <small class="hint">@T["ApplicationTypeHelp"]</small>
+            </div>
+            <div>
+                <label asp-for="ClientType">@T["ClientAuthentication"]</label>
+                <select asp-for="ClientType" class="js-client-type">
+                    <option value="@ClientTypes.Confidential">@T["ConfidentialWithClientSecret"]</option>
+                    <option value="@ClientTypes.Public">@T["PublicWithoutClientSecret"]</option>
+                </select>
+            </div>
+            <div>
+                <label asp-for="ConsentType">@T["Consent"]</label>
+                <select asp-for="ConsentType">
+                    <option value="@ConsentTypes.Explicit">@T["ConsentExplicitOption"]</option>
+                    <option value="@ConsentTypes.Implicit">@T["ConsentImplicitOption"]</option>
+                    <option value="@ConsentTypes.External">@T["ConsentExternalOption"]</option>
+                    <option value="@ConsentTypes.Systematic">@T["ConsentSystematicOption"]</option>
+                </select>
+            </div>
         </div>
     </div>
 
-    <textarea asp-for="GrantTypes" class="js-list-source" data-list="grant-types" hidden></textarea>
-    <input type="hidden" asp-for="AllowAuthorizationCode" />
-    <input type="hidden" asp-for="AllowRefreshToken" />
-    <input type="hidden" asp-for="AllowClientCredentials" />
+    <div class="client-form-section secret-form-panel js-secret-panel">
+        <div class="section-title form-section-title">
+            <div>
+                <span class="page-kicker">@T["CertificatesAndSecrets"]</span>
+                <h2>@T["ClientSecrets"]</h2>
+                <p class="muted">@T["ClientSecretsFormHelp"]</p>
+            </div>
+        </div>
 
-    <div class="addable-list" data-list-target="grant-types">
-        <div class="addable-list-items"></div>
-        <div class="actions-row addable-list-actions">
-            <select class="addable-list-select">
-                <option value="authorization_code">authorization_code</option>
-                <option value="refresh_token">refresh_token</option>
-                <option value="client_credentials">client_credentials</option>
-            </select>
-            <input class="addable-list-input" placeholder="custom_grant_type" />
-            <button class="btn ghost addable-list-add" type="button">Adicionar</button>
+        <div class="dynamic-list" data-list="SecretItems">
+            <div class="dynamic-header grid-secret">
+                <strong>@T["Description"]</strong>
+                <strong>@T["Expiration"]</strong>
+                <strong>@T["Value"]</strong>
+                <span></span>
+            </div>
+
+            <div class="dynamic-items">
+                @for (var i = 0; i < Model.SecretItems.Count; i++)
+                {
+                    <div class="dynamic-row grid-secret">
+                        <input type="hidden" name="SecretItems[@i].Id" value="@Model.SecretItems[i].Id" />
+                        <input name="SecretItems[@i].Description" value="@Model.SecretItems[i].Description" placeholder="@T["SecretDescriptionPlaceholder"]" />
+
+                        <select name="SecretItems[@i].Expiration">
+                            <option value="Never" selected="@(Model.SecretItems[i].Expiration == ClientSecretExpiration.Never)">@T["NeverExpires"]</option>
+                            <option value="Months6" selected="@(Model.SecretItems[i].Expiration == ClientSecretExpiration.Months6)">@T["SixMonths"]</option>
+                            <option value="Months12" selected="@(Model.SecretItems[i].Expiration == ClientSecretExpiration.Months12)">@T["TwelveMonths"]</option>
+                            <option value="Months24" selected="@(Model.SecretItems[i].Expiration == ClientSecretExpiration.Months24)">@T["TwentyFourMonths"]</option>
+                        </select>
+
+                        <input name="SecretItems[@i].PlainTextSecret" value="" placeholder="@T["SecretValueAutoPlaceholder"]" />
+                        <input type="hidden" name="SecretItems[@i].IsExisting" value="@Model.SecretItems[i].IsExisting.ToString().ToLowerInvariant()" />
+                        <input type="hidden" name="SecretItems[@i].CreatedAt" value="@Model.SecretItems[i].CreatedAt" />
+                        <input type="hidden" name="SecretItems[@i].ExpiresAtUtc" value="@Model.SecretItems[i].ExpiresAtUtc?.ToString("O")" />
+
+                        <button class="btn icon danger js-remove-row" type="button" title="@T["RemoveSecret"]">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                }
+            </div>
+
+            <button class="btn ghost js-add-row" type="button" data-template="secret">
+                <i class="bi bi-plus-lg"></i> @T["AddSecret"]
+            </button>
+
+            <small class="muted">@T["ExistingSecretsHiddenHelp"]</small>
         </div>
     </div>
 
-    <label class="check"><input asp-for="RequirePkce" /> @T["ExigirPkce"]</label>
+    <div class="client-form-section">
+        <div class="section-title form-section-title">
+            <div>
+                <span class="page-kicker">@T["RequiredClaims"]</span>
+                <h2>@T["RequiredUserClaims"]</h2>
+                <p class="muted">@T["RequiredClaimsHelp"]</p>
+            </div>
+        </div>
 
-    <div class="section-title form-section-title">
-        <div>
-            <span class="page-kicker">@T["Endpoints"]</span>
-            <h2>@T["EndpointsPermitidos"]</h2>
+        <div class="dynamic-list" data-list="RequiredClaimItems">
+            <div class="dynamic-header grid-claim">
+                <strong>@T["Type"]</strong>
+                <strong>@T["Value"]</strong>
+                <span></span>
+            </div>
+
+            <div class="dynamic-items">
+                @for (var i = 0; i < Model.RequiredClaimItems.Count; i++)
+                {
+                    <div class="dynamic-row grid-claim">
+                        <input name="RequiredClaimItems[@i].Type" value="@Model.RequiredClaimItems[i].Type" placeholder="@T["ClaimTypePlaceholder"]" />
+                        <input name="RequiredClaimItems[@i].Value" value="@Model.RequiredClaimItems[i].Value" placeholder="@T["ClaimValuePlaceholder"]" />
+
+                        <button class="btn icon danger js-remove-row" type="button" title="@T["RemoveClaim"]">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                }
+            </div>
+
+            <button class="btn ghost js-add-row" type="button" data-template="claim">
+                <i class="bi bi-plus-lg"></i> @T["AddClaim"]
+            </button>
         </div>
     </div>
 
-    <div class="check-grid">
-        <label class="check"><input asp-for="AllowAuthorizationEndpoint" /> @T["AuthorizationEndpoint"]</label>
-        <label class="check"><input asp-for="AllowTokenEndpoint" /> @T["TokenEndpoint"]</label>
-        <label class="check"><input asp-for="AllowEndSessionEndpoint" /> @T["TextLogoutEndSessionEndpoint"]</label>
-        <label class="check"><input asp-for="AllowRevocationEndpoint" /> @T["RevocationEndpoint"]</label>
-        <label class="check"><input asp-for="AllowIntrospectionEndpoint" /> @T["IntrospectionEndpoint"]</label>
+    <div class="client-form-section">
+        <div class="section-title form-section-title">
+            <div>
+                <span class="page-kicker">@T["GrantTypes"]</span>
+                <h2>@T["AllowedFlows"]</h2>
+                <p class="muted">@T["AllowedFlowsHelp"]</p>
+            </div>
+        </div>
+
+        <div class="dynamic-list" data-list="GrantTypeItems">
+            <div class="dynamic-items compact-tags">
+                @for (var i = 0; i < Model.GrantTypeItems.Count; i++)
+                {
+                    <div class="dynamic-row input-add-row">
+                        <select name="GrantTypeItems[@i]">
+                            <option value="@GrantTypes.AuthorizationCode" selected="@(Model.GrantTypeItems[i] == GrantTypes.AuthorizationCode)">authorization_code</option>
+                            <option value="@GrantTypes.RefreshToken" selected="@(Model.GrantTypeItems[i] == GrantTypes.RefreshToken)">refresh_token</option>
+                            <option value="@GrantTypes.ClientCredentials" selected="@(Model.GrantTypeItems[i] == GrantTypes.ClientCredentials)">client_credentials</option>
+                        </select>
+
+                        <button class="btn icon danger js-remove-row" type="button" title="@T["RemoveGrantType"]">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                }
+            </div>
+
+            <button class="btn ghost js-add-row" type="button" data-template="grant">
+                <i class="bi bi-plus-lg"></i> @T["AddGrantType"]
+            </button>
+        </div>
+
+        <label class="check pkce-check">
+            <input asp-for="RequirePkce" /> @T["RequirePkceForAuthorizationCode"]
+        </label>
     </div>
 
-    <div class="section-title form-section-title">
-        <div>
-            <span class="page-kicker">@T["Redirects"]</span>
-            <h2>@T["UrisAutorizadas"]</h2>
+    <div class="client-form-section">
+        <div class="section-title form-section-title">
+            <div>
+                <span class="page-kicker">@T["Endpoints"]</span>
+                <h2>@T["AllowedEndpoints"]</h2>
+            </div>
+        </div>
+
+        <div class="check-grid professional-check-grid">
+            <label class="check"><input asp-for="AllowAuthorizationEndpoint" /> @T["AuthorizationEndpoint"]</label>
+            <label class="check"><input asp-for="AllowTokenEndpoint" /> @T["TokenEndpoint"]</label>
+            <label class="check"><input asp-for="AllowEndSessionEndpoint" /> @T["EndSessionEndpoint"]</label>
+            <label class="check"><input asp-for="AllowRevocationEndpoint" /> @T["RevocationEndpoint"]</label>
+            <label class="check"><input asp-for="AllowIntrospectionEndpoint" /> @T["IntrospectionEndpoint"]</label>
         </div>
     </div>
 
-    <label asp-for="RedirectUris">@T["RedirectUris"]</label>
-    <textarea asp-for="RedirectUris" class="js-list-source" data-list="redirect-uris" hidden></textarea>
-    <div class="addable-list" data-list-target="redirect-uris">
-        <div class="addable-list-items"></div>
-        <div class="actions-row addable-list-actions">
-            <input class="addable-list-input" placeholder='@T["TextHttpsLocalhost7108SigninOidc"].Value' />
-            <button class="btn ghost addable-list-add" type="button">Adicionar</button>
+    <div class="client-form-section js-redirect-panel">
+        <div class="section-title form-section-title">
+            <div>
+                <span class="page-kicker">@T["Authentication"]</span>
+                <h2>@T["RedirectUris"]</h2>
+                <p class="muted">@T["RedirectUrisHelp"]</p>
+            </div>
         </div>
-    </div>
-    <small class="muted">@T["TextUmaUriPorLinhaParaAspNetCore"] <code>@T["TextSigninOidc"]</code>.</small>
 
-    <label asp-for="PostLogoutRedirectUris">@T["PostLogoutRedirectUris"]</label>
-    <textarea asp-for="PostLogoutRedirectUris" class="js-list-source" data-list="post-logout-uris" hidden></textarea>
-    <div class="addable-list" data-list-target="post-logout-uris">
-        <div class="addable-list-items"></div>
-        <div class="actions-row addable-list-actions">
-            <input class="addable-list-input" placeholder='@T["TextHttpsLocalhost7108SignoutCallbackOidc"].Value' />
-            <button class="btn ghost addable-list-add" type="button">Adicionar</button>
+        <div class="dynamic-list" data-list="RedirectUriItems">
+            <label>@T["RedirectUris"]</label>
+            <div class="dynamic-items">
+                @for (var i = 0; i < Model.RedirectUriItems.Count; i++)
+                {
+                    <div class="dynamic-row input-add-row">
+                        <input name="RedirectUriItems[@i]" value="@Model.RedirectUriItems[i]" placeholder="https://localhost:7108/signin-oidc" />
+                        <button class="btn icon danger js-remove-row" type="button" title="@T["RemoveRedirectUri"]">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                }
+            </div>
+
+            <button class="btn ghost js-add-row" type="button" data-template="string" data-placeholder="https://localhost:7108/signin-oidc">
+                <i class="bi bi-plus-lg"></i> @T["AddRedirectUri"]
+            </button>
         </div>
-    </div>
 
-    <label asp-for="Scopes">@T["AllowedScopes"]</label>
-    <textarea asp-for="Scopes" class="js-list-source" data-list="scopes" hidden></textarea>
-    <div class="addable-list" data-list-target="scopes">
-        <div class="addable-list-items"></div>
-        <div class="actions-row addable-list-actions">
-            <select class="addable-list-select">
-                <option value="openid">openid</option>
-                <option value="profile">profile</option>
-                <option value="email">email</option>
-                <option value="roles">roles</option>
-                <option value="offline_access">offline_access</option>
-                <option value="auth2demo.api">auth2demo.api</option>
-                <option value="rareles.api">rareles.api</option>
-            </select>
-            <input class="addable-list-input" placeholder="custom.scope" />
-            <button class="btn ghost addable-list-add" type="button">Adicionar</button>
-        </div>
-    </div>
-    <small class="muted">@T["TextSeparePorLinhaEspacoOuVirgulaScopesNao"]</small>
+        <div class="dynamic-list" data-list="PostLogoutRedirectUriItems">
+            <label>@T["PostLogoutUris"]</label>
+            <div class="dynamic-items">
+                @for (var i = 0; i < Model.PostLogoutRedirectUriItems.Count; i++)
+                {
+                    <div class="dynamic-row input-add-row">
+                        <input name="PostLogoutRedirectUriItems[@i]" value="@Model.PostLogoutRedirectUriItems[i]" placeholder="https://localhost:7108/signout-callback-oidc" />
+                        <button class="btn icon danger js-remove-row" type="button" title="@T["RemovePostLogoutUri"]">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                }
+            </div>
 
-    <div class="section-title form-section-title">
-        <div>
-            <span class="page-kicker">Claims</span>
-            <h2>Claims obrigatórias do usuário</h2>
-            <p class="muted">Informe a claim que o usuário precisa ter para conseguir usar este client. Use <code>tipo=valor</code>. Se deixar sem valor, basta a claim existir.</p>
-        </div>
-    </div>
-
-    <textarea asp-for="RequiredClaims" class="js-list-source" data-list="required-claims" hidden></textarea>
-    <div class="addable-list" data-list-target="required-claims">
-        <div class="addable-list-items"></div>
-        <div class="actions-row addable-list-actions">
-            <input class="addable-list-input" placeholder="role=Admin" />
-            <button class="btn ghost addable-list-add" type="button">Adicionar claim</button>
+            <button class="btn ghost js-add-row" type="button" data-template="string" data-placeholder="https://localhost:7108/signout-callback-oidc">
+                <i class="bi bi-plus-lg"></i> @T["AddPostLogoutUri"]
+            </button>
         </div>
     </div>
 
-    <div class="section-title form-section-title">
-        <div>
-            <span class="page-kicker">@T["Secret"]</span>
-            <h2>@T["Credencial"]</h2>
+    <div class="client-form-section">
+        <div class="section-title form-section-title">
+            <div>
+                <span class="page-kicker">@T["ApiPermissions"]</span>
+                <h2>@T["AllowedScopes"]</h2>
+            </div>
+        </div>
+
+        <div class="dynamic-list" data-list="ScopeItems">
+            <label>@T["Scopes"]</label>
+            <div class="dynamic-items">
+                @for (var i = 0; i < Model.ScopeItems.Count; i++)
+                {
+                    <div class="dynamic-row input-add-row">
+                        <input name="ScopeItems[@i]" value="@Model.ScopeItems[i]" placeholder="openid" />
+                        <button class="btn icon danger js-remove-row" type="button" title="@T["RemoveScope"]">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                }
+            </div>
+
+            <button class="btn ghost js-add-row" type="button" data-template="string" data-placeholder="openid">
+                <i class="bi bi-plus-lg"></i> @T["AddScope"]
+            </button>
         </div>
     </div>
 
-    @if (Model.IsEdit)
-    {
-        <label class="check"><input asp-for="RegenerateSecret" /> @T["RegenerarSecretAoSalvar"]</label>
-        <small class="muted">@T["TextAoRegenerarCopieOValorExibidoDepoisDo"]</small>
-    }
-    else
-    {
-        <label class="check"><input asp-for="GenerateSecret" /> @T["GerarSecretParaConfidentialClient"]</label>
-    }
+    <div class="form-actions sticky-form-actions">
+        <button class="btn" type="submit">
+            <i class="bi bi-check2-circle"></i>
+            @(Model.IsEdit ? T["SaveChanges"].Value : T["CreateClient"].Value)
+        </button>
 
-    <div class="form-actions">
-        <button class="btn" type="submit">@(Model.IsEdit ? T["SaveChanges"] : T["Create"])</button>
         <a class="btn ghost" asp-action="Index">@T["Cancel"]</a>
     </div>
 </form>
 
 <script>
-(() => {
-    const splitLines = value => (value || '')
-        .split(/[\r\n,;\t ]+/)
-        .map(item => item.trim())
-        .filter(Boolean);
+    (() => {
+        const form = document.querySelector('.client-form-builder');
+        if (!form) return;
 
-    document.querySelectorAll('.js-list-source').forEach(source => {
-        const listName = source.dataset.list;
-        const wrapper = document.querySelector(`[data-list-target="${listName}"]`);
-        if (!wrapper) return;
+        const templates = {
+            secret: (prefix, index) => `<div class="dynamic-row grid-secret">
+                <input name="${prefix}[${index}].Description" placeholder="@T["SecretDescriptionPlaceholder"]" />
+                <select name="${prefix}[${index}].Expiration">
+                    <option value="Never">@T["NeverExpires"]</option>
+                    <option value="Months6">@T["SixMonths"]</option>
+                    <option value="Months12">@T["TwelveMonths"]</option>
+                    <option value="Months24">@T["TwentyFourMonths"]</option>
+                </select>
+                <input name="${prefix}[${index}].PlainTextSecret" placeholder="@T["SecretValueAutoPlaceholder"]" />
+                <input type="hidden" name="${prefix}[${index}].IsExisting" value="false" />
+                <button class="btn icon danger js-remove-row" type="button" title="@T["RemoveSecret"]"><i class="bi bi-trash"></i></button>
+            </div>`,
 
-        const itemsContainer = wrapper.querySelector('.addable-list-items');
-        const input = wrapper.querySelector('.addable-list-input');
-        const select = wrapper.querySelector('.addable-list-select');
-        const addButton = wrapper.querySelector('.addable-list-add');
+            claim: (prefix, index) => `<div class="dynamic-row grid-claim">
+                <input name="${prefix}[${index}].Type" placeholder="@T["ClaimTypePlaceholder"]" />
+                <input name="${prefix}[${index}].Value" placeholder="@T["ClaimValuePlaceholder"]" />
+                <button class="btn icon danger js-remove-row" type="button" title="@T["RemoveClaim"]"><i class="bi bi-trash"></i></button>
+            </div>`,
 
-        const values = new Set(splitLines(source.value));
+            grant: (prefix, index) => `<div class="dynamic-row input-add-row">
+                <select name="${prefix}[${index}]">
+                    <option value="authorization_code">authorization_code</option>
+                    <option value="refresh_token">refresh_token</option>
+                    <option value="client_credentials">client_credentials</option>
+                </select>
+                <button class="btn icon danger js-remove-row" type="button" title="@T["RemoveGrantType"]"><i class="bi bi-trash"></i></button>
+            </div>`,
 
-        const sync = () => {
-            source.value = Array.from(values).join('\n');
-            render();
+            string: (prefix, index, placeholder) => `<div class="dynamic-row input-add-row">
+                <input name="${prefix}[${index}]" placeholder="${placeholder}" />
+                <button class="btn icon danger js-remove-row" type="button" title="@T["RemoveItem"]"><i class="bi bi-trash"></i></button>
+            </div>`
         };
 
-        const addValue = value => {
-            const normalized = (value || '').trim();
-            if (!normalized || values.has(normalized)) return;
-            values.add(normalized);
-            if (input) input.value = '';
-            sync();
-        };
+        function reindex(list) {
+            const prefix = list.dataset.list;
 
-        const render = () => {
-            itemsContainer.innerHTML = '';
-            Array.from(values).forEach(value => {
-                const row = document.createElement('div');
-                row.className = 'addable-list-row';
-
-                const code = document.createElement('code');
-                code.textContent = value;
-
-                const remove = document.createElement('button');
-                remove.type = 'button';
-                remove.className = 'btn ghost';
-                remove.textContent = 'Remover';
-                remove.addEventListener('click', () => {
-                    values.delete(value);
-                    sync();
+            list.querySelectorAll('.dynamic-items > .dynamic-row').forEach((row, index) => {
+                row.querySelectorAll('[name]').forEach(input => {
+                    input.name = input.name.replace(new RegExp(prefix + '\\[\\d+\\]'), `${prefix}[${index}]`);
                 });
-
-                row.appendChild(code);
-                row.appendChild(remove);
-                itemsContainer.appendChild(row);
             });
-        };
+        }
 
-        addButton?.addEventListener('click', () => addValue(input?.value || select?.value));
-        select?.addEventListener('change', () => {
-            if (input) input.value = select.value;
-        });
-        input?.addEventListener('keydown', event => {
-            if (event.key === 'Enter') {
+        function syncClientMode() {
+            const kind = form.querySelector('.js-client-kind')?.value || '';
+            const clientType = form.querySelector('.js-client-type');
+            const secretPanel = form.querySelector('.js-secret-panel');
+            const redirectPanel = form.querySelector('.js-redirect-panel');
+
+            const isPublicKind = kind === '@((int)ClientKind.Spa)' || kind === '@((int)ClientKind.NativeApplication)';
+            const isMachineToMachine = kind === '@((int)ClientKind.MachineToMachine)';
+
+            if (clientType && isPublicKind) {
+                clientType.value = '@ClientTypes.Public';
+            }
+
+            if (clientType && isMachineToMachine) {
+                clientType.value = '@ClientTypes.Confidential';
+            }
+
+            const isPublic = clientType?.value === '@ClientTypes.Public';
+
+            if (secretPanel) {
+                secretPanel.style.display = isPublic ? 'none' : '';
+            }
+
+            if (redirectPanel) {
+                redirectPanel.style.display = isMachineToMachine ? 'none' : '';
+            }
+        }
+
+        form.addEventListener('click', event => {
+            const addButton = event.target.closest('.js-add-row');
+            const removeButton = event.target.closest('.js-remove-row');
+
+            if (addButton) {
+                const list = addButton.closest('.dynamic-list');
+                const prefix = list.dataset.list;
+                const index = list.querySelectorAll('.dynamic-items > .dynamic-row').length;
+                const type = addButton.dataset.template;
+                const placeholder = addButton.dataset.placeholder || '';
+
+                list.querySelector('.dynamic-items').insertAdjacentHTML(
+                    'beforeend',
+                    templates[type](prefix, index, placeholder)
+                );
+
                 event.preventDefault();
-                addValue(input.value);
+            }
+
+            if (removeButton) {
+                const list = removeButton.closest('.dynamic-list');
+                removeButton.closest('.dynamic-row').remove();
+                reindex(list);
+                event.preventDefault();
             }
         });
 
-        sync();
-    });
-})();
+        form.querySelector('.js-client-kind')?.addEventListener('change', syncClientMode);
+        form.querySelector('.js-client-type')?.addEventListener('change', syncClientMode);
+
+        syncClientMode();
+    })();
 </script>

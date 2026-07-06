@@ -2,9 +2,13 @@
 @{
     ViewData["Title"] = T["TextConfiguracoesDeSeguranca"].Value;
 }
-<div class="page-heading">
-    <div><span class="page-kicker">@T["Settings"]</span><h1>@T["Security"]</h1><p>@T["TextPoliticaDeSenhaBloqueioMfaETempoDe"]</p></div>
-</div>
+@section AdminHeader {
+    <span class="admin-page-kicker">@T["Settings"]</span>
+    <h1>@T["Security"]</h1>
+    <p>@T["TextPoliticaDeSenhaBloqueioMfaETempoDe"]</p>
+}
+
+
 @if (TempData["Message"] is not null)
 {
     <div class="alert alert-success">@TempData["Message"]</div>

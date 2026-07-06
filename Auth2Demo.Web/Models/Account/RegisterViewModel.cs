@@ -15,4 +15,6 @@ public sealed class RegisterViewModel
 
     [Required, Compare(nameof(Password)), DataType(DataType.Password)]
     public string ConfirmPassword { get; set; } = string.Empty;
+
+    public string? ReturnUrl { get; set; }
 }

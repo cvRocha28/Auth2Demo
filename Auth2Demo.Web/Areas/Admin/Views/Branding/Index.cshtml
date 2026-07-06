@@ -4,15 +4,13 @@
     ViewData["Title"] = T["Branding"].Value;
 }
 
-<div class="page-heading">
-    <div>
-        <span class="page-kicker">@T["Customization"]</span>
+@section AdminHeader {
+    <span class="admin-page-kicker">@T["Customization"]</span>
+    <h1>@T["Branding"]</h1>
+    <p>@T["TextPersonalizeNomeLogoCoresTemaECssDo"]</p>
+}
 
-        <h1>@T["Branding"]</h1>
 
-        <p>@T["TextPersonalizeNomeLogoCoresTemaECssDo"]</p>
-    </div>
-</div>
 
 @if (TempData["Message"] is not null)
 {

@@ -1,8 +1,8 @@
+using Auth2Demo.Application.Services.Portal;
 using Auth2Demo.Infrastructure.Identity;
 using Auth2Demo.Web.Models;
 using Auth2Demo.Web.Models.Account;
 using Auth2Demo.Web.Models.Home;
-using Auth2Demo.Infrastructure.Services.Portal;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;

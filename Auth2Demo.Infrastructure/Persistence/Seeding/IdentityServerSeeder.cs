@@ -1,14 +1,15 @@
 using Auth2Demo.Domain.Identity;
 using Auth2Demo.Domain.Security;
 using Auth2Demo.Infrastructure.Identity;
-using Auth2Demo.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
-using Auth2Demo.Web.Security;
+using Auth2Demo.Application.Security;
 using Microsoft.AspNetCore.Identity;
 using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Auth2Demo.Web.Seeding;
+namespace Auth2Demo.Infrastructure.Persistence.Seeding;
 
 public static class IdentityServerSeeder
 {

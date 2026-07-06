@@ -1,56 +1,41 @@
+
 # Auth2Demo
 
-A modern Identity Platform built with ASP.NET Core 10, OpenIddict and ASP.NET Core Identity.
+Auth2Demo is a modern Identity Provider built with ASP.NET Core 10 and OpenIddict, inspired by Azure Entra ID and Auth0.
 
 ## Features
 
-- ASP.NET Core Identity
-- OpenIddict
 - OAuth 2.1 / OpenID Connect
-- External Login Providers
-- MFA
-- Passkeys
-- Email Confirmation
-- Password Reset
-- Administration Portal
-- Localization (en-US / pt-BR)
+- Authorization Code + PKCE
+- Client Credentials
+- Multiple Client Secrets (DEV/QA/UAT/PRD)
+- Secret rotation without revoking active secrets
+- API Permissions
+- Redirect URI management
+- Required Claims
+- Identity Providers
+- Audit logging
+- Localization (i18n)
+- Clean Architecture
 
 ## Architecture
 
-The solution follows a Clean Architecture inspired approach.
+- Auth2Demo.Domain
+- Auth2Demo.Application
+- Auth2Demo.Infrastructure
+- Auth2Demo.Web
 
-```
-Auth2Demo
-├── Auth2Demo.Domain
-├── Auth2Demo.Application
-├── Auth2Demo.Infrastructure
-├── Auth2Demo.Web
-├── Auth2Demo.UnitTests
-└── Auth2Demo.IntegrationTests
-```
+See the documentation inside the `docs` folder.
 
-## Restore
+## Running
 
-```powershell
-dotnet restore .\Auth2Demo.slnx
+```bash
+dotnet restore
+dotnet build
+dotnet ef database update
+dotnet run --project Auth2Demo.Web
 ```
 
-## Build
+## Roadmap
 
-```powershell
-dotnet build .\Auth2Demo.slnx
-```
-
-## Run
-
-```powershell
-dotnet run --project .\Auth2Demo.Web
-```
-
-## Documentation
-
-- [Architecture](docs/architecture.md)
-- [Authentication](docs/authentication.md)
-- [Localization](docs/localization.md)
-- [Deployment](docs/deployment.md)
-- [Professional Roadmap](docs/professional-roadmap.md)
+See docs/professional-roadmap.md

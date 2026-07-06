@@ -1,6 +1,6 @@
+using Auth2Demo.Application.Services.Admin;
 using Auth2Demo.Web.Areas.Admin.Models;
 using Auth2Demo.Web.Security;
-using Auth2Demo.Infrastructure.Services.Admin;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

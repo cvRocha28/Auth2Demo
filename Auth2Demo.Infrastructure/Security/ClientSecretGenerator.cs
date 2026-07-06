@@ -1,11 +1,8 @@
+using Auth2Demo.Application.Services.Admin;
 using System.Security.Cryptography;
 
 namespace Auth2Demo.Infrastructure.Security;
 
-public interface IClientSecretGenerator
-{
-    string GenerateSecret(int bytes = 48);
-}
 
 public sealed class ClientSecretGenerator : IClientSecretGenerator
 {

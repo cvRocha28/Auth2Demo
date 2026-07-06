@@ -4,14 +4,15 @@
     var recoveryCodes = (TempData["RecoveryCodes"] as string)?.Split('|', StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
 }
 
-<div class="page-heading">
-    <div>
-        <span class="page-kicker">@T["Authentication"]</span>
-        <h1>@T["GerenciarMfa"]</h1>
-        <p>@Model.DisplayName — @Model.Email</p>
-    </div>
+@section AdminHeader {
+    <span class="admin-page-kicker">@T["Authentication"]</span>
+    <h1>@T["GerenciarMfa"]</h1>
+    <p>@Model.DisplayName — @Model.Email</p>
+}
+
+@section AdminActions {
     <a class="btn" asp-action="Index">@T["Back"]</a>
-</div>
+}
 
 @if (TempData["Success"] is not null)
 {

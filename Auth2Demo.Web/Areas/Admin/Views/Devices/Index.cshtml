@@ -4,15 +4,13 @@
     ViewData["Title"] = T["Devices"].Value;
 }
 
-<div class="page-heading">
-    <div>
-        <span class="page-kicker">@T["Security"]</span>
+@section AdminHeader {
+    <span class="admin-page-kicker">@T["Security"]</span>
+    <h1>@T["Devices"]</h1>
+    <p>@T["TextGerencieDispositivosConhecidosEConfiaveis"]</p>
+}
 
-        <h1>@T["Devices"]</h1>
 
-        <p>@T["TextGerencieDispositivosConhecidosEConfiaveis"]</p>
-    </div>
-</div>
 
 <div class="table-wrap">
     <table>

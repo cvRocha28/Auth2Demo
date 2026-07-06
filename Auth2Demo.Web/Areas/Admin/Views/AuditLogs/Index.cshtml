@@ -6,15 +6,13 @@
     ViewData["Title"] = T["AuditLogs"].Value;
 }
 
-<div class="page-heading">
-    <div>
-        <span class="page-kicker">@T["Security"]</span>
+@section AdminHeader {
+    <span class="admin-page-kicker">@T["Security"]</span>
+    <h1>@T["AuditLogs"]</h1>
+    <p>@T["TextEventosDeLoginConsentimentoMfaEAdmin"]</p>
+}
 
-        <h1>@T["AuditLogs"]</h1>
 
-        <p>@T["TextEventosDeLoginConsentimentoMfaEAdmin"]</p>
-    </div>
-</div>
 
 <div class="card toolbar-card">
     <form method="get" class="form-inline">

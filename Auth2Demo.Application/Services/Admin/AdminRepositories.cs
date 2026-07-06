@@ -93,3 +93,4 @@ public interface IAdminMfaRepository
     Task DeleteMethodAsync(MfaMethod method);
     Task AddAuditAsync(AuditLog auditLog);
 }
+

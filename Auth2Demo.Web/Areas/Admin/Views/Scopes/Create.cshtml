@@ -1,11 +1,43 @@
 @model ScopeCreateViewModel
-@{ ViewData["Title"] = T["NovoScope"].Value; }
-<h1>@T["NewScopeApi"]</h1>
-<form method="post" class="card form-card">
-<div asp-validation-summary="ModelOnly" class="validation"></div>
-<label asp-for="Name"></label><input asp-for="Name" />
-<label asp-for="DisplayName"></label><input asp-for="DisplayName" />
-<label asp-for="Description"></label><textarea asp-for="Description"></textarea>
-<label asp-for="Resources"></label><input asp-for="Resources" />
-<button class="btn">@T["Create"]</button>
+@{
+    ViewData["Title"] = T["NovoScope"].Value;
+}
+
+@section AdminHeader {
+    <span class="admin-page-kicker">@T["RecursosProtegidos"]</span>
+    <h1>@T["NewScopeApi"]</h1>
+    <p>@T["TextDefinaOsScopesQueOsClientsPodemSolicitar"]</p>
+}
+
+@section AdminActions {
+    <a class="btn ghost" asp-action="Index"><i class="bi bi-arrow-left"></i> @T["Back"]</a>
+}
+
+<form method="post" class="card form-card pro-form">
+    <div asp-validation-summary="ModelOnly" class="validation"></div>
+
+    <div class="form-row">
+        <label asp-for="Name"></label>
+        <input asp-for="Name" />
+    </div>
+
+    <div class="form-row">
+        <label asp-for="DisplayName"></label>
+        <input asp-for="DisplayName" />
+    </div>
+
+    <div class="form-row">
+        <label asp-for="Description"></label>
+        <textarea asp-for="Description"></textarea>
+    </div>
+
+    <div class="form-row">
+        <label asp-for="Resources"></label>
+        <input asp-for="Resources" />
+    </div>
+
+    <div class="form-actions">
+        <button class="btn"><i class="bi bi-check2-circle"></i> @T["Create"]</button>
+        <a class="btn ghost" asp-action="Index">@T["Cancel"]</a>
+    </div>
 </form>

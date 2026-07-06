@@ -1,15 +1,28 @@
+@using Auth2Demo.Web.Services.Branding
+@inject IBrandingResolver BrandingResolver
 @model RegisterViewModel
-@{ ViewData["Title"] = T["CreateAccount"].Value; }
-<div class="auth-card form-card">
-    <div class="auth-tabs">
-        <a class="auth-tab" asp-action="Login">@T["Login"]</a>
-        <a class="auth-tab active" asp-action="Register">@T["CreateAccount"]</a>
-    </div>
-    <div class="auth-header">
+@{
+    ViewData["Title"] = T["CreateAccount"].Value;
+    var branding = await BrandingResolver.ResolveAsync(Context);
+}
+<div class="auth-card form-card auth-tenant-card">
+    <div class="auth-header auth-tenant-header">
+        <div class="auth-badge">
+            @if (branding.HasLogo)
+            {
+                <img src="@branding.LogoUrl" alt="@branding.TenantName" />
+            }
+            else
+            {
+                <i class="bi bi-person-plus" aria-hidden="true"></i>
+            }
+        </div>
         <h1>@T["CreateAccount"]</h1>
         <p>@T["TextCrieUmaContaLocalParaTestarOIdentity"]</p>
     </div>
-    <form method="post">
+    <form method="post" class="auth-form">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="ReturnUrl" />
         <div asp-validation-summary="ModelOnly" class="validation"></div>
         <div class="form-row">
             <label asp-for="DisplayName">@T["Name"]</label>
@@ -18,21 +31,24 @@
         </div>
         <div class="form-row">
             <label asp-for="Email">@T["Email"]</label>
-            <div class="input-wrap"><span class="input-icon">✉</span><input class="with-icon" asp-for="Email" placeholder="you@example.com" autocomplete="username" /></div>
+            <div class="input-wrap"><span class="input-icon"><i class="bi bi-envelope" aria-hidden="true"></i></span><input class="with-icon" asp-for="Email" placeholder="you@example.com" autocomplete="username" /></div>
             <span asp-validation-for="Email"></span>
         </div>
         <div class="form-row">
             <label asp-for="Password">@T["Password"]</label>
-            <div class="input-wrap"><span class="input-icon">🔑</span><input class="with-icon" asp-for="Password" placeholder='@T["TextMinimo10Caracteres"].Value' autocomplete="new-password" /></div>
+            <div class="input-wrap"><span class="input-icon"><i class="bi bi-key" aria-hidden="true"></i></span><input class="with-icon" asp-for="Password" placeholder='@T["TextMinimo10Caracteres"].Value' autocomplete="new-password" /></div>
             <span asp-validation-for="Password"></span>
         </div>
         <div class="form-row">
             <label asp-for="ConfirmPassword">@T["ConfirmarSenha"]</label>
-            <div class="input-wrap"><span class="input-icon">🔑</span><input class="with-icon" asp-for="ConfirmPassword" placeholder='@T["RepitaASenha"].Value' autocomplete="new-password" /></div>
+            <div class="input-wrap"><span class="input-icon"><i class="bi bi-key" aria-hidden="true"></i></span><input class="with-icon" asp-for="ConfirmPassword" placeholder='@T["RepitaASenha"].Value' autocomplete="new-password" /></div>
             <span asp-validation-for="ConfirmPassword"></span>
         </div>
         <button class="btn btn-block" type="submit">@T["CreateAccount"]</button>
     </form>
-    <p class="form-footer">@T["TextJaTemUmaConta"] <a asp-action="Login">@T["Login"]</a></p>
+    @if (branding.ShowCreateAccountLink)
+    {
+        <p class="form-footer">@T["TextJaTemUmaConta"] <a asp-action="Login" asp-route-returnUrl="@Model.ReturnUrl">@T["Login"]</a></p>
+    }
 </div>
 @section Scripts { <partial name="_ValidationScriptsPartial" /> }

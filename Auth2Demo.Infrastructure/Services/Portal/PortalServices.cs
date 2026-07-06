@@ -19,10 +19,6 @@ public sealed class PerfilIndexData
     public required IReadOnlyList<PasskeyCredential> Passkeys { get; init; }
 }
 
-public interface IExternalProviderService
-{
-    Task<IReadOnlyList<ExternalProviderData>> GetEnabledForLoginAsync();
-}
 
 public sealed class ExternalProviderService : IExternalProviderService
 {

@@ -1,18 +1,82 @@
+@using Auth2Demo.Web.Services.Branding
+@inject IBrandingResolver BrandingResolver
+@{
+    var branding = await BrandingResolver.ResolveAsync(Context);
+    var titleSuffix = string.IsNullOrWhiteSpace(branding.TenantName) ? T["TitleSuffix"].Value : branding.TenantName;
+    var isAuthenticationExperience =
+        Context.Request.Path.StartsWithSegments("/Account/Login", StringComparison.OrdinalIgnoreCase) ||
+        Context.Request.Path.StartsWithSegments("/Account/Register", StringComparison.OrdinalIgnoreCase) ||
+        Context.Request.Path.StartsWithSegments("/connect/authorize", StringComparison.OrdinalIgnoreCase) ||
+        Context.Request.Path.StartsWithSegments("/Authorization", StringComparison.OrdinalIgnoreCase) ||
+        (ViewData["HideShellHeader"] as bool? == true);
+}
 <!doctype html>
-<html lang='@T["HtmlLang"].Value'>
+<html lang='@T["HtmlLang"].Value' data-theme="@branding.Theme.ToLowerInvariant()">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>@ViewData["Title"] - @T["TitleSuffix"]</title>
+    <title>@ViewData["Title"] - @titleSuffix</title>
+    @if (!string.IsNullOrWhiteSpace(branding.FaviconUrl))
+    {
+        <link rel="icon" href="@branding.FaviconUrl" />
+    }
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <style>
+        :root {
+            --primary: @branding.PrimaryColor;
+            --primary-2: @branding.SecondaryColor;
+            --primary-soft: color-mix(in srgb, @branding.PrimaryColor 14%, white);
+            --secondary-brand: @branding.SecondaryColor;
+            --bg: @branding.BackgroundColor;
+            --surface: @branding.SurfaceColor;
+            --surface-2: color-mix(in srgb, @branding.SurfaceColor 90%, @branding.BackgroundColor);
+            --text: @branding.TextColor;
+            --muted: @branding.MutedTextColor;
+            --line: @branding.BorderColor;
+            --success: @branding.SuccessColor;
+            --warning: @branding.WarningColor;
+            --danger: @branding.DangerColor;
+            --auth-card-radius: @(branding.CardRadius)px;
+            --auth-button-radius: @(branding.ButtonRadius)px;
+            --auth-button-background: @(branding.UseGradientButtons ? $"linear-gradient(135deg, {branding.PrimaryColor}, {branding.SecondaryColor})" : branding.PrimaryColor);
+        }
+        @if (branding.IsDark)
+        {
+            <text>
+            :root {
+                --bg: #020617;
+                --surface: #0f172a;
+                --surface-2: #111827;
+                --text: #e5e7eb;
+                --muted: #94a3b8;
+                --line: #1f2937;
+                --shadow: 0 18px 45px rgba(0,0,0,.35);
+            }
+            body { background: radial-gradient(circle at top left, color-mix(in srgb, @branding.PrimaryColor 26%, #020617) 0, #020617 44%, #0f172a 100%); }
+            .topbar { background: rgba(15,23,42,.88); }
+            .nav-link, .link-button { color: #cbd5e1; }
+            </text>
+        }
+        @Html.Raw(branding.CustomCss)
+    </style>
 </head>
-<body>
-@if (User.Identity?.IsAuthenticated == true)
+<body class='@(isAuthenticationExperience ? "auth-experience-body" : string.Empty)'>
+@if (User.Identity?.IsAuthenticated == true && !isAuthenticationExperience)
 {
     <header class="topbar">
         <a class="brand" asp-controller="Home" asp-action="Index">
-            <span class="brand-mark">🔐</span>
-            <span>@T["Auth2demo"]</span>
+            <span class="brand-mark">
+                @if (branding.HasLogo)
+                {
+                    <img src="@branding.LogoUrl" alt="@branding.TenantName" />
+                }
+                else
+                {
+                    <i class="bi bi-shield-lock" aria-hidden="true"></i>
+                }
+            </span>
+            <span>@branding.TenantName</span>
         </a>
         <nav>
             <a class="nav-link" asp-controller="Perfil" asp-action="Index">@T["Profile"]</a>
@@ -27,7 +91,7 @@
         </nav>
     </header>
 }
-<main class="container">@RenderBody()</main>
+<main class='@(isAuthenticationExperience ? "auth-experience-main" : "container")'>@RenderBody()</main>
 @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

@@ -79,12 +79,12 @@
                     <div><strong>@T["SecurityAndChecks"]</strong><span>@T["TextResumoRapidoParaProtegerAConta"]</span></div>
                 </div>
                 <div class="security-checks">
-                    <div class="security-check @(profile.EmailConfirmed ? "ok" : "warn")"><span>✉</span><div><strong>@T["Email"]</strong><small>@(profile.EmailConfirmed ? T["Confirmed"].Value : T["ConfirmationPending"].Value)</small></div></div>
-                    <div class="security-check @(profile.PhoneNumberConfirmed ? "ok" : "warn")"><span>☎</span><div><strong>@T["PhoneNumber"]</strong><small>@(profile.PhoneNumberConfirmed ? T["Confirmed"].Value : T["NotConfirmed"].Value)</small></div></div>
-                    <div class="security-check @(profile.TwoFactorEnabled ? "ok" : "warn")"><span>🔐</span><div><strong>@T["TextAutenticacaoEmDuasEtapas"]</strong><small>@(profile.TwoFactorEnabled ? T["ActiveFemale"].Value : T["RecommendedEnable"].Value)</small></div></div>
-                    <div class="security-check ok"><span>📄</span><div><strong>@T["Document"]</strong><small>@profile.DocumentVerificationStatus</small></div></div>
-                    <div class="security-check ok"><span>🙂</span><div><strong>@T["FaceScan"]</strong><small>@profile.FaceVerificationStatus</small></div></div>
-                    <div class="security-check @(profile.LockoutEnd.HasValue && profile.LockoutEnd > DateTimeOffset.UtcNow ? "warn" : "ok")"><span>🛡</span><div><strong>@T["Lockout"]</strong><small>@(profile.LockoutEnd.HasValue && profile.LockoutEnd > DateTimeOffset.UtcNow ? string.Format(T["LockedUntil"].Value, profile.LockoutEnd.Value.ToLocalTime().ToString("dd/MM/yyyy HH:mm")) : T["NoActiveLockout"].Value)</small></div></div>
+                    <div class="security-check @(profile.EmailConfirmed ? "ok" : "warn")"><span><i class="bi bi-envelope" aria-hidden="true"></i></span><div><strong>@T["Email"]</strong><small>@(profile.EmailConfirmed ? T["Confirmed"].Value : T["ConfirmationPending"].Value)</small></div></div>
+                    <div class="security-check @(profile.PhoneNumberConfirmed ? "ok" : "warn")"><span><i class="bi bi-telephone" aria-hidden="true"></i></span><div><strong>@T["PhoneNumber"]</strong><small>@(profile.PhoneNumberConfirmed ? T["Confirmed"].Value : T["NotConfirmed"].Value)</small></div></div>
+                    <div class="security-check @(profile.TwoFactorEnabled ? "ok" : "warn")"><span><i class="bi bi-shield-lock" aria-hidden="true"></i></span><div><strong>@T["TextAutenticacaoEmDuasEtapas"]</strong><small>@(profile.TwoFactorEnabled ? T["ActiveFemale"].Value : T["RecommendedEnable"].Value)</small></div></div>
+                    <div class="security-check ok"><span><i class="bi bi-file-earmark-text" aria-hidden="true"></i></span><div><strong>@T["Document"]</strong><small>@profile.DocumentVerificationStatus</small></div></div>
+                    <div class="security-check ok"><span><i class="bi bi-emoji-smile" aria-hidden="true"></i></span><div><strong>@T["FaceScan"]</strong><small>@profile.FaceVerificationStatus</small></div></div>
+                    <div class="security-check @(profile.LockoutEnd.HasValue && profile.LockoutEnd > DateTimeOffset.UtcNow ? "warn" : "ok")"><span><i class="bi bi-shield-check" aria-hidden="true"></i></span><div><strong>@T["Lockout"]</strong><small>@(profile.LockoutEnd.HasValue && profile.LockoutEnd > DateTimeOffset.UtcNow ? string.Format(T["LockedUntil"].Value, profile.LockoutEnd.Value.ToLocalTime().ToString("dd/MM/yyyy HH:mm")) : T["NoActiveLockout"].Value)</small></div></div>
                 </div>
             </div>
         </div>
@@ -104,7 +104,7 @@
                         @foreach (var session in profile.RecentSessions)
                         {
                             <div class="activity-item">
-                                <div class="activity-icon">💻</div>
+                                <div class="activity-icon"><i class="bi bi-pc-display" aria-hidden="true"></i></div>
                                 <div><strong>@session.DeviceName</strong><small>@(session.IpAddress ?? T["IpNotInformed"].Value) @(string.IsNullOrWhiteSpace(session.Location) ? string.Empty : $"• {session.Location}")</small></div>
                                 <span class="activity-time">@session.LastSeenAt.ToLocalTime().ToString("dd/MM HH:mm")</span>
                             </div>
@@ -127,7 +127,7 @@
                         @foreach (var device in profile.RecentDevices)
                         {
                             <div class="activity-item">
-                                <div class="activity-icon">📱</div>
+                                <div class="activity-icon"><i class="bi bi-phone" aria-hidden="true"></i></div>
                                 <div><strong>@device.Name</strong><small>@(device.Browser ?? T["BrowserNotInformed"].Value) @(string.IsNullOrWhiteSpace(device.OperatingSystem) ? string.Empty : $"• {device.OperatingSystem}")</small></div>
                                 <span class="badge @(device.IsTrusted ? "badge-success" : "badge-warning")">@(device.IsTrusted ? T["Trusted"].Value : T["New"].Value)</span>
                             </div>
@@ -146,9 +146,9 @@ else
             <h1 class="hero-title">@T["AppName"]<br /><span>@T["IdentityProvider"]</span></h1>
             <p class="hero-text">@T["TextServidorDeAutenticacaoProprioSeguroEExtensivelCom"]</p>
             <ul class="feature-list">
-                <li><span class="feature-icon">✓</span> @T["TextAutenticacaoModernaComOidcOauth2EAuthorizationCode"]</li>
-                <li><span class="feature-icon">✓</span> @T["TextPainelAdministrativoParaUsuariosRolesClientsEScopes"]</li>
-                <li><span class="feature-icon">✓</span> @T["TextBaseProntaParaMfaAuditoriaApisProtegidasE"]</li>
+                <li><span class="feature-icon"><i class="bi bi-check-lg" aria-hidden="true"></i></span> @T["TextAutenticacaoModernaComOidcOauth2EAuthorizationCode"]</li>
+                <li><span class="feature-icon"><i class="bi bi-check-lg" aria-hidden="true"></i></span> @T["TextPainelAdministrativoParaUsuariosRolesClientsEScopes"]</li>
+                <li><span class="feature-icon"><i class="bi bi-check-lg" aria-hidden="true"></i></span> @T["TextBaseProntaParaMfaAuditoriaApisProtegidasE"]</li>
             </ul>
             <div class="trust-grid">
                 <div class="trust-item"><strong>@T["Oidc"]</strong><span>@T["ModernFlow"]</span></div>
@@ -176,11 +176,11 @@ else
                 <div asp-validation-summary="ModelOnly" class="validation"></div>
                 <div class="form-row">
                     <label for="Email">@T["Email"]</label>
-                    <div class="input-wrap"><span class="input-icon">✉</span><input class="with-icon" id="Email" name="Email" type="email" value="@login.Email" placeholder="admin@auth2demo.local" autocomplete="username" /></div>
+                    <div class="input-wrap"><span class="input-icon"><i class="bi bi-envelope" aria-hidden="true"></i></span><input class="with-icon" id="Email" name="Email" type="email" value="@login.Email" placeholder="admin@auth2demo.local" autocomplete="username" /></div>
                 </div>
                 <div class="form-row">
                     <label for="Password">@T["Password"]</label>
-                    <div class="input-wrap"><span class="input-icon">🔑</span><input class="with-icon" id="Password" name="Password" type="password" placeholder='@T["EnterYourPassword"].Value' autocomplete="current-password" /></div>
+                    <div class="input-wrap"><span class="input-icon"><i class="bi bi-key" aria-hidden="true"></i></span><input class="with-icon" id="Password" name="Password" type="password" placeholder='@T["EnterYourPassword"].Value' autocomplete="current-password" /></div>
                 </div>
                 <label class="check"><input name="RememberMe" type="checkbox" value="true" /> @T["RememberMe"]</label>
                 <button class="btn btn-block" type="submit">@T["Login"]</button>

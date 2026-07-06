@@ -1,14 +1,5 @@
 # Authentication
 
-Supported authentication features:
+Supports Authorization Code + PKCE, Client Credentials, Refresh Tokens and external identity providers.
 
-- ASP.NET Core Identity
-- Cookie Authentication
-- Google Login
-- Microsoft Login
-- Email Confirmation
-- Password Reset
-- MFA
-- Passkeys
-- OpenID Connect
-- OAuth 2.1
+Client secrets are stored in IdentityApplicationSecrets allowing multiple active secrets per application.

@@ -11,6 +11,7 @@ using QRCoder;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 using Auth2Demo.Web;
+using Auth2Demo.Web.Services.Branding;
 
 namespace Auth2Demo.Web.Controllers;
 
@@ -24,6 +25,7 @@ public sealed class AccountController : Controller
     private readonly ILocalAccountService _localAccounts;
     private readonly UrlEncoder _urlEncoder;
     private readonly IStringLocalizer<SharedResource> _localizer;
+    private readonly IBrandingResolver _brandingResolver;
 
     public AccountController(
         SignInManager<ApplicationUser> signInManager,
@@ -31,7 +33,8 @@ public sealed class AccountController : Controller
         IAccountSecurityService security,
         ILocalAccountService localAccounts,
         UrlEncoder urlEncoder,
-        IStringLocalizer<SharedResource> localizer)
+        IStringLocalizer<SharedResource> localizer,
+        IBrandingResolver brandingResolver)
     {
         _signInManager = signInManager;
         _userManager = userManager;
@@ -39,10 +42,21 @@ public sealed class AccountController : Controller
         _localAccounts = localAccounts;
         _urlEncoder = urlEncoder;
         _localizer = localizer;
+        _brandingResolver = brandingResolver;
     }
 
-    private async Task<IReadOnlyList<ExternalProviderViewModel>> GetExternalProvidersAsync() =>
-        (await _security.GetEnabledExternalProvidersAsync())
+    private async Task<IReadOnlyList<ExternalProviderViewModel>> GetExternalProvidersAsync(string? returnUrl)
+    {
+        var branding = await _brandingResolver.ResolveAsync(HttpContext);
+        var providers = await _security.GetEnabledExternalProvidersAsync();
+
+        if (branding.RestrictExternalProviders)
+        {
+            var allowed = branding.EnabledProviderSchemes.ToHashSet(StringComparer.OrdinalIgnoreCase);
+            providers = providers.Where(x => allowed.Contains(x.Scheme)).ToArray();
+        }
+
+        return providers
             .Select(x => new ExternalProviderViewModel
             {
                 DisplayName = x.DisplayName,
@@ -50,12 +64,18 @@ public sealed class AccountController : Controller
                 ButtonText = x.ButtonText
             })
             .ToArray();
+    }
 
-    private async Task<LoginViewModel> BuildLoginViewModelAsync(string? returnUrl) => new()
+    private async Task<LoginViewModel> BuildLoginViewModelAsync(string? returnUrl)
     {
-        ReturnUrl = returnUrl,
-        ExternalProviders = await GetExternalProvidersAsync()
-    };
+        var branding = await _brandingResolver.ResolveAsync(HttpContext);
+        return new LoginViewModel
+        {
+            ReturnUrl = returnUrl,
+            EnableLocalLogin = branding.EnableLocalLogin,
+            ExternalProviders = await GetExternalProvidersAsync(returnUrl)
+        };
+    }
 
     [HttpGet]
     public async Task<IActionResult> Login(string? returnUrl = null)
@@ -69,7 +89,16 @@ public sealed class AccountController : Controller
     {
         if (!ModelState.IsValid)
         {
-            model.ExternalProviders = await GetExternalProvidersAsync();
+            model.ExternalProviders = await GetExternalProvidersAsync(model.ReturnUrl);
+            return View(model);
+        }
+
+        var branding = await _brandingResolver.ResolveAsync(HttpContext);
+        model.EnableLocalLogin = branding.EnableLocalLogin;
+        if (!branding.EnableLocalLogin)
+        {
+            ModelState.AddModelError(string.Empty, _localizer["PasswordLoginDisabledForThisApplication"].Value);
+            model.ExternalProviders = await GetExternalProvidersAsync(model.ReturnUrl);
             return View(model);
         }
 
@@ -120,7 +149,7 @@ public sealed class AccountController : Controller
                 break;
         }
 
-        model.ExternalProviders = await GetExternalProvidersAsync();
+        model.ExternalProviders = await GetExternalProvidersAsync(model.ReturnUrl);
         return View(model);
     }
 
@@ -304,6 +333,13 @@ public sealed class AccountController : Controller
             return RedirectToAction(nameof(Login), new { returnUrl });
         }
 
+        var branding = await _brandingResolver.ResolveAsync(HttpContext);
+        if (branding.RestrictExternalProviders && !branding.EnabledProviderSchemes.Contains(provider, StringComparer.OrdinalIgnoreCase))
+        {
+            TempData["Error"] = _localizer["ExternalProviderDisabledForThisApplication"].Value;
+            return RedirectToAction(nameof(Login), new { returnUrl });
+        }
+
         var redirectUrl = Url.Action(nameof(ExternalLoginCallback), "Account", new { returnUrl });
         var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
         return Challenge(properties, provider);
@@ -394,7 +430,7 @@ public sealed class AccountController : Controller
     }
 
     [HttpGet]
-    public IActionResult Register() => View(new RegisterViewModel());
+    public IActionResult Register(string? returnUrl = null) => View(new RegisterViewModel { ReturnUrl = returnUrl });
 
     [HttpPost]
     [ValidateAntiForgeryToken]
@@ -414,7 +450,8 @@ public sealed class AccountController : Controller
             return View("EmailConfirmationSent", new EmailConfirmationSentViewModel
             {
                 Email = result.Email,
-                ConfirmationLink = result.ConfirmationLink
+                ConfirmationLink = result.ConfirmationLink,
+                ReturnUrl = model.ReturnUrl
             });
         }
 
@@ -427,23 +464,24 @@ public sealed class AccountController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> EmailConfirmationSent(string email)
+    public async Task<IActionResult> EmailConfirmationSent(string email, string? returnUrl = null)
     {
         if (string.IsNullOrWhiteSpace(email))
         {
-            return RedirectToAction(nameof(Login));
+            return RedirectToAction(nameof(Login), new { returnUrl });
         }
 
         var result = await _localAccounts.CreateEmailConfirmationLinkAsync(email, BuildEmailConfirmationUrl);
         if (!result.UserFound)
         {
-            return RedirectToAction(nameof(Login));
+            return RedirectToAction(nameof(Login), new { returnUrl });
         }
 
         return View(new EmailConfirmationSentViewModel
         {
             Email = result.Email,
-            ConfirmationLink = result.Link
+            ConfirmationLink = result.Link,
+            ReturnUrl = returnUrl
         });
     }
 
@@ -460,7 +498,8 @@ public sealed class AccountController : Controller
         return View("EmailConfirmationSent", new EmailConfirmationSentViewModel
         {
             Email = result.Email,
-            ConfirmationLink = result.Link
+            ConfirmationLink = result.Link,
+            ReturnUrl = model.ReturnUrl
         });
     }
 
@@ -487,7 +526,7 @@ public sealed class AccountController : Controller
     }
 
     [HttpGet]
-    public IActionResult ForgotPassword() => View(new ForgotPasswordViewModel());
+    public IActionResult ForgotPassword(string? returnUrl = null) => View(new ForgotPasswordViewModel { ReturnUrl = returnUrl });
 
     [HttpPost]
     [ValidateAntiForgeryToken]
@@ -508,7 +547,8 @@ public sealed class AccountController : Controller
         return View("PasswordResetSent", new PasswordResetSentViewModel
         {
             Email = result.Email,
-            ResetLink = result.Link
+            ResetLink = result.Link,
+            ReturnUrl = model.ReturnUrl
         });
     }
 
