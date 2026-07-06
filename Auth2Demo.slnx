@@ -1,7 +1,9 @@
 <Solution>
   <Folder Name="/docs/">
+    <File Path="docs/administration.md" />
     <File Path="docs/architecture.md" />
     <File Path="docs/authentication.md" />
+    <File Path="docs/database.md" />
     <File Path="docs/deployment.md" />
     <File Path="docs/localization.md" />
     <File Path="docs/professional-roadmap.md" />
