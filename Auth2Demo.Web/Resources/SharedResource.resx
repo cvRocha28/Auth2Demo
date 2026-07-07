@@ -2637,4 +2637,16 @@
   <data name="ExternalProviderDisabledForThisApplication" xml:space="preserve">
     <value>This provider is disabled for this application.</value>
   </data>
+  <data name="UsernameOrEmail" xml:space="preserve">
+    <value>Username or email</value>
+  </data>
+  <data name="LoginPageDescription" xml:space="preserve">
+    <value>Sign in with your corporate username, email, or an authorized external provider.</value>
+  </data>
+  <data name="PasswordResetSentGenericDescription" xml:space="preserve">
+    <value>If a local account exists for this username or email, password reset instructions will be sent to the registered email address.</value>
+  </data>
+  <data name="AuditLoginBlockedOrSuspended" xml:space="preserve">
+    <value>Login was blocked because the user is blocked, suspended, or deleted.</value>
+  </data>
 </root>

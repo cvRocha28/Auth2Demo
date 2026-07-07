@@ -22,7 +22,7 @@
             }
         </div>
         <h1>@branding.TenantName</h1>
-        <p>@T["TextAcesseComSeuEMailESenhaPara"]</p>
+        <p>@T["LoginPageDescription"]</p>
     </div>
 
     @if (TempData["Success"] is not null)
@@ -56,7 +56,7 @@
                             <div class="confirm-email-actions">
                                 <a class="btn btn-outline btn-small"
                                    asp-action="EmailConfirmationSent"
-                                   asp-route-email="@Model.Email"
+                                   asp-route-email="@Model.Login"
                                    asp-route-returnUrl="@Model.ReturnUrl">
                                     @T["ResendConfirmationEmail"]
                                 </a>
@@ -79,12 +79,12 @@
                 }
 
                 <div class="form-row">
-                    <label asp-for="Email">@T["Email"]</label>
+                    <label asp-for="Login">@T["UsernameOrEmail"]</label>
                     <div class="input-wrap">
-                        <span class="input-icon"><i class="bi bi-envelope" aria-hidden="true"></i></span>
-                        <input class="with-icon" asp-for="Email" placeholder="admin@auth2demo.local" autocomplete="username" />
+                        <span class="input-icon"><i class="bi bi-person-badge" aria-hidden="true"></i></span>
+                        <input class="with-icon" asp-for="Login" placeholder="USERNAME ou usuario@empresa.com" autocomplete="username" />
                     </div>
-                    <span asp-validation-for="Email"></span>
+                    <span asp-validation-for="Login"></span>
                 </div>
 
                 <div class="form-row">

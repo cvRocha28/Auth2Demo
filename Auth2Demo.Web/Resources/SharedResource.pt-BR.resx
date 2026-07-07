@@ -2637,4 +2637,58 @@
   <data name="ExternalProviderDisabledForThisApplication" xml:space="preserve">
     <value>Este provedor está desabilitado para esta aplicação.</value>
   </data>
+  <data name="UsernameOrEmail" xml:space="preserve">
+    <value>Usuário ou e-mail</value>
+  </data>
+  <data name="LoginPageDescription" xml:space="preserve">
+    <value>Acesse com seu usuário corporativo, e-mail ou provedor externo autorizado.</value>
+  </data>
+  <data name="PasswordResetSentGenericDescription" xml:space="preserve">
+    <value>Se existir uma conta local com esse usuário ou e-mail, enviaremos as instruções de redefinição de senha para o e-mail cadastrado.</value>
+  </data>
+  <data name="AuditLoginBlockedOrSuspended" xml:space="preserve">
+    <value>Login bloqueado porque o usuário está bloqueado, suspenso ou excluído.</value>
+  </data>
+  <data name="LocalPassword" xml:space="preserve">
+    <value>Senha local</value>
+  </data>
+  <data name="LocalPasswordEnabled" xml:space="preserve">
+    <value>Configurada</value>
+  </data>
+  <data name="LocalPasswordNotConfigured" xml:space="preserve">
+    <value>Não configurada</value>
+  </data>
+  <data name="AccountAccess" xml:space="preserve">
+    <value>Acesso da conta</value>
+  </data>
+  <data name="CreateLocalPassword" xml:space="preserve">
+    <value>Criar senha local</value>
+  </data>
+  <data name="CreateLocalPasswordText" xml:space="preserve">
+    <value>Sua conta foi criada com um provedor externo. Adicione uma senha local para também entrar com e-mail e senha.</value>
+  </data>
+  <data name="ChangePasswordText" xml:space="preserve">
+    <value>Atualize a senha local usada para entrar com e-mail e senha.</value>
+  </data>
+  <data name="PasswordPolicyHint" xml:space="preserve">
+    <value>Use pelo menos 10 caracteres e siga a política de senha configurada.</value>
+  </data>
+  <data name="LocalPasswordProfessionalHint" xml:space="preserve">
+    <value>O login externo continua vinculado; isso apenas adiciona ou atualiza o acesso por e-mail e senha.</value>
+  </data>
+  <data name="PasswordFieldsRequired" xml:space="preserve">
+    <value>Preencha os campos de senha.</value>
+  </data>
+  <data name="PasswordConfirmationDoesNotMatch" xml:space="preserve">
+    <value>A confirmação de senha não confere.</value>
+  </data>
+  <data name="CurrentPasswordRequired" xml:space="preserve">
+    <value>Informe sua senha atual.</value>
+  </data>
+  <data name="PasswordUpdateFailed" xml:space="preserve">
+    <value>Não foi possível atualizar a senha.</value>
+  </data>
+  <data name="LocalPasswordCreatedSuccessfully" xml:space="preserve">
+    <value>Senha local criada com sucesso.</value>
+  </data>
 </root>

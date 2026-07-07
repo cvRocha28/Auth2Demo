@@ -37,7 +37,7 @@ public sealed class UsersController : Controller
         model.AvailableRoles = await _users.GetRoleNamesAsync();
         if (!ModelState.IsValid) return View(model);
 
-        var result = await _users.CreateAsync(new AdminUserCreateData { DisplayName = model.DisplayName, Email = model.Email, Password = model.Password, EmailConfirmed = model.EmailConfirmed, Roles = model.Roles });
+        var result = await _users.CreateAsync(new AdminUserCreateData { DisplayName = model.DisplayName, UserName = model.UserName, Email = model.Email, Password = model.Password, EmailConfirmed = model.EmailConfirmed, Roles = model.Roles });
         if (result.Success) return RedirectToAction(nameof(Index));
 
         foreach (var error in result.Errors) ModelState.AddModelError(string.Empty, error.Description);
@@ -48,7 +48,7 @@ public sealed class UsersController : Controller
     {
         var model = await _users.GetForEditAsync(id);
         if (model is null) return NotFound();
-        return View(new UserEditViewModel { Id = model.Id, DisplayName = model.DisplayName, Email = model.Email, Status = model.Status, EmailConfirmed = model.EmailConfirmed, Roles = model.Roles, AvailableRoles = await _users.GetRoleNamesAsync() });
+        return View(new UserEditViewModel { Id = model.Id, DisplayName = model.DisplayName, UserName = model.UserName, Email = model.Email, Status = model.Status, EmailConfirmed = model.EmailConfirmed, Roles = model.Roles, AvailableRoles = await _users.GetRoleNamesAsync() });
     }
 
     [HttpPost, ValidateAntiForgeryToken]
@@ -57,7 +57,7 @@ public sealed class UsersController : Controller
         model.AvailableRoles = await _users.GetRoleNamesAsync();
         if (!ModelState.IsValid) return View(model);
 
-        var result = await _users.UpdateAsync(new AdminUserEditData { Id = model.Id, DisplayName = model.DisplayName, Email = model.Email, Status = model.Status, EmailConfirmed = model.EmailConfirmed, Roles = model.Roles });
+        var result = await _users.UpdateAsync(new AdminUserEditData { Id = model.Id, DisplayName = model.DisplayName, UserName = model.UserName, Email = model.Email, Status = model.Status, EmailConfirmed = model.EmailConfirmed, Roles = model.Roles });
         if (result.NotFound) return NotFound();
         if (result.Success) return RedirectToAction(nameof(Index));
 

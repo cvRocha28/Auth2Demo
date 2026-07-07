@@ -23,9 +23,16 @@
         <span asp-validation-for="DisplayName"></span>
     </div>
 
+
+    <div class="form-row">
+        <label asp-for="UserName">@T["Username"]</label>
+        <input asp-for="UserName" placeholder="BRATE832492" autocomplete="username" />
+        <span asp-validation-for="UserName"></span>
+    </div>
+
     <div class="form-row">
         <label asp-for="Email">@T["Email"]</label>
-        <input asp-for="Email" placeholder="user@company.com" autocomplete="username" />
+        <input asp-for="Email" placeholder="user@company.com" autocomplete="email" />
         <span asp-validation-for="Email"></span>
     </div>
 
