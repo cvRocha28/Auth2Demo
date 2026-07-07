@@ -360,32 +360,136 @@
             });
         }
 
-        function syncClientMode() {
-            const kind = form.querySelector('.js-client-kind')?.value || '';
+        const presets = {
+            '@((int)ClientKind.WebApplication)': {
+                clientType: '@ClientTypes.Confidential',
+                consentType: '@ConsentTypes.Explicit',
+                grants: ['authorization_code', 'refresh_token'],
+                scopes: ['openid', 'profile', 'email', 'roles', 'offline_access'],
+                redirects: ['https://localhost:7108/signin-oidc'],
+                postLogoutRedirects: ['https://localhost:7108/signout-callback-oidc'],
+                endpoints: { authorization: true, token: true, endSession: true, revocation: true, introspection: true },
+                requirePkce: true,
+                showSecrets: true,
+                showRedirects: true,
+                secretDescription: 'default',
+                secretExpiration: 'Months12'
+            },
+            '@((int)ClientKind.Spa)': {
+                clientType: '@ClientTypes.Public',
+                consentType: '@ConsentTypes.Explicit',
+                grants: ['authorization_code', 'refresh_token'],
+                scopes: ['openid', 'profile', 'email', 'offline_access'],
+                redirects: ['https://localhost:5173/auth/callback'],
+                postLogoutRedirects: ['https://localhost:5173/'],
+                endpoints: { authorization: true, token: true, endSession: true, revocation: true, introspection: false },
+                requirePkce: true,
+                showSecrets: false,
+                showRedirects: true
+            },
+            '@((int)ClientKind.MachineToMachine)': {
+                clientType: '@ClientTypes.Confidential',
+                consentType: '@ConsentTypes.Implicit',
+                grants: ['client_credentials'],
+                scopes: ['api'],
+                redirects: [],
+                postLogoutRedirects: [],
+                endpoints: { authorization: false, token: true, endSession: false, revocation: true, introspection: true },
+                requirePkce: false,
+                showSecrets: true,
+                showRedirects: false,
+                secretDescription: 'm2m-default',
+                secretExpiration: 'Months12'
+            },
+            '@((int)ClientKind.NativeApplication)': {
+                clientType: '@ClientTypes.Public',
+                consentType: '@ConsentTypes.Explicit',
+                grants: ['authorization_code', 'refresh_token'],
+                scopes: ['openid', 'profile', 'email', 'offline_access'],
+                redirects: ['http://127.0.0.1:7890/callback'],
+                postLogoutRedirects: ['http://127.0.0.1:7890/'],
+                endpoints: { authorization: true, token: true, endSession: true, revocation: true, introspection: false },
+                requirePkce: true,
+                showSecrets: false,
+                showRedirects: true
+            }
+        };
+
+        function getList(name) {
+            return form.querySelector(`[data-list="${name}"]`);
+        }
+
+        function setDynamicValues(listName, values, templateType, placeholder = '') {
+            const list = getList(listName);
+            const container = list?.querySelector('.dynamic-items');
+            if (!container) return;
+
+            container.innerHTML = '';
+            values.forEach((value, index) => {
+                container.insertAdjacentHTML('beforeend', templates[templateType](listName, index, placeholder));
+                const row = container.lastElementChild;
+                const input = row?.querySelector('input, select');
+                if (input) input.value = value;
+            });
+        }
+
+        function setEndpoint(name, value) {
+            const input = form.querySelector(`[name="${name}"]`);
+            if (input) input.checked = value;
+        }
+
+        function ensureSecretRow(preset) {
+            const list = getList('SecretItems');
+            const container = list?.querySelector('.dynamic-items');
+            if (!container || container.querySelector('.dynamic-row')) return;
+
+            container.insertAdjacentHTML('beforeend', templates.secret('SecretItems', 0));
+            const row = container.lastElementChild;
+            const description = row?.querySelector('[name="SecretItems[0].Description"]');
+            const expiration = row?.querySelector('[name="SecretItems[0].Expiration"]');
+            if (description) description.value = preset.secretDescription || 'default';
+            if (expiration) expiration.value = preset.secretExpiration || 'Months12';
+        }
+
+        function applyApplicationPreset() {
+            const kind = form.querySelector('.js-client-kind')?.value || '@((int)ClientKind.WebApplication)';
+            const preset = presets[kind] || presets['@((int)ClientKind.WebApplication)'];
             const clientType = form.querySelector('.js-client-type');
+            const consentType = form.querySelector('[name="ConsentType"]');
             const secretPanel = form.querySelector('.js-secret-panel');
             const redirectPanel = form.querySelector('.js-redirect-panel');
+            const pkce = form.querySelector('[name="RequirePkce"]');
 
-            const isPublicKind = kind === '@((int)ClientKind.Spa)' || kind === '@((int)ClientKind.NativeApplication)';
+            if (clientType) clientType.value = preset.clientType;
+            if (consentType) consentType.value = preset.consentType;
+            if (pkce) pkce.checked = preset.requirePkce;
+
+            setDynamicValues('GrantTypeItems', preset.grants, 'grant');
+            setDynamicValues('ScopeItems', preset.scopes, 'string', 'openid');
+            setDynamicValues('RedirectUriItems', preset.redirects, 'string', 'https://localhost:7108/signin-oidc');
+            setDynamicValues('PostLogoutRedirectUriItems', preset.postLogoutRedirects, 'string', 'https://localhost:7108/signout-callback-oidc');
+
+            setEndpoint('AllowAuthorizationEndpoint', preset.endpoints.authorization);
+            setEndpoint('AllowTokenEndpoint', preset.endpoints.token);
+            setEndpoint('AllowEndSessionEndpoint', preset.endpoints.endSession);
+            setEndpoint('AllowRevocationEndpoint', preset.endpoints.revocation);
+            setEndpoint('AllowIntrospectionEndpoint', preset.endpoints.introspection);
+
+            if (secretPanel) secretPanel.style.display = preset.showSecrets ? '' : 'none';
+            if (redirectPanel) redirectPanel.style.display = preset.showRedirects ? '' : 'none';
+            if (preset.showSecrets) ensureSecretRow(preset);
+        }
+
+        function syncClientMode() {
+            const clientType = form.querySelector('.js-client-type');
+            const secretPanel = form.querySelector('.js-secret-panel');
+            const kind = form.querySelector('.js-client-kind')?.value || '';
             const isMachineToMachine = kind === '@((int)ClientKind.MachineToMachine)';
-
-            if (clientType && isPublicKind) {
-                clientType.value = '@ClientTypes.Public';
-            }
-
-            if (clientType && isMachineToMachine) {
-                clientType.value = '@ClientTypes.Confidential';
-            }
-
             const isPublic = clientType?.value === '@ClientTypes.Public';
 
-            if (secretPanel) {
-                secretPanel.style.display = isPublic ? 'none' : '';
-            }
-
-            if (redirectPanel) {
-                redirectPanel.style.display = isMachineToMachine ? 'none' : '';
-            }
+            if (secretPanel) secretPanel.style.display = isPublic ? 'none' : '';
+            const redirectPanel = form.querySelector('.js-redirect-panel');
+            if (redirectPanel) redirectPanel.style.display = isMachineToMachine ? 'none' : '';
         }
 
         form.addEventListener('click', event => {
@@ -415,7 +519,7 @@
             }
         });
 
-        form.querySelector('.js-client-kind')?.addEventListener('change', syncClientMode);
+        form.querySelector('.js-client-kind')?.addEventListener('change', applyApplicationPreset);
         form.querySelector('.js-client-type')?.addEventListener('change', syncClientMode);
 
         syncClientMode();

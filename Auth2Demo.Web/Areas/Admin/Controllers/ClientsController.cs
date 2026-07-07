@@ -1092,27 +1092,7 @@ public sealed class ClientsController : Controller
             model.ScopeItems = Split(model.Scopes).ToList();
         }
 
-        if (model.Kind is ClientKind.Spa or ClientKind.NativeApplication)
-        {
-            model.ClientType = ClientTypes.Public;
-            model.GenerateSecret = false;
-        }
-        else if (string.IsNullOrWhiteSpace(model.ClientType))
-        {
-            model.ClientType = ClientTypes.Confidential;
-        }
-
-        if (model.Kind == ClientKind.MachineToMachine)
-        {
-            model.AllowAuthorizationCode = false;
-            model.AllowRefreshToken = false;
-            model.AllowClientCredentials = true;
-            model.AllowAuthorizationEndpoint = false;
-            model.AllowEndSessionEndpoint = false;
-            model.RequirePkce = false;
-            model.RedirectUris = string.Empty;
-            model.PostLogoutRedirectUris = string.Empty;
-        }
+        ApplyRecommendedApplicationTypeDefaults(model);
 
         if (!model.AllowAuthorizationCode)
         {
@@ -1128,5 +1108,101 @@ public sealed class ClientsController : Controller
         {
             model.AllowTokenEndpoint = true;
         }
+    }
+
+    private static void ApplyRecommendedApplicationTypeDefaults(ClientFormViewModel model)
+    {
+        switch (model.Kind)
+        {
+            case ClientKind.WebApplication:
+                model.ClientType = ClientTypes.Confidential;
+                model.AllowAuthorizationCode = true;
+                model.AllowRefreshToken = true;
+                model.AllowClientCredentials = false;
+                SetGrantTypes(model, GrantTypes.AuthorizationCode, GrantTypes.RefreshToken);
+                model.RequirePkce = true;
+                model.AllowAuthorizationEndpoint = true;
+                model.AllowTokenEndpoint = true;
+                model.AllowEndSessionEndpoint = true;
+                model.AllowRevocationEndpoint = true;
+                model.AllowIntrospectionEndpoint = true;
+                model.GenerateSecret = true;
+                EnsureConfidentialClientSecret(model, "default");
+                break;
+
+            case ClientKind.Spa:
+                model.ClientType = ClientTypes.Public;
+                model.AllowAuthorizationCode = true;
+                model.AllowRefreshToken = true;
+                model.AllowClientCredentials = false;
+                SetGrantTypes(model, GrantTypes.AuthorizationCode, GrantTypes.RefreshToken);
+                model.RequirePkce = true;
+                model.AllowAuthorizationEndpoint = true;
+                model.AllowTokenEndpoint = true;
+                model.AllowEndSessionEndpoint = true;
+                model.AllowRevocationEndpoint = true;
+                model.AllowIntrospectionEndpoint = false;
+                model.GenerateSecret = false;
+                model.SecretItems.Clear();
+                break;
+
+            case ClientKind.NativeApplication:
+                model.ClientType = ClientTypes.Public;
+                model.AllowAuthorizationCode = true;
+                model.AllowRefreshToken = true;
+                model.AllowClientCredentials = false;
+                SetGrantTypes(model, GrantTypes.AuthorizationCode, GrantTypes.RefreshToken);
+                model.RequirePkce = true;
+                model.AllowAuthorizationEndpoint = true;
+                model.AllowTokenEndpoint = true;
+                model.AllowEndSessionEndpoint = true;
+                model.AllowRevocationEndpoint = true;
+                model.AllowIntrospectionEndpoint = false;
+                model.GenerateSecret = false;
+                model.SecretItems.Clear();
+                break;
+
+            case ClientKind.MachineToMachine:
+                model.ClientType = ClientTypes.Confidential;
+                model.AllowAuthorizationCode = false;
+                model.AllowRefreshToken = false;
+                model.AllowClientCredentials = true;
+                SetGrantTypes(model, GrantTypes.ClientCredentials);
+                model.RequirePkce = false;
+                model.AllowAuthorizationEndpoint = false;
+                model.AllowTokenEndpoint = true;
+                model.AllowEndSessionEndpoint = false;
+                model.AllowRevocationEndpoint = true;
+                model.AllowIntrospectionEndpoint = true;
+                model.GenerateSecret = true;
+                model.RedirectUriItems.Clear();
+                model.PostLogoutRedirectUriItems.Clear();
+                model.RedirectUris = string.Empty;
+                model.PostLogoutRedirectUris = string.Empty;
+                EnsureConfidentialClientSecret(model, "m2m-default");
+                break;
+        }
+    }
+
+    private static void SetGrantTypes(ClientFormViewModel model, params string[] grantTypes)
+    {
+        model.GrantTypeItems = grantTypes
+            .Where(grantType => !string.IsNullOrWhiteSpace(grantType))
+            .Distinct(StringComparer.Ordinal)
+            .ToList();
+    }
+
+    private static void EnsureConfidentialClientSecret(ClientFormViewModel model, string description)
+    {
+        if (model.SecretItems.Any(secret => !secret.Remove))
+        {
+            return;
+        }
+
+        model.SecretItems.Add(new ClientSecretInputViewModel
+        {
+            Description = description,
+            Expiration = ClientSecretExpiration.Months12
+        });
     }
 }

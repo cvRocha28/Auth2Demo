@@ -2637,4 +2637,58 @@
   <data name="ExternalProviderDisabledForThisApplication" xml:space="preserve">
     <value>This provider is disabled for this application.</value>
   </data>
+  <data name="UsernameOrEmail" xml:space="preserve">
+    <value>Username or email</value>
+  </data>
+  <data name="LoginPageDescription" xml:space="preserve">
+    <value>Sign in with your corporate username, email, or an authorized external provider.</value>
+  </data>
+  <data name="PasswordResetSentGenericDescription" xml:space="preserve">
+    <value>If a local account exists for this username or email, password reset instructions will be sent to the registered email address.</value>
+  </data>
+  <data name="AuditLoginBlockedOrSuspended" xml:space="preserve">
+    <value>Login was blocked because the user is blocked, suspended, or deleted.</value>
+  </data>
+  <data name="LocalPassword" xml:space="preserve">
+    <value>Local password</value>
+  </data>
+  <data name="LocalPasswordEnabled" xml:space="preserve">
+    <value>Configured</value>
+  </data>
+  <data name="LocalPasswordNotConfigured" xml:space="preserve">
+    <value>Not configured</value>
+  </data>
+  <data name="AccountAccess" xml:space="preserve">
+    <value>Account access</value>
+  </data>
+  <data name="CreateLocalPassword" xml:space="preserve">
+    <value>Create local password</value>
+  </data>
+  <data name="CreateLocalPasswordText" xml:space="preserve">
+    <value>Your account was created with an external provider. Add a local password to also sign in with email and password.</value>
+  </data>
+  <data name="ChangePasswordText" xml:space="preserve">
+    <value>Update the local password used for email and password sign-in.</value>
+  </data>
+  <data name="PasswordPolicyHint" xml:space="preserve">
+    <value>Use at least 10 characters and follow the configured password policy.</value>
+  </data>
+  <data name="LocalPasswordProfessionalHint" xml:space="preserve">
+    <value>External login stays linked; this only adds or updates email/password access.</value>
+  </data>
+  <data name="PasswordFieldsRequired" xml:space="preserve">
+    <value>Fill in the password fields.</value>
+  </data>
+  <data name="PasswordConfirmationDoesNotMatch" xml:space="preserve">
+    <value>The password confirmation does not match.</value>
+  </data>
+  <data name="CurrentPasswordRequired" xml:space="preserve">
+    <value>Enter your current password.</value>
+  </data>
+  <data name="PasswordUpdateFailed" xml:space="preserve">
+    <value>The password could not be updated.</value>
+  </data>
+  <data name="LocalPasswordCreatedSuccessfully" xml:space="preserve">
+    <value>Local password created successfully.</value>
+  </data>
 </root>

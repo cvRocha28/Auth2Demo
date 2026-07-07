@@ -18,6 +18,7 @@
     @Html.AntiForgeryToken()
     <input type="hidden" asp-for="Id" />
     <input type="hidden" asp-for="IsSystemProvider" />
+    <input type="hidden" asp-for="HasClientSecret" />
     <div asp-validation-summary="ModelOnly" class="validation"></div>
 
     <div class="grid" style="grid-template-columns:1fr 1fr">
@@ -53,7 +54,14 @@
         </div>
         <div class="form-row">
             <label asp-for="ClientSecret">@T["ClientSecret"]</label>
-            <input asp-for="ClientSecret" autocomplete="off" />
+            <input asp-for="ClientSecret" type="password" autocomplete="new-password"
+                   value=""
+                   placeholder="@(Model.HasClientSecret ? "•••••••••••• — deixe vazio para manter o secret atual" : "Informe o client secret do provider")" />
+            <small class="muted">
+                @(Model.HasClientSecret
+                    ? "O secret atual está protegido e não é exibido. Preencha somente se quiser substituir."
+                    : "O valor será criptografado antes de ser salvo no banco.")
+            </small>
             <span asp-validation-for="ClientSecret"></span>
         </div>
     </div>
@@ -83,7 +91,8 @@
     <label class="check"><input asp-for="IsEnabled" /> @T["ExibirEsteProviderNaTelaDeLogin"]</label>
 
     <div class="alert">
-        @T["TextEmProducaoPrefiraProtegerO"] <strong>@T["ClientSecret"]</strong> @T["TextComKeyVaultSecretsManagerOuCriptografiaNo"]
+        <strong>@T["ClientSecret"]:</strong> o valor é criptografado com ASP.NET Core Data Protection antes de ser salvo.
+        Na edição, o secret real nunca é carregado na tela; campo vazio mantém o valor atual.
     </div>
 
     <div class="form-actions">

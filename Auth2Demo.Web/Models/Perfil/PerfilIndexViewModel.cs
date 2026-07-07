@@ -16,6 +16,7 @@ public sealed class PerfilIndexViewModel
     public required IReadOnlyList<AuditLog> AuditLogs { get; init; }
     public required IReadOnlyList<MfaMethod> MfaMethods { get; init; }
     public required IReadOnlyList<PasskeyCredential> Passkeys { get; init; }
+    public required bool HasLocalPassword { get; init; }
 
     public bool HasMfa => User.TwoFactorEnabled || MfaMethods.Count > 0;
     public bool HasExternalLogin => ExternalLogins.Count > 0;

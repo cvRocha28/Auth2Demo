@@ -15,15 +15,18 @@ public sealed class PerfilController : Controller
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly IPerfilService _perfil;
+    private readonly IAccountSecurityService _security;
 
     public PerfilController(
         UserManager<ApplicationUser> userManager,
         SignInManager<ApplicationUser> signInManager,
-        IPerfilService perfil)
+        IPerfilService perfil,
+        IAccountSecurityService security)
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _perfil = perfil;
+        _security = security;
     }
 
     public async Task<IActionResult> Index()
@@ -43,7 +46,8 @@ public sealed class PerfilController : Controller
             Devices = data.Devices,
             AuditLogs = data.AuditLogs,
             MfaMethods = data.MfaMethods,
-            Passkeys = data.Passkeys
+            Passkeys = data.Passkeys,
+            HasLocalPassword = await _userManager.HasPasswordAsync(user)
         });
     }
 
@@ -79,6 +83,74 @@ public sealed class PerfilController : Controller
 
         return RedirectToAction(nameof(Index));
     }
+
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> AlterarSenha(string? currentPassword, string newPassword, string confirmPassword)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user is null) return Challenge();
+
+        newPassword = newPassword?.Trim() ?? string.Empty;
+        confirmPassword = confirmPassword?.Trim() ?? string.Empty;
+        currentPassword ??= string.Empty;
+
+        var hasLocalPassword = await _userManager.HasPasswordAsync(user);
+
+        if (string.IsNullOrWhiteSpace(newPassword) || string.IsNullOrWhiteSpace(confirmPassword))
+        {
+            TempData["Error"] = "PasswordFieldsRequired";
+            return RedirectToAction(nameof(Index));
+        }
+
+        if (!string.Equals(newPassword, confirmPassword, StringComparison.Ordinal))
+        {
+            TempData["Error"] = "PasswordConfirmationDoesNotMatch";
+            return RedirectToAction(nameof(Index));
+        }
+
+        if (hasLocalPassword && string.IsNullOrWhiteSpace(currentPassword))
+        {
+            TempData["Error"] = "CurrentPasswordRequired";
+            return RedirectToAction(nameof(Index));
+        }
+
+        IdentityResult result = hasLocalPassword
+            ? await _userManager.ChangePasswordAsync(user, currentPassword, newPassword)
+            : await _userManager.AddPasswordAsync(user, newPassword);
+
+        if (!result.Succeeded)
+        {
+            TempData["Error"] = "PasswordUpdateFailed";
+            TempData["ErrorDetails"] = string.Join(" ", result.Errors.Select(x => x.Description));
+            await RecordSecurityAuditAsync(user, hasLocalPassword ? "Local password change" : "Local password creation", "Failed");
+            return RedirectToAction(nameof(Index));
+        }
+
+        user.UpdatedAt = DateTimeOffset.UtcNow;
+        await _userManager.UpdateAsync(user);
+        await _signInManager.RefreshSignInAsync(user);
+        await RecordSecurityAuditAsync(user, hasLocalPassword ? "Local password changed" : "Local password created", "Success");
+
+        TempData["Success"] = hasLocalPassword ? "PasswordChangedSuccessfully" : "LocalPasswordCreatedSuccessfully";
+        return RedirectToAction(nameof(Index));
+    }
+
+    private Task RecordSecurityAuditAsync(ApplicationUser user, string eventType, string outcome)
+    {
+        return _security.RecordAuditAsync(
+            eventType,
+            "AccountSecurity",
+            outcome,
+            user.Id,
+            user.Email,
+            eventType,
+            "Password",
+            HttpContext.Connection.RemoteIpAddress?.ToString(),
+            Request.Headers.UserAgent.ToString());
+    }
+
 
     [HttpPost]
     [ValidateAntiForgeryToken]

@@ -1,5 +1,6 @@
 using Auth2Demo.Domain.Identity;
 using Auth2Demo.Infrastructure.Persistence;
+using Auth2Demo.Infrastructure.Security;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.MicrosoftAccount;
@@ -17,10 +18,14 @@ public sealed class ExternalProviderOptionsSetup :
     private const string DisabledClientSecret = "disabled-provider-client-secret";
 
     private readonly IServiceScopeFactory _scopeFactory;
+    private readonly IIdentityProviderSecretProtector _secretProtector;
 
-    public ExternalProviderOptionsSetup(IServiceScopeFactory scopeFactory)
+    public ExternalProviderOptionsSetup(
+        IServiceScopeFactory scopeFactory,
+        IIdentityProviderSecretProtector secretProtector)
     {
         _scopeFactory = scopeFactory;
+        _secretProtector = secretProtector;
     }
 
     public void PostConfigure(string? name, GoogleOptions options)
@@ -35,7 +40,7 @@ public sealed class ExternalProviderOptionsSetup :
         }
 
         options.ClientId = provider.ClientId!;
-        options.ClientSecret = provider.ClientSecret!;
+        options.ClientSecret = _secretProtector.Unprotect(provider.ClientSecret)!;
         options.CallbackPath = string.IsNullOrWhiteSpace(provider.CallbackPath) ? "/signin-google" : provider.CallbackPath;
 
         if (!options.Scope.Contains("profile"))
@@ -59,7 +64,7 @@ public sealed class ExternalProviderOptionsSetup :
         }
 
         options.ClientId = provider.ClientId!;
-        options.ClientSecret = provider.ClientSecret!;
+        options.ClientSecret = _secretProtector.Unprotect(provider.ClientSecret)!;
         options.CallbackPath = string.IsNullOrWhiteSpace(provider.CallbackPath) ? "/signin-microsoft" : provider.CallbackPath;
 
         options.ClaimActions.MapJsonKey("urn:microsoft:picture", "picture");

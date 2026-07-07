@@ -44,6 +44,7 @@ public static class DependencyInjection
         services.AddScoped<IApplicationInitializer, DatabaseInitializer>();
 
         services.AddSingleton<IClientSecretGenerator, ClientSecretGenerator>();
+        services.AddSingleton<IIdentityProviderSecretProtector, IdentityProviderSecretProtector>();
 
         services.AddScoped<ILocalAccountService, LocalAccountService>();
         services.AddScoped<IIdentityEmailSender, NullIdentityEmailSender>();

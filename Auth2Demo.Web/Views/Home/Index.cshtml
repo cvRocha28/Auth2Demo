@@ -175,8 +175,8 @@ else
                 <input type="hidden" name="ReturnUrl" value="@login.ReturnUrl" />
                 <div asp-validation-summary="ModelOnly" class="validation"></div>
                 <div class="form-row">
-                    <label for="Email">@T["Email"]</label>
-                    <div class="input-wrap"><span class="input-icon"><i class="bi bi-envelope" aria-hidden="true"></i></span><input class="with-icon" id="Email" name="Email" type="email" value="@login.Email" placeholder="admin@auth2demo.local" autocomplete="username" /></div>
+                    <label for="Login">@T["UsernameOrEmail"]</label>
+                    <div class="input-wrap"><span class="input-icon"><i class="bi bi-person-badge" aria-hidden="true"></i></span><input class="with-icon" id="Login" name="Login" type="text" value="@login.Login" placeholder="USERNAME ou usuario@empresa.com" autocomplete="username" /></div>
                 </div>
                 <div class="form-row">
                     <label for="Password">@T["Password"]</label>

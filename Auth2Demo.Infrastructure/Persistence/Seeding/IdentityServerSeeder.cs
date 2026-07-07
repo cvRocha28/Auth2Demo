@@ -58,8 +58,9 @@ public static class IdentityServerSeeder
 
     private static async Task SeedAdminAsync(UserManager<ApplicationUser> userManager)
     {
+        const string userName = "ADMIN2026";
         const string email = "admin@auth2demo.local";
-        const string password = "Admin@12345!";
+        const string password = "Admin@2026!";
 
         var admin = await userManager.FindByEmailAsync(email);
 
@@ -68,7 +69,7 @@ public static class IdentityServerSeeder
             admin = new ApplicationUser
             {
                 Id = Guid.NewGuid(),
-                UserName = email,
+                UserName = userName,
                 Email = email,
                 EmailConfirmed = true,
                 DisplayName = "Auth2Demo Admin",
@@ -246,12 +247,6 @@ public static class IdentityServerSeeder
             "Auth2Demo API",
             "auth2demo_api",
             "API administrativa do provedor de identidade.");
-
-        await EnsureScopeAsync(
-            "rareles.api",
-            "Rareles API",
-            "rareles_api",
-            "API principal do Rareles.");
     }
 
     private static async Task SeedClientsAsync(IOpenIddictApplicationManager manager)
@@ -290,55 +285,5 @@ public static class IdentityServerSeeder
             await manager.CreateAsync(descriptor);
         }
 
-        if (await manager.FindByClientIdAsync("rareles-web") is null)
-        {
-            var descriptor = new OpenIddictApplicationDescriptor
-            {
-                ClientId = "rareles-web",
-                DisplayName = "Rareles Web MVC Client",
-                ConsentType = ConsentTypes.Explicit,
-                ClientType = ClientTypes.Public
-            };
-
-            descriptor.RedirectUris.Add(new Uri("https://localhost:7108/signin-oidc"));
-            descriptor.PostLogoutRedirectUris.Add(new Uri("https://localhost:7108/signout-callback-oidc"));
-
-            descriptor.Permissions.Add(Permissions.Endpoints.Authorization);
-            descriptor.Permissions.Add(Permissions.Endpoints.Token);
-            descriptor.Permissions.Add(Permissions.Endpoints.EndSession);
-
-            descriptor.Permissions.Add(Permissions.GrantTypes.AuthorizationCode);
-            descriptor.Permissions.Add(Permissions.GrantTypes.RefreshToken);
-
-            descriptor.Permissions.Add(Permissions.ResponseTypes.Code);
-
-            descriptor.Permissions.Add(Permissions.Prefixes.Scope + Scopes.OpenId);
-            descriptor.Permissions.Add(Permissions.Prefixes.Scope + Scopes.Email);
-            descriptor.Permissions.Add(Permissions.Prefixes.Scope + Scopes.Profile);
-            descriptor.Permissions.Add(Permissions.Prefixes.Scope + Scopes.Roles);
-            descriptor.Permissions.Add(Permissions.Prefixes.Scope + Scopes.OfflineAccess);
-            descriptor.Permissions.Add(Permissions.Prefixes.Scope + "rareles.api");
-
-            descriptor.Requirements.Add(Requirements.Features.ProofKeyForCodeExchange);
-
-            await manager.CreateAsync(descriptor);
-        }
-
-        if (await manager.FindByClientIdAsync("rareles-worker") is null)
-        {
-            var descriptor = new OpenIddictApplicationDescriptor
-            {
-                ClientId = "rareles-worker",
-                ClientSecret = "rareles-worker-secret",
-                DisplayName = "Rareles Worker M2M",
-                ClientType = ClientTypes.Confidential
-            };
-
-            descriptor.Permissions.Add(Permissions.Endpoints.Token);
-            descriptor.Permissions.Add(Permissions.GrantTypes.ClientCredentials);
-            descriptor.Permissions.Add(Permissions.Prefixes.Scope + "rareles.api");
-
-            await manager.CreateAsync(descriptor);
-        }
     }
 }

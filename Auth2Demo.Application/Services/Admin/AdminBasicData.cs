@@ -6,6 +6,7 @@ namespace Auth2Demo.Application.Services.Admin;
 public sealed class AdminUserCreateData
 {
     public string DisplayName { get; set; } = string.Empty;
+    public string UserName { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string Password { get; set; } = string.Empty;
     public bool EmailConfirmed { get; set; } = true;
@@ -16,6 +17,7 @@ public sealed class AdminUserEditData
 {
     public Guid Id { get; set; }
     public string DisplayName { get; set; } = string.Empty;
+    public string UserName { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public UserStatus Status { get; set; }
     public bool EmailConfirmed { get; set; }
@@ -47,6 +49,7 @@ public sealed class IdentityProviderEditData
     public string? ButtonText { get; set; }
     public string? ClientId { get; set; }
     public string? ClientSecret { get; set; }
+    public bool HasClientSecret { get; set; }
     public string? Authority { get; set; }
     public string? CallbackPath { get; set; }
     public bool IsEnabled { get; set; }

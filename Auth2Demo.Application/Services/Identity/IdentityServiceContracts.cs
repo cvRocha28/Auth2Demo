@@ -7,17 +7,17 @@ public sealed record RegisterLocalAccountRequest(
     Func<Guid, string, string> BuildEmailConfirmationUrl);
 
 public sealed record LoginLocalAccountRequest(
-    string Email,
+    string Login,
     string Password,
     bool RememberMe,
     Func<Guid, string, string> BuildEmailConfirmationUrl);
 
 public sealed record ForgotPasswordRequest(
-    string Email,
-    Func<string, string, string> BuildPasswordResetUrl);
+    string Login,
+    Func<Guid, string, string> BuildPasswordResetUrl);
 
 public sealed record ResetPasswordRequest(
-    string Email,
+    Guid UserId,
     string Code,
     string Password);
 

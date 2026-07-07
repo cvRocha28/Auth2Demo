@@ -44,6 +44,8 @@ public sealed class IdentityProviderEditViewModel
     [StringLength(1000)]
     public string? ClientSecret { get; set; }
 
+    public bool HasClientSecret { get; set; }
+
     [StringLength(500)]
     public string? Authority { get; set; }
 

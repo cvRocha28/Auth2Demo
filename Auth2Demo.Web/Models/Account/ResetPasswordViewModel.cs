@@ -4,8 +4,8 @@ namespace Auth2Demo.Web.Models.Account;
 
 public sealed class ResetPasswordViewModel
 {
-    [Required, EmailAddress]
-    public string Email { get; set; } = string.Empty;
+    [Required]
+    public Guid UserId { get; set; }
 
     [Required]
     public string Code { get; set; } = string.Empty;

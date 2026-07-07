@@ -103,7 +103,7 @@ public sealed class AccountController : Controller
         }
 
         var result = await _localAccounts.PasswordSignInAsync(new LoginLocalAccountRequest(
-            model.Email,
+            model.Login,
             model.Password,
             model.RememberMe,
             BuildEmailConfirmationUrl));
@@ -145,7 +145,7 @@ public sealed class AccountController : Controller
             case LocalLoginStatus.InvalidCredentials:
             default:
                 ModelState.AddModelError(string.Empty, _localizer["InvalidUsernameOrPassword"].Value);
-                await RecordAuditAsync("Password Login", "Authentication", "Failed", result.UserId, result.Email ?? model.Email, _localizer["AuditPasswordLoginFailed"].Value, "Password");
+                await RecordAuditAsync("Password Login", "Authentication", "Failed", result.UserId, result.Email ?? model.Login, _localizer["AuditPasswordLoginFailed"].Value, "Password");
                 break;
         }
 
@@ -362,18 +362,28 @@ public sealed class AccountController : Controller
         }
 
         var signInResult = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false, bypassTwoFactor: true);
+        if (signInResult.IsLockedOut)
+        {
+            var lockedUser = await _userManager.FindByLoginAsync(info.LoginProvider, info.ProviderKey)
+                             ?? await FindUserFromExternalClaimsAsync(info.Principal);
+            await RecordAuditAsync("External Login", "Authentication", "LockedOut", lockedUser?.Id, lockedUser?.Email, _localizer["UserTemporarilyLockedInvalidAttempts"].Value, info.LoginProvider);
+            ModelState.AddModelError(string.Empty, _localizer["UserTemporarilyLockedInvalidAttempts"].Value);
+            return View(nameof(Login), await BuildLoginViewModelAsync(returnUrl));
+        }
+
         if (signInResult.Succeeded)
         {
-            var existingUser = await _userManager.FindByLoginAsync(info.LoginProvider, info.ProviderKey);
-            var existingEmail = info.Principal.FindFirstValue(ClaimTypes.Email);
-
-            if (existingUser is null && !string.IsNullOrWhiteSpace(existingEmail))
-            {
-                existingUser = await _userManager.FindByEmailAsync(existingEmail);
-            }
+            var existingUser = await _userManager.FindByLoginAsync(info.LoginProvider, info.ProviderKey)
+                               ?? await FindUserFromExternalClaimsAsync(info.Principal);
 
             if (existingUser is not null)
             {
+                if (!await IsUserAllowedToSignInAsync(existingUser, info.LoginProvider))
+                {
+                    ModelState.AddModelError(string.Empty, _localizer["InvalidUsernameOrPassword"].Value);
+                    return View(nameof(Login), await BuildLoginViewModelAsync(returnUrl));
+                }
+
                 UpdateUserFromExternalProvider(existingUser, info.Principal);
                 existingUser.EmailConfirmed = true;
                 existingUser.LastLoginAt = DateTimeOffset.UtcNow;
@@ -384,14 +394,18 @@ public sealed class AccountController : Controller
             return LocalRedirect(returnUrl ?? "/");
         }
 
-        var email = info.Principal.FindFirstValue(ClaimTypes.Email);
-        if (string.IsNullOrWhiteSpace(email))
+        var email = info.Principal.FindFirstValue(ClaimTypes.Email)
+                    ?? info.Principal.FindFirstValue("email")
+                    ?? info.Principal.FindFirstValue(ClaimTypes.Upn)
+                    ?? info.Principal.FindFirstValue("preferred_username");
+        if (string.IsNullOrWhiteSpace(email) || !email.Contains('@', StringComparison.Ordinal))
         {
             ModelState.AddModelError(string.Empty, _localizer["ExternalProviderDidNotReturnEmail"].Value);
             return View(nameof(Login), await BuildLoginViewModelAsync(returnUrl));
         }
 
-        var user = await _userManager.FindByEmailAsync(email);
+        email = email.Trim();
+        var user = await FindUserFromExternalClaimsAsync(info.Principal);
         if (user is null)
         {
             user = new ApplicationUser
@@ -411,6 +425,12 @@ public sealed class AccountController : Controller
                 foreach (var error in createResult.Errors) ModelState.AddModelError(string.Empty, error.Description);
                 return View(nameof(Login), await BuildLoginViewModelAsync(returnUrl));
             }
+        }
+
+        if (!await IsUserAllowedToSignInAsync(user, info.LoginProvider))
+        {
+            ModelState.AddModelError(string.Empty, _localizer["InvalidUsernameOrPassword"].Value);
+            return View(nameof(Login), await BuildLoginViewModelAsync(returnUrl));
         }
 
         var addLoginResult = await _userManager.AddLoginAsync(user, info);
@@ -489,12 +509,12 @@ public sealed class AccountController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> ResendEmailConfirmation(LoginViewModel model)
     {
-        if (string.IsNullOrWhiteSpace(model.Email))
+        if (string.IsNullOrWhiteSpace(model.Login))
         {
             return RedirectToAction(nameof(Login), new { model.ReturnUrl });
         }
 
-        var result = await _localAccounts.CreateEmailConfirmationLinkAsync(model.Email, BuildEmailConfirmationUrl);
+        var result = await _localAccounts.CreateEmailConfirmationLinkAsync(model.Login, BuildEmailConfirmationUrl);
         return View("EmailConfirmationSent", new EmailConfirmationSentViewModel
         {
             Email = result.Email,
@@ -535,33 +555,34 @@ public sealed class AccountController : Controller
         if (!ModelState.IsValid) return View(model);
 
         var result = await _localAccounts.CreatePasswordResetLinkAsync(new ForgotPasswordRequest(
-            model.Email,
+            model.Login,
             BuildPasswordResetUrl));
 
         if (result.UserFound)
         {
-            var user = await _userManager.FindByEmailAsync(result.Email);
+            var user = await FindUserByUserNameOrEmailAsync(result.Email);
             await RecordAuditAsync("Forgot Password", "Identity", "ResetLinkGenerated", user?.Id, result.Email, _localizer["AuditPasswordResetLinkGenerated"].Value, "Password");
         }
 
         return View("PasswordResetSent", new PasswordResetSentViewModel
         {
             Email = result.Email,
-            ResetLink = result.Link,
+            ResetLink = result.EmailDeliveryUnavailable ? result.Link : string.Empty,
+            EmailDeliveryUnavailable = result.EmailDeliveryUnavailable,
             ReturnUrl = model.ReturnUrl
         });
     }
 
     [HttpGet]
-    public IActionResult ResetPassword(string? email = null, string? code = null)
+    public IActionResult ResetPassword(Guid? userId = null, string? code = null)
     {
-        if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(code))
+        if (!userId.HasValue || userId.Value == Guid.Empty || string.IsNullOrWhiteSpace(code))
         {
             TempData["Error"] = _localizer["InvalidPasswordResetLink"].Value;
             return RedirectToAction(nameof(Login));
         }
 
-        return View(new ResetPasswordViewModel { Email = email, Code = code });
+        return View(new ResetPasswordViewModel { UserId = userId.Value, Code = code });
     }
 
     [HttpPost]
@@ -571,7 +592,7 @@ public sealed class AccountController : Controller
         if (!ModelState.IsValid) return View(model);
 
         var result = await _localAccounts.ResetPasswordAsync(new ResetPasswordRequest(
-            model.Email,
+            model.UserId,
             model.Code,
             model.Password));
 
@@ -607,6 +628,64 @@ public sealed class AccountController : Controller
 
     [HttpGet("/account/access-denied")]
     public IActionResult AccessDenied() => View();
+
+
+    private async Task<ApplicationUser?> FindUserByUserNameOrEmailAsync(string? login)
+    {
+        login = login?.Trim();
+        if (string.IsNullOrWhiteSpace(login))
+        {
+            return null;
+        }
+
+        var user = await _userManager.FindByNameAsync(login);
+        if (user is not null)
+        {
+            return user;
+        }
+
+        return login.Contains('@', StringComparison.Ordinal)
+            ? await _userManager.FindByEmailAsync(login)
+            : null;
+    }
+
+    private async Task<ApplicationUser?> FindUserFromExternalClaimsAsync(ClaimsPrincipal principal)
+    {
+        var candidates = new[]
+            {
+                principal.FindFirstValue(ClaimTypes.Email),
+                principal.FindFirstValue(ClaimTypes.Upn),
+                principal.FindFirstValue("preferred_username"),
+                principal.FindFirstValue("email"),
+                principal.FindFirstValue("upn")
+            }
+            .Where(x => !string.IsNullOrWhiteSpace(x))
+            .Select(x => x!.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var candidate in candidates)
+        {
+            var user = await FindUserByUserNameOrEmailAsync(candidate);
+            if (user is not null)
+            {
+                return user;
+            }
+        }
+
+        return null;
+    }
+
+    private async Task<bool> IsUserAllowedToSignInAsync(ApplicationUser user, string provider)
+    {
+        if (user.Status is UserStatus.Blocked or UserStatus.Suspended || user.IsDeleted)
+        {
+            await _signInManager.SignOutAsync();
+            await RecordLoginAsync(user, provider, "Blocked", _localizer["AuditLoginBlockedOrSuspended"].Value);
+            return false;
+        }
+
+        return true;
+    }
 
     private static void UpdateUserFromExternalProvider(ApplicationUser user, ClaimsPrincipal principal)
     {
@@ -730,12 +809,12 @@ public sealed class AccountController : Controller
                ?? string.Empty;
     }
 
-    private string BuildPasswordResetUrl(string email, string code)
+    private string BuildPasswordResetUrl(Guid userId, string code)
     {
         return Url.Action(
                    nameof(ResetPassword),
                    "Account",
-                   new { email, code },
+                   new { userId = userId.ToString(), code },
                    Request.Scheme)
                ?? string.Empty;
     }

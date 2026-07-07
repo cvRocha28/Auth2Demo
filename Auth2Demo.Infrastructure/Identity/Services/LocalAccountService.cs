@@ -24,11 +24,13 @@ public sealed class LocalAccountService : ILocalAccountService
 
     public async Task<RegisterLocalAccountResult> RegisterAsync(RegisterLocalAccountRequest request)
     {
+        var email = NormalizeLoginInput(request.Email);
+
         var user = new ApplicationUser
         {
             Id = Guid.NewGuid(),
-            UserName = request.Email,
-            Email = request.Email,
+            UserName = email,
+            Email = email,
             DisplayName = request.DisplayName,
             Status = UserStatus.Active,
             EmailConfirmed = false
@@ -39,19 +41,19 @@ public sealed class LocalAccountService : ILocalAccountService
         {
             return new RegisterLocalAccountResult
             {
-                Email = request.Email,
+                Email = email,
                 Errors = ToErrors(result.Errors)
             };
         }
 
         var confirmationLink = await BuildEmailConfirmationLinkAsync(user, request.BuildEmailConfirmationUrl);
-        var emailDeliveryUnavailable = await TrySendEmailConfirmationAsync(user.Email ?? request.Email, confirmationLink);
+        var emailDeliveryUnavailable = await TrySendEmailConfirmationAsync(user.Email ?? email, confirmationLink);
 
         return new RegisterLocalAccountResult
         {
             Succeeded = true,
             UserId = user.Id,
-            Email = user.Email ?? request.Email,
+            Email = user.Email ?? email,
             ConfirmationLink = confirmationLink,
             EmailDeliveryUnavailable = emailDeliveryUnavailable
         };
@@ -59,10 +61,11 @@ public sealed class LocalAccountService : ILocalAccountService
 
     public async Task<LocalLoginResult> PasswordSignInAsync(LoginLocalAccountRequest request)
     {
-        var user = await _userManager.FindByEmailAsync(request.Email);
+        var login = NormalizeLoginInput(request.Login);
+        var user = await FindByUserNameOrEmailAsync(login);
         if (user is null)
         {
-            return new LocalLoginResult { Status = LocalLoginStatus.InvalidCredentials, Email = request.Email };
+            return new LocalLoginResult { Status = LocalLoginStatus.InvalidCredentials, Email = login };
         }
 
         if (user.Status is UserStatus.Blocked or UserStatus.Suspended)
@@ -80,7 +83,7 @@ public sealed class LocalAccountService : ILocalAccountService
             }
 
             var confirmationLink = await BuildEmailConfirmationLinkAsync(user, request.BuildEmailConfirmationUrl);
-            var emailDeliveryUnavailable = await TrySendEmailConfirmationAsync(user.Email ?? request.Email, confirmationLink);
+            var emailDeliveryUnavailable = await TrySendEmailConfirmationAsync(user.Email ?? login, confirmationLink);
 
             return new LocalLoginResult
             {
@@ -120,25 +123,26 @@ public sealed class LocalAccountService : ILocalAccountService
 
     public async Task<EmailLinkResult> CreateEmailConfirmationLinkAsync(string email, Func<Guid, string, string> buildUrl)
     {
-        var user = await _userManager.FindByEmailAsync(email);
-        if (user is null)
+        var login = NormalizeLoginInput(email);
+        var user = await FindByUserNameOrEmailAsync(login);
+        if (user is null || string.IsNullOrWhiteSpace(user.Email))
         {
-            return new EmailLinkResult { Email = email };
+            return new EmailLinkResult { Email = login };
         }
 
         if (await _userManager.IsEmailConfirmedAsync(user))
         {
-            return new EmailLinkResult { Succeeded = true, UserFound = true, Email = user.Email ?? email };
+            return new EmailLinkResult { Succeeded = true, UserFound = true, Email = user.Email };
         }
 
         var link = await BuildEmailConfirmationLinkAsync(user, buildUrl);
-        var emailDeliveryUnavailable = await TrySendEmailConfirmationAsync(user.Email ?? email, link);
+        var emailDeliveryUnavailable = await TrySendEmailConfirmationAsync(user.Email, link);
 
         return new EmailLinkResult
         {
             Succeeded = true,
             UserFound = true,
-            Email = user.Email ?? email,
+            Email = user.Email,
             Link = link,
             EmailDeliveryUnavailable = emailDeliveryUnavailable
         };
@@ -172,22 +176,23 @@ public sealed class LocalAccountService : ILocalAccountService
 
     public async Task<EmailLinkResult> CreatePasswordResetLinkAsync(ForgotPasswordRequest request)
     {
-        var user = await _userManager.FindByEmailAsync(request.Email);
-        if (user is null || !await _userManager.HasPasswordAsync(user))
+        var login = NormalizeLoginInput(request.Login);
+        var user = await FindByUserNameOrEmailAsync(login);
+        if (user is null || !await _userManager.HasPasswordAsync(user) || string.IsNullOrWhiteSpace(user.Email))
         {
-            return new EmailLinkResult { Succeeded = true, Email = request.Email };
+            return new EmailLinkResult { Succeeded = true, Email = login };
         }
 
         var code = await _userManager.GeneratePasswordResetTokenAsync(user);
         var encodedCode = EncodeToken(code);
-        var resetLink = request.BuildPasswordResetUrl(user.Email ?? request.Email, encodedCode);
-        var emailDeliveryUnavailable = await TrySendPasswordResetAsync(user.Email ?? request.Email, resetLink);
+        var resetLink = request.BuildPasswordResetUrl(user.Id, encodedCode);
+        var emailDeliveryUnavailable = await TrySendPasswordResetAsync(user.Email, resetLink);
 
         return new EmailLinkResult
         {
             Succeeded = true,
             UserFound = true,
-            Email = user.Email ?? request.Email,
+            Email = user.Email,
             Link = resetLink,
             EmailDeliveryUnavailable = emailDeliveryUnavailable
         };
@@ -195,7 +200,7 @@ public sealed class LocalAccountService : ILocalAccountService
 
     public async Task<ResetPasswordResult> ResetPasswordAsync(ResetPasswordRequest request)
     {
-        var user = await _userManager.FindByEmailAsync(request.Email);
+        var user = await _userManager.FindByIdAsync(request.UserId.ToString());
         if (user is null || string.IsNullOrWhiteSpace(request.Code))
         {
             return new ResetPasswordResult { InvalidLink = true };
@@ -220,6 +225,30 @@ public sealed class LocalAccountService : ILocalAccountService
             Email = user.Email,
             Errors = ToErrors(result.Errors)
         };
+    }
+
+
+    private async Task<ApplicationUser?> FindByUserNameOrEmailAsync(string login)
+    {
+        if (string.IsNullOrWhiteSpace(login))
+        {
+            return null;
+        }
+
+        var user = await _userManager.FindByNameAsync(login);
+        if (user is not null)
+        {
+            return user;
+        }
+
+        return login.Contains('@', StringComparison.Ordinal)
+            ? await _userManager.FindByEmailAsync(login)
+            : null;
+    }
+
+    private static string NormalizeLoginInput(string? login)
+    {
+        return (login ?? string.Empty).Trim();
     }
 
     private async Task<string> BuildEmailConfirmationLinkAsync(ApplicationUser user, Func<Guid, string, string> buildUrl)

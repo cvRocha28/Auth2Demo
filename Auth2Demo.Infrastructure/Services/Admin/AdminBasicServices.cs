@@ -3,6 +3,7 @@ using Auth2Demo.Domain.Identity;
 using Auth2Demo.Domain.Security;
 using Auth2Demo.Infrastructure.Identity;
 using Auth2Demo.Infrastructure.Repositories.Admin;
+using Auth2Demo.Infrastructure.Security;
 using Microsoft.AspNetCore.Identity;
 
 namespace Auth2Demo.Infrastructure.Services.Admin;
@@ -400,8 +401,8 @@ public sealed class AdminUserService : IAdminUserService
         var user = new ApplicationUser
         {
             Id = Guid.NewGuid(),
-            UserName = model.Email,
-            Email = model.Email,
+            UserName = string.IsNullOrWhiteSpace(model.UserName) ? model.Email : model.UserName.Trim(),
+            Email = model.Email.Trim(),
             DisplayName = model.DisplayName,
             EmailConfirmed = model.EmailConfirmed,
             Status = UserStatus.Active
@@ -447,6 +448,7 @@ public sealed class AdminUserService : IAdminUserService
         {
             Id = user.Id,
             DisplayName = user.DisplayName,
+            UserName = user.UserName ?? user.Email ?? string.Empty,
             Email = user.Email!,
             Status = user.Status,
             EmailConfirmed = user.EmailConfirmed,
@@ -464,8 +466,8 @@ public sealed class AdminUserService : IAdminUserService
         }
 
         user.DisplayName = model.DisplayName;
-        user.Email = model.Email;
-        user.UserName = model.Email;
+        user.UserName = string.IsNullOrWhiteSpace(model.UserName) ? model.Email.Trim() : model.UserName.Trim();
+        user.Email = model.Email.Trim();
         user.Status = model.Status;
         user.EmailConfirmed = model.EmailConfirmed;
         user.UpdatedAt = DateTimeOffset.UtcNow;
@@ -529,10 +531,14 @@ public sealed class AdminUserService : IAdminUserService
 public sealed class AdminIdentityProviderService : IAdminIdentityProviderService
 {
     private readonly IAdminIdentityProviderRepository _identityProviders;
+    private readonly IIdentityProviderSecretProtector _secretProtector;
 
-    public AdminIdentityProviderService(IAdminIdentityProviderRepository identityProviders)
+    public AdminIdentityProviderService(
+        IAdminIdentityProviderRepository identityProviders,
+        IIdentityProviderSecretProtector secretProtector)
     {
         _identityProviders = identityProviders;
+        _secretProtector = secretProtector;
     }
 
     public Task<IReadOnlyList<IdentityProviderListItemData>> ListAsync()
@@ -559,7 +565,8 @@ public sealed class AdminIdentityProviderService : IAdminIdentityProviderService
             IconCssClass = provider.IconCssClass,
             ButtonText = provider.ButtonText,
             ClientId = provider.ClientId,
-            ClientSecret = provider.ClientSecret,
+            ClientSecret = null,
+            HasClientSecret = !string.IsNullOrWhiteSpace(provider.ClientSecret),
             Authority = provider.Authority,
             CallbackPath = provider.CallbackPath,
             IsEnabled = provider.IsEnabled,
@@ -594,7 +601,7 @@ public sealed class AdminIdentityProviderService : IAdminIdentityProviderService
                 model.IconCssClass,
                 model.ButtonText,
                 model.ClientId,
-                model.ClientSecret,
+                _secretProtector.Protect(model.ClientSecret),
                 model.Authority,
                 model.CallbackPath,
                 model.IsEnabled,
@@ -612,6 +619,10 @@ public sealed class AdminIdentityProviderService : IAdminIdentityProviderService
             return new SaveIdentityProviderResult(true, false, false);
         }
 
+        var protectedClientSecret = string.IsNullOrWhiteSpace(model.ClientSecret)
+            ? (_secretProtector.IsProtected(current.ClientSecret) ? current.ClientSecret : _secretProtector.Protect(current.ClientSecret))
+            : _secretProtector.Protect(model.ClientSecret);
+
         current.Update(
             model.DisplayName,
             normalizedScheme,
@@ -619,7 +630,7 @@ public sealed class AdminIdentityProviderService : IAdminIdentityProviderService
             model.IconCssClass,
             model.ButtonText,
             model.ClientId,
-            model.ClientSecret,
+            protectedClientSecret,
             model.Authority,
             model.CallbackPath,
             model.IsEnabled,

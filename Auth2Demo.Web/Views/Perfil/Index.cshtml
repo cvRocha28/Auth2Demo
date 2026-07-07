@@ -16,7 +16,7 @@
     }
     @if (TempData["Error"]?.ToString() is { } errorKey)
     {
-        <div class="alert profile-alert"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i> @T[errorKey]</div>
+        <div class="alert profile-alert"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i> @T[errorKey]@if (TempData["ErrorDetails"]?.ToString() is { } details) { <span> @details</span> }</div>
     }
 
     <section class="profile-pro-hero">
@@ -41,6 +41,7 @@
                 <div class="profile-pro-badges">
                     <span class="profile-status-pill @confirmedClass"><i class="bi @(user.EmailConfirmed ? "bi-patch-check" : "bi-clock")" aria-hidden="true"></i> @(user.EmailConfirmed ? T["EmailConfirmed"] : T["EmailPending"])</span>
                     <span class="profile-status-pill @mfaClass"><i class="bi bi-shield-lock" aria-hidden="true"></i> @(Model.HasMfa ? T["MfaEnabled"] : T["MfaDisabled"])</span>
+                    <span class="profile-status-pill @(Model.HasLocalPassword ? "is-ok" : "is-warning")"><i class="bi bi-key" aria-hidden="true"></i> @(Model.HasLocalPassword ? T["LocalPasswordEnabled"] : T["LocalPasswordNotConfigured"])</span>
                     @if (Model.IsAdmin)
                     {
                         <span class="profile-status-pill is-admin"><i class="bi bi-stars" aria-hidden="true"></i> @T["AdminProfile"]</span>
@@ -85,6 +86,7 @@
         <aside class="profile-pro-sidebar">
             <a href="#profile-general"><i class="bi bi-person" aria-hidden="true"></i> @T["EditProfile"]</a>
             <a href="#profile-security"><i class="bi bi-shield-lock" aria-hidden="true"></i> @T["SecurityCenter"]</a>
+            <a href="#profile-password"><i class="bi bi-key" aria-hidden="true"></i> @(Model.HasLocalPassword ? T["ChangePassword"] : T["CreateLocalPassword"])</a>
             <a href="#profile-access"><i class="bi bi-box-arrow-in-right" aria-hidden="true"></i> @T["ExternalLogins"]</a>
             <a href="#profile-sessions"><i class="bi bi-activity" aria-hidden="true"></i> @T["RecentSessions"]</a>
             @if (Model.IsAdmin)
@@ -161,7 +163,47 @@
                         <i class="bi bi-globe2" aria-hidden="true"></i>
                         <div><strong>@T["ExternalLogins"]</strong><span>@(Model.HasExternalLogin ? T["ExternalLoginLinked"] : T["NoExternalLogin"])</span></div>
                     </div>
+                    <div class="profile-security-item @(Model.HasLocalPassword ? "is-ok" : "is-warning")">
+                        <i class="bi bi-key" aria-hidden="true"></i>
+                        <div><strong>@T["LocalPassword"]</strong><span>@(Model.HasLocalPassword ? T["LocalPasswordEnabled"] : T["LocalPasswordNotConfigured"])</span></div>
+                    </div>
                 </div>
+            </section>
+
+            <section id="profile-password" class="profile-pro-card">
+                <div class="profile-card-header">
+                    <div>
+                        <span class="page-kicker">@T["AccountAccess"]</span>
+                        <h2>@(Model.HasLocalPassword ? T["ChangePassword"] : T["CreateLocalPassword"])</h2>
+                        <p>@(Model.HasLocalPassword ? T["ChangePasswordText"] : T["CreateLocalPasswordText"])</p>
+                    </div>
+                </div>
+
+                <form asp-controller="Perfil" asp-action="AlterarSenha" method="post" class="profile-password-panel" autocomplete="off">
+                    @Html.AntiForgeryToken()
+                    <div class="profile-password-grid">
+                        @if (Model.HasLocalPassword)
+                        {
+                            <div class="profile-field-block">
+                                <label for="currentPassword">@T["CurrentPassword"]</label>
+                                <input id="currentPassword" name="currentPassword" type="password" autocomplete="current-password" required />
+                            </div>
+                        }
+                        <div class="profile-field-block">
+                            <label for="newPassword">@T["NewPassword"]</label>
+                            <input id="newPassword" name="newPassword" type="password" autocomplete="new-password" minlength="10" required />
+                            <span class="hint">@T["PasswordPolicyHint"]</span>
+                        </div>
+                        <div class="profile-field-block">
+                            <label for="confirmPassword">@T["ConfirmPassword"]</label>
+                            <input id="confirmPassword" name="confirmPassword" type="password" autocomplete="new-password" minlength="10" required />
+                        </div>
+                    </div>
+                    <div class="profile-password-actions">
+                        <button class="btn" type="submit"><i class="bi bi-key" aria-hidden="true"></i> @(Model.HasLocalPassword ? T["ChangePassword"] : T["CreateLocalPassword"])</button>
+                        <span class="hint">@T["LocalPasswordProfessionalHint"]</span>
+                    </div>
+                </form>
             </section>
 
             @if (Model.IsAdmin)

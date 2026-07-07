@@ -3433,3 +3433,59 @@ code {
     .branding-tab { min-width: 120px; }
     .branding-studio-head { flex-direction: column; }
 }
+
+.profile-password-panel {
+    margin-top: 4px;
+    padding: 18px;
+    border: 1px solid rgba(148, 163, 184, .22);
+    border-radius: 22px;
+    background: #f8fafc;
+}
+
+.profile-password-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    align-items: start;
+}
+
+.profile-field-block {
+    display: grid;
+    gap: 8px;
+}
+
+.profile-field-block label {
+    color: #0f172a;
+    font-weight: 900;
+}
+
+.profile-field-block input {
+    width: 100%;
+    min-height: 48px;
+    border: 1px solid rgba(148, 163, 184, .36);
+    border-radius: 16px;
+    padding: 0 14px;
+    background: #fff;
+    color: #0f172a;
+    outline: none;
+}
+
+.profile-field-block input:focus {
+    border-color: rgba(37, 99, 235, .58);
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, .12);
+}
+
+.profile-password-actions {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    margin-top: 18px;
+}
+
+@media (min-width: 992px) {
+    .profile-security-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
