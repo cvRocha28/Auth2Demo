@@ -1,0 +1,248 @@
+@model Auth2Demo.Application.Services.Admin.DirectoryGroupDetailsData
+@{
+    ViewData["Title"] = Model.Name;
+    var groupInitial = string.IsNullOrWhiteSpace(Model.Name) ? "G" : Model.Name[..1].ToUpperInvariant();
+}
+
+@section AdminHeader {
+    <div class="group-page-heading">
+        <span class="admin-page-kicker"><i class="bi bi-collection"></i> @Model.CompanyName</span>
+        <div class="group-title-row">
+            <span class="group-title-icon">@groupInitial</span>
+            <div>
+                <h1>@Model.Name</h1>
+                <p>Manage group properties, tenant membership and application access from one workspace.</p>
+            </div>
+        </div>
+    </div>
+}
+
+@section AdminActions {
+    <div class="d-flex gap-2 flex-wrap">
+        <a class="btn btn-outline" asp-action="Groups" asp-route-companyId="@Model.CompanyId">
+            <i class="bi bi-arrow-left"></i> Back to groups
+        </a>
+        <a class="btn btn-outline" asp-controller="TenantDirectory" asp-action="Index" asp-route-companyId="@Model.CompanyId">
+            <i class="bi bi-building"></i> Tenant overview
+        </a>
+    </div>
+}
+
+@if (TempData["Success"] is string ok)
+{
+    <div class="alert alert-success d-flex align-items-center gap-2" role="alert">
+        <i class="bi bi-check-circle-fill"></i><span>@ok</span>
+    </div>
+}
+@if (TempData["Error"] is string err)
+{
+    <div class="alert alert-danger d-flex align-items-center gap-2" role="alert">
+        <i class="bi bi-exclamation-triangle-fill"></i><span>@err</span>
+    </div>
+}
+
+<div class="group-summary-grid">
+    <article class="group-summary-card">
+        <span class="group-summary-icon"><i class="bi bi-people"></i></span>
+        <div><strong>@Model.Members.Count</strong><span>Current members</span></div>
+    </article>
+    <article class="group-summary-card">
+        <span class="group-summary-icon"><i class="bi bi-person-plus"></i></span>
+        <div><strong>@Model.AvailableUsers.Count</strong><span>Available users</span></div>
+    </article>
+    <article class="group-summary-card">
+        <span class="group-summary-icon"><i class="bi bi-grid"></i></span>
+        <div><strong>@Model.ApplicationAssignmentCount</strong><span>App assignments</span></div>
+    </article>
+    <article class="group-summary-card">
+        <span class="group-summary-icon @(Model.IsEnabled ? "success" : "muted")"><i class="bi @(Model.IsEnabled ? "bi-check-circle" : "bi-pause-circle")"></i></span>
+        <div><strong>@(Model.IsEnabled ? "Active" : "Disabled")</strong><span>Group status</span></div>
+    </article>
+</div>
+
+<div class="row g-4 align-items-start">
+    <div class="col-xxl-8">
+        <section class="admin-card group-members-card">
+            <div class="admin-card-header group-card-header">
+                <div>
+                    <strong><i class="bi bi-people"></i> Members</strong>
+                    <span>Only active users linked to @Model.CompanyName can be added.</span>
+                </div>
+                <span class="directory-count">@Model.Members.Count</span>
+            </div>
+
+            <div class="group-add-member">
+                <form asp-action="AddGroupMember" method="post" class="group-add-member-form">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="groupId" value="@Model.Id" />
+                    <div class="group-field-grow">
+                        <label class="form-label" for="availableUser">Add a tenant user</label>
+                        <select class="form-select" id="availableUser" name="userId" required disabled="@(Model.AvailableUsers.Count == 0)">
+                            <option value="">Select an available user...</option>
+                            @foreach (var user in Model.AvailableUsers)
+                            {
+                                <option value="@user.Id">@user.DisplayName — @user.Email</option>
+                            }
+                        </select>
+                        <small class="form-text">Users already in this group are excluded from the list.</small>
+                    </div>
+                    <button type="submit" class="btn btn-primary group-add-button" disabled="@(Model.AvailableUsers.Count == 0)">
+                        <i class="bi bi-person-plus"></i> Add member
+                    </button>
+                </form>
+            </div>
+
+            @if (Model.Members.Count > 0)
+            {
+                <div class="group-member-toolbar">
+                    <div class="directory-search group-member-search">
+                        <i class="bi bi-search"></i>
+                        <input id="memberSearch" class="form-control" type="search" placeholder="Search members by name, email, department or job title" autocomplete="off" />
+                    </div>
+                    <span id="memberSearchCount" class="text-muted small">@Model.Members.Count member(s)</span>
+                </div>
+            }
+
+            <div class="table-responsive">
+                <table class="table align-middle mb-0 directory-table group-members-table">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Organization data</th>
+                            <th>Status</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="memberRows">
+                    @if (Model.Members.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="4">
+                                <div class="group-empty-state">
+                                    <span><i class="bi bi-people"></i></span>
+                                    <h2>No members yet</h2>
+                                    <p>Add an active tenant user to start using this group for reusable application assignments.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var member in Model.Members)
+                        {
+                            var initial = string.IsNullOrWhiteSpace(member.DisplayName) ? "?" : member.DisplayName[..1].ToUpperInvariant();
+                            var searchText = $"{member.DisplayName} {member.Email} {member.Department} {member.JobTitle}".ToLowerInvariant();
+                            <tr class="group-member-row" data-search="@searchText">
+                                <td>
+                                    <div class="directory-identity">
+                                        <span class="directory-avatar">@initial</span>
+                                        <div>
+                                            <strong>@member.DisplayName</strong>
+                                            <div class="text-muted small">@member.Email</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <strong class="group-organization-value">@(member.Department ?? "Not specified")</strong>
+                                    <div class="text-muted small">@(member.JobTitle ?? "No job title")</div>
+                                </td>
+                                <td><span class="badge text-bg-success"><i class="bi bi-check-circle"></i> Active</span></td>
+                                <td class="text-end">
+                                    <form asp-action="RemoveGroupMember" method="post" class="d-inline" data-confirm="Remove this member from the group?">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="groupId" value="@Model.Id" />
+                                        <input type="hidden" name="userId" value="@member.UserId" />
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                            <i class="bi bi-person-dash"></i> Remove
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                        <tr id="memberSearchEmpty" class="d-none">
+                            <td colspan="4" class="text-center py-5 text-muted">No members match your search.</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <div class="col-xxl-4">
+        <section class="admin-card group-settings-card mb-4">
+            <div class="admin-card-header group-card-header">
+                <div>
+                    <strong><i class="bi bi-sliders"></i> Group settings</strong>
+                    <span>Keep the group name unique inside this tenant.</span>
+                </div>
+            </div>
+            <form asp-action="UpdateGroup" method="post" class="group-settings-form">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="id" value="@Model.Id" />
+
+                <div>
+                    <label class="form-label" for="groupName">Name</label>
+                    <input class="form-control" id="groupName" name="name" value="@Model.Name" maxlength="160" required />
+                    <small class="form-text">Use a clear name that describes the audience or access purpose.</small>
+                </div>
+
+                <div>
+                    <label class="form-label" for="groupDescription">Description</label>
+                    <textarea class="form-control" id="groupDescription" name="description" rows="5" maxlength="500" placeholder="Describe who belongs to this group and where it should be used.">@Model.Description</textarea>
+                    <div class="group-character-count"><span id="descriptionCount">@(Model.Description?.Length ?? 0)</span>/500</div>
+                </div>
+
+                <div class="group-status-setting">
+                    <div>
+                        <strong>Group status</strong>
+                        <span>Disabled groups remain stored but should not be used for new access decisions.</span>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" name="isEnabled" value="true" id="groupEnabled" checked="@Model.IsEnabled" />
+                        <label class="form-check-label" for="groupEnabled">Active</label>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-check2-circle"></i> Save changes
+                </button>
+            </form>
+        </section>
+
+        <section class="admin-card group-governance-card mb-4">
+            <div class="admin-card-header group-card-header">
+                <div>
+                    <strong><i class="bi bi-shield-check"></i> Governance</strong>
+                    <span>How this group participates in tenant access.</span>
+                </div>
+            </div>
+            <div class="group-governance-list">
+                <div><span><i class="bi bi-building"></i></span><div><strong>Tenant</strong><small>@Model.CompanyName</small></div></div>
+                <div><span><i class="bi bi-people"></i></span><div><strong>Members</strong><small>@Model.Members.Count direct member(s)</small></div></div>
+                <div><span><i class="bi bi-grid"></i></span><div><strong>Assignments</strong><small>@Model.ApplicationAssignmentCount enterprise application assignment(s)</small></div></div>
+            </div>
+        </section>
+
+        <section class="admin-card danger-zone group-danger-zone">
+            <div class="admin-card-header group-card-header">
+                <div>
+                    <strong><i class="bi bi-exclamation-triangle"></i> Danger zone</strong>
+                    <span>Deleting the group also removes memberships and application assignments.</span>
+                </div>
+            </div>
+            <form asp-action="DeleteGroup" method="post" class="p-4" data-confirm="Delete this group and all of its assignments? This action cannot be undone.">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="id" value="@Model.Id" />
+                <input type="hidden" name="companyId" value="@Model.CompanyId" />
+                <button type="submit" class="btn btn-outline-danger w-100">
+                    <i class="bi bi-trash"></i> Delete group
+                </button>
+            </form>
+        </section>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/pages/directory-group.js" asp-append-version="true" defer></script>
+}

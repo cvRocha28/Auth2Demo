@@ -1,74 +1,104 @@
 @model Auth2Demo.Domain.Security.SecuritySettings
 @{
     ViewData["Title"] = T["TextConfiguracoesDeSeguranca"].Value;
+    var passwordRules = new[]
+    {
+        (Enabled: Model.RequireDigit, Text: "Número"),
+        (Enabled: Model.RequireUppercase, Text: "Maiúscula"),
+        (Enabled: Model.RequireLowercase, Text: "Minúscula"),
+        (Enabled: Model.RequireNonAlphanumeric, Text: "Caractere especial")
+    };
 }
 @section AdminHeader {
-    <span class="admin-page-kicker">@T["Settings"]</span>
-    <h1>@T["Security"]</h1>
-    <p>@T["TextPoliticaDeSenhaBloqueioMfaETempoDe"]</p>
+    <span class="admin-page-kicker">CONFIGURAÇÕES</span>
+    <h1>Segurança</h1>
+    <p>Política de senha, bloqueio de conta, MFA administrativo e ciclo de vida dos tokens.</p>
 }
-
 
 @if (TempData["Message"] is not null)
 {
     <div class="alert alert-success">@TempData["Message"]</div>
 }
-<form method="post" class="card pro-form">
-    <input type="hidden" asp-for="Id" />
 
-    <div class="grid two">
-        <div class="form-row">
-            <label>@T["TextTamanhoMinimoDaSenha"]</label>
-            <input asp-for="PasswordRequiredLength" type="number" />
+<div class="grid security-settings-layout">
+    <form method="post" class="card pro-form">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="Id" />
+
+        <div class="form-section-title">
+            <div>
+                <strong>Política de senha</strong>
+                <p class="muted">Essas regras são aplicadas no cadastro local, reset e criação de senha para contas externas.</p>
+            </div>
         </div>
 
-        <div class="form-row">
-            <label>@T["TentativasAntesDoBloqueio"]</label>
-            <input asp-for="MaxFailedAccessAttempts" type="number" />
+        <div class="grid two">
+            <div class="form-row">
+                <label asp-for="PasswordRequiredLength">Tamanho mínimo da senha</label>
+                <input asp-for="PasswordRequiredLength" type="number" min="4" max="128" />
+                <span asp-validation-for="PasswordRequiredLength"></span>
+            </div>
+            <div class="form-row">
+                <label asp-for="MaxFailedAccessAttempts">Tentativas antes do bloqueio</label>
+                <input asp-for="MaxFailedAccessAttempts" type="number" min="1" max="25" />
+                <span asp-validation-for="MaxFailedAccessAttempts"></span>
+            </div>
+            <div class="form-row">
+                <label asp-for="LockoutMinutes">Bloqueio em minutos</label>
+                <input asp-for="LockoutMinutes" type="number" min="1" max="1440" />
+                <span asp-validation-for="LockoutMinutes"></span>
+            </div>
+            <div class="form-row">
+                <label asp-for="AccessTokenLifetimeMinutes">Access token em minutos</label>
+                <input asp-for="AccessTokenLifetimeMinutes" type="number" min="5" max="1440" />
+                <span asp-validation-for="AccessTokenLifetimeMinutes"></span>
+            </div>
+            <div class="form-row">
+                <label asp-for="RefreshTokenLifetimeDays">Refresh token em dias</label>
+                <input asp-for="RefreshTokenLifetimeDays" type="number" min="1" max="365" />
+                <span asp-validation-for="RefreshTokenLifetimeDays"></span>
+            </div>
         </div>
 
-        <div class="form-row">
-            <label>@T["BloqueioEmMinutos"]</label>
-            <input asp-for="LockoutMinutes" type="number" />
+        <div class="form-section-title section-spaced">
+            <div>
+                <strong>Requisitos obrigatórios</strong>
+                <p class="muted">Mantenha regras fortes para ambientes corporativos.</p>
+            </div>
         </div>
 
-        <div class="form-row">
-            <label>@T["AccessTokenEmMinutos"]</label>
-            <input asp-for="AccessTokenLifetimeMinutes" type="number" />
+        <div class="grid two">
+            <label class="check"><input asp-for="RequireDigit" /> Exigir número</label>
+            <label class="check"><input asp-for="RequireUppercase" /> Exigir maiúscula</label>
+            <label class="check"><input asp-for="RequireLowercase" /> Exigir minúscula</label>
+            <label class="check"><input asp-for="RequireNonAlphanumeric" /> Exigir caractere especial</label>
+            <label class="check"><input asp-for="RequireMfaForAdmins" /> Exigir MFA para administradores</label>
         </div>
 
-        <div class="form-row">
-            <label>@T["RefreshTokenEmDias"]</label>
-            <input asp-for="RefreshTokenLifetimeDays" type="number" />
+        <div class="form-actions">
+            <button class="btn" type="submit"><i class="bi bi-shield-check"></i> Salvar configurações</button>
         </div>
-    </div>
+    </form>
 
-    <label class="check">
-        <input asp-for="RequireDigit" />
-        @T["TextExigirNumero"]
-    </label>
+    <aside class="card pro-form">
+        <span class="admin-page-kicker">PREVIEW</span>
+        <h2 class="heading-spaced">Como a regra será aplicada</h2>
+        <p class="muted">A tela de cadastro usa o tamanho mínimo configurado e o backend valida todos os requisitos pelo Identity.</p>
+        <div class="alert">
+            <strong>Senha mínima:</strong> @Model.PasswordRequiredLength caracteres<br />
+            <strong>Bloqueio:</strong> @Model.MaxFailedAccessAttempts tentativas / @Model.LockoutMinutes min<br />
+            <strong>Tokens:</strong> access @Model.AccessTokenLifetimeMinutes min, refresh @Model.RefreshTokenLifetimeDays dias
+        </div>
+        <ul class="security-rule-list">
+            @foreach (var rule in passwordRules)
+            {
+                <li class="@(rule.Enabled ? "enabled" : "disabled")">
+                    <i class="bi @(rule.Enabled ? "bi-check-circle" : "bi-dash-circle")"></i>
+                    @rule.Text
+                </li>
+            }
+        </ul>
+    </aside>
+</div>
 
-    <label class="check">
-        <input asp-for="RequireUppercase" />
-        @T["TextExigirMaiuscula"]
-    </label>
-
-    <label class="check">
-        <input asp-for="RequireLowercase" />
-        @T["TextExigirMinuscula"]
-    </label>
-
-    <label class="check">
-        <input asp-for="RequireNonAlphanumeric" />
-        @T["ExigirCaractereEspecial"]
-    </label>
-
-    <label class="check">
-        <input asp-for="RequireMfaForAdmins" />
-        @T["ExigirMfaParaAdministradores"]
-    </label>
-
-    <button class="btn" type="submit">
-        @T["SalvarConfiguracoes"]
-    </button>
-</form>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

@@ -1,0 +1,238 @@
+@model Auth2Demo.Application.Services.Admin.CompanyDirectoryData
+@{
+    ViewData["Title"] = $"{Model.CompanyName} users";
+    var totalUsers = Model.Users.Count;
+    var activeUsers = Model.ActiveUserCount;
+    var disabledUsers = Model.DisabledUserCount;
+    var defaultUsers = Model.Users.Count(x => x.IsDefault);
+}
+
+@section AdminHeader {
+    <span class="admin-page-kicker"><i class="bi bi-people"></i> TENANT USERS</span>
+    <h1>@Model.CompanyName users</h1>
+    <p>Manage tenant membership, organization attributes and default-tenant preferences without changing the global identity account.</p>
+}
+@section AdminActions {
+    <a class="btn btn-outline" asp-action="Index" asp-route-companyId="@Model.CompanyId">
+        <i class="bi bi-arrow-left"></i> Tenant overview
+    </a>
+    <a class="btn btn-outline" asp-controller="Directory" asp-action="Users" asp-route-companyId="@Model.CompanyId">
+        <i class="bi bi-globe2"></i> Global user view
+    </a>
+}
+@if (TempData["Success"] is string ok)
+{
+    <div class="alert alert-success d-flex align-items-center gap-2"><i class="bi bi-check-circle-fill"></i><span>@ok</span></div>
+}
+@if (TempData["Error"] is string err)
+{
+    <div class="alert alert-danger d-flex align-items-center gap-2"><i class="bi bi-exclamation-triangle-fill"></i><span>@err</span></div>
+}
+
+<div class="tenant-users-page">
+    <section class="tenant-users-stats" aria-label="Tenant user summary">
+        <article class="tenant-users-stat">
+            <div class="tenant-users-stat__icon"><i class="bi bi-people"></i></div>
+            <div><div class="tenant-users-stat__value">@totalUsers</div><div class="tenant-users-stat__label">Tenant memberships</div></div>
+        </article>
+        <article class="tenant-users-stat">
+            <div class="tenant-users-stat__icon"><i class="bi bi-person-check"></i></div>
+            <div><div class="tenant-users-stat__value">@activeUsers</div><div class="tenant-users-stat__label">Active memberships</div></div>
+        </article>
+        <article class="tenant-users-stat">
+            <div class="tenant-users-stat__icon"><i class="bi bi-person-slash"></i></div>
+            <div><div class="tenant-users-stat__value">@disabledUsers</div><div class="tenant-users-stat__label">Disabled memberships</div></div>
+        </article>
+        <article class="tenant-users-stat">
+            <div class="tenant-users-stat__icon"><i class="bi bi-star"></i></div>
+            <div><div class="tenant-users-stat__value">@defaultUsers</div><div class="tenant-users-stat__label">Default tenant links</div></div>
+        </article>
+    </section>
+
+    <div class="tenant-users-grid">
+        <section class="tenant-users-card">
+            <header class="tenant-users-card__header">
+                <div>
+                    <h2><i class="bi bi-building-check me-1"></i> Tenant memberships</h2>
+                    <p>Edit organization metadata without changing credentials or account-wide security.</p>
+                </div>
+                <span class="badge rounded-pill text-bg-primary">@totalUsers total</span>
+            </header>
+
+            <div class="tenant-users-toolbar">
+                <div class="tenant-users-search">
+                    <i class="bi bi-search"></i>
+                    <input id="tenantUserSearch" class="form-control" type="search" placeholder="Search by name, email, department or job title" autocomplete="off" />
+                </div>
+                <select id="tenantUserStatus" class="form-select" aria-label="Filter by membership status">
+                    <option value="all">All statuses</option>
+                    <option value="active">Active</option>
+                    <option value="disabled">Disabled</option>
+                    <option value="default">Default tenant</option>
+                </select>
+            </div>
+
+            @if (Model.Users.Count == 0)
+            {
+                <div class="tenant-users-empty">
+                    <div class="tenant-users-empty__icon"><i class="bi bi-person-plus"></i></div>
+                    <h3>No users are linked to this tenant</h3>
+                    <p>Select an existing identity in the panel to create the first tenant membership.</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="tenant-users-table">
+                        <thead>
+                            <tr><th>User</th><th>Organization data</th><th>Status</th><th class="text-end">Actions</th></tr>
+                        </thead>
+                        <tbody id="tenantUsersBody">
+                        @foreach (var user in Model.Users)
+                        {
+                            var searchable = $"{user.DisplayName} {user.Email} {user.Department} {user.JobTitle}".ToLowerInvariant();
+                            var status = user.IsDefault ? "default" : (user.IsEnabled ? "active" : "disabled");
+                            var initials = string.Join("", (user.DisplayName ?? "U").Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(x => char.ToUpperInvariant(x[0])));
+                            <tr data-user-row data-search="@searchable" data-status="@status">
+                                <td>
+                                    <div class="tenant-user">
+                                        <div class="tenant-user__avatar">@initials</div>
+                                        <div><div class="tenant-user__name">@user.DisplayName</div><div class="tenant-user__email">@user.Email</div></div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="tenant-users-meta">@(string.IsNullOrWhiteSpace(user.Department) ? "No department" : user.Department)
+                                        <small>@(string.IsNullOrWhiteSpace(user.JobTitle) ? "No job title" : user.JobTitle)</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="tenant-users-badges">
+                                        <span class="badge rounded-pill @(user.IsEnabled ? "text-bg-success" : "text-bg-secondary")">@(user.IsEnabled ? "Active" : "Disabled")</span>
+                                        @if (user.IsDefault) { <span class="badge rounded-pill text-bg-light border"><i class="bi bi-star-fill me-1"></i>Default tenant</span> }
+                                    </div>
+                                </td>
+                                <td class="text-end">
+                                    <button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="modal" data-bs-target="#membership-@user.MembershipId.ToString("N")">
+                                        <i class="bi bi-pencil-square"></i> Manage
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+                <div id="tenantUsersNoResults" class="tenant-users-empty d-none">
+                    <div class="tenant-users-empty__icon"><i class="bi bi-search"></i></div>
+                    <h3>No memberships match your filters</h3>
+                    <p>Clear the search or select another status to see more users.</p>
+                </div>
+            }
+        </section>
+
+        <aside>
+            <section class="tenant-users-card">
+                <header class="tenant-users-card__header">
+                    <div>
+                        <h2><i class="bi bi-person-plus me-1"></i> Add existing identity</h2>
+                        <p>Create a tenant membership without duplicating the global account.</p>
+                    </div>
+                </header>
+                <form asp-action="AddUser" method="post" class="tenant-users-form">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="companyId" value="@Model.CompanyId" />
+                    <div class="mb-3">
+                        <label class="form-label" for="newTenantUser">Identity account</label>
+                        <select id="newTenantUser" class="form-select" name="userId" required disabled="@(Model.AvailableUsers.Count == 0)">
+                            <option value="">Select a user</option>
+                            @foreach (var u in Model.AvailableUsers) { <option value="@u.Id">@u.DisplayName — @u.Email</option> }
+                        </select>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-12"><label class="form-label" for="newDepartment">Department</label><input id="newDepartment" class="form-control" name="department" maxlength="160" placeholder="Example: Technology" /></div>
+                        <div class="col-12"><label class="form-label" for="newJobTitle">Job title</label><input id="newJobTitle" class="form-control" name="jobTitle" maxlength="160" placeholder="Example: Software Engineer" /></div>
+                    </div>
+                    <div class="form-check form-switch my-4">
+                        <input class="form-check-input" type="checkbox" name="isDefault" value="true" id="new-default" />
+                        <label class="form-check-label fw-semibold" for="new-default">Set as default tenant</label>
+                        <div class="form-text">Used as the preferred organization context for this identity.</div>
+                    </div>
+                    <button class="btn btn-primary w-100" type="submit" @(Model.AvailableUsers.Count == 0 ? "disabled" : null)>
+                        <i class="bi bi-plus-circle"></i> Add to tenant
+                    </button>
+                    @if (Model.AvailableUsers.Count == 0)
+                    {
+                        <div class="tenant-users-help mt-3"><strong>No identities available.</strong><br />Every active identity is already linked to this tenant.</div>
+                    }
+                </form>
+            </section>
+
+            <section class="tenant-users-side-note">
+                <h3><i class="bi bi-shield-check me-1"></i> Governance boundary</h3>
+                <p>This workspace manages only tenant membership, department, job title and default-tenant preference. Passwords, lockout and authentication methods remain in the global user area.</p>
+            </section>
+        </aside>
+    </div>
+</div>
+
+@foreach (var user in Model.Users)
+{
+    <div class="modal fade tenant-users-modal" id="membership-@user.MembershipId.ToString("N")" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <form asp-action="UpdateUser" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="companyId" value="@Model.CompanyId" />
+                    <input type="hidden" name="membershipId" value="@user.MembershipId" />
+                    <div class="modal-header">
+                        <div><h5 class="modal-title mb-1">Manage tenant membership</h5><div class="text-muted small">@user.DisplayName · @user.Email</div></div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row g-3">
+                            <div class="col-md-6"><label class="form-label">Department</label><input class="form-control" name="department" value="@user.Department" maxlength="160" /></div>
+                            <div class="col-md-6"><label class="form-label">Job title</label><input class="form-control" name="jobTitle" value="@user.JobTitle" maxlength="160" /></div>
+                            <div class="col-12"><hr class="my-1" /></div>
+                            <div class="col-md-6">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" name="isEnabled" value="true" id="enabled-@user.MembershipId" @(user.IsEnabled ? "checked" : null) />
+                                    <label class="form-check-label fw-semibold" for="enabled-@user.MembershipId">Membership enabled</label>
+                                </div>
+                                <div class="form-text">Disabled memberships cannot satisfy tenant access policies.</div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" name="isDefault" value="true" id="default-@user.MembershipId" @(user.IsDefault ? "checked" : null) />
+                                    <label class="form-check-label fw-semibold" for="default-@user.MembershipId">Default tenant</label>
+                                </div>
+                                <div class="form-text">Only one enabled tenant can be default for the user.</div>
+                            </div>
+                            <div class="col-12">
+                                <div class="tenant-users-danger">
+                                    <strong><i class="bi bi-exclamation-triangle me-1"></i> Remove membership</strong>
+                                    <p>Removing this membership also removes tenant group memberships and direct application assignments for this tenant.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer justify-content-between">
+                        <button type="submit" class="btn btn-outline-danger" formaction="@Url.Action("RemoveUser", new { companyId = Model.CompanyId, membershipId = user.MembershipId })" data-confirm="Remove this tenant membership, tenant group memberships and direct application assignments?">
+                            <i class="bi bi-trash"></i> Remove membership
+                        </button>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-outline" data-bs-dismiss="modal">Cancel</button>
+                            <button class="btn btn-primary" type="submit"><i class="bi bi-check2"></i> Save changes</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}
+
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/tenantdirectory-users.css" asp-append-version="true" />
+}
+@section Scripts {
+    <script src="~/js/pages/tenantdirectory-users.js" asp-append-version="true" defer></script>
+}

@@ -80,6 +80,19 @@ public sealed class ResetPasswordResult
     public IReadOnlyList<IdentityOperationError> Errors { get; init; } = Array.Empty<IdentityOperationError>();
 }
 
+
+public sealed record PasswordPolicyData(
+    int RequiredLength,
+    bool RequireDigit,
+    bool RequireUppercase,
+    bool RequireLowercase,
+    bool RequireNonAlphanumeric);
+
+public interface ISecurityPolicyService
+{
+    Task<PasswordPolicyData> GetPasswordPolicyAsync(CancellationToken cancellationToken = default);
+}
+
 public interface ILocalAccountService
 {
     Task<RegisterLocalAccountResult> RegisterAsync(RegisterLocalAccountRequest request);

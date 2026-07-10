@@ -29,7 +29,7 @@
         <label for="description">@T["Description"]</label>
         <input id="description" name="description" placeholder='@T["ExpliqueOObjetivoDessaRole"].Value' />
     </div>
-    <button class="btn" type="submit">@T["CriarRole"]</button>
+    <button class="btn" type="submit"><i class="bi bi-plus-circle"></i> @T["AdminCreateRole"]</button>
 </form>
 
 <div class="table-wrap">
@@ -41,17 +41,17 @@
             <tr>
                 <td><strong>@r.Name</strong></td>
                 <td>@(string.IsNullOrWhiteSpace(r.Description) ? "-" : r.Description)</td>
-                <td><span class="badge @(r.IsSystemRole ? "badge-success" : string.Empty)">@(r.IsSystemRole ? "Sistema" : "Personalizada")</span></td>
+                <td><span class="badge @(r.IsSystemRole ? "badge-success" : string.Empty)">@(r.IsSystemRole ? T["AdminSystem"] : T["AdminCustom"])</span></td>
                 <td>
                     @if (!r.IsSystemRole)
                     {
-                        <form method="post" asp-action="Delete" asp-route-id="@r.Id" class="inline" onsubmit='return confirm("@T["TextExcluirEstaRoleElaNaoPodeEstarAtribuida"].Value")'>
+                        <form method="post" asp-action="Delete" asp-route-id="@r.Id" class="inline" data-confirm="@T["TextExcluirEstaRoleElaNaoPodeEstarAtribuida"].Value">
                             <button class="btn btn-outline btn-sm" type="submit">@T["Delete"]</button>
                         </form>
                     }
                     else
                     {
-                        <span class="muted">@T["Protegida"]</span>
+                        <span class="badge badge-success"><i class="bi bi-shield-lock"></i> @T["AdminProtected"]</span>
                     }
                 </td>
             </tr>

@@ -1,7 +1,9 @@
 using System.Text;
 using Auth2Demo.Application.Services.Identity;
 using Auth2Demo.Domain.Identity;
+using Auth2Demo.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.WebUtilities;
 
 namespace Auth2Demo.Infrastructure.Identity.Services;
@@ -11,19 +13,23 @@ public sealed class LocalAccountService : ILocalAccountService
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly IIdentityEmailSender _emailSender;
+    private readonly ApplicationDbContext _db;
 
     public LocalAccountService(
         UserManager<ApplicationUser> userManager,
         SignInManager<ApplicationUser> signInManager,
-        IIdentityEmailSender emailSender)
+        IIdentityEmailSender emailSender,
+        ApplicationDbContext db)
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _emailSender = emailSender;
+        _db = db;
     }
 
     public async Task<RegisterLocalAccountResult> RegisterAsync(RegisterLocalAccountRequest request)
     {
+        await ApplyRuntimeLockoutSettingsAsync();
         var email = NormalizeLoginInput(request.Email);
 
         var user = new ApplicationUser
@@ -61,6 +67,7 @@ public sealed class LocalAccountService : ILocalAccountService
 
     public async Task<LocalLoginResult> PasswordSignInAsync(LoginLocalAccountRequest request)
     {
+        await ApplyRuntimeLockoutSettingsAsync();
         var login = NormalizeLoginInput(request.Login);
         var user = await FindByUserNameOrEmailAsync(login);
         if (user is null)
@@ -244,6 +251,16 @@ public sealed class LocalAccountService : ILocalAccountService
         return login.Contains('@', StringComparison.Ordinal)
             ? await _userManager.FindByEmailAsync(login)
             : null;
+    }
+
+
+    private async Task ApplyRuntimeLockoutSettingsAsync()
+    {
+        var settings = await _db.SecuritySettings.AsNoTracking().FirstOrDefaultAsync();
+        if (settings is null) return;
+
+        _userManager.Options.Lockout.MaxFailedAccessAttempts = Math.Clamp(settings.MaxFailedAccessAttempts, 1, 25);
+        _userManager.Options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(Math.Clamp(settings.LockoutMinutes, 1, 1440));
     }
 
     private static string NormalizeLoginInput(string? login)

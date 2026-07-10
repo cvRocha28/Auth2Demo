@@ -3489,3 +3489,36 @@ code {
         grid-template-columns: repeat(4, minmax(0, 1fr));
     }
 }
+
+
+/* Profile password policy */
+.profile-password-policy {
+    margin: 1rem 0 1.25rem;
+    padding: 1rem 1.1rem;
+    border: 1px solid var(--border, #dfe5ec);
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--surface, #fff) 92%, var(--primary, #2563eb) 8%);
+}
+.profile-password-policy-title { display:flex; gap:.75rem; align-items:flex-start; }
+.profile-password-policy-title > i { font-size:1.35rem; color:var(--primary, #2563eb); margin-top:.05rem; }
+.profile-password-policy-title strong, .profile-password-policy-title span { display:block; }
+.profile-password-policy-title span { margin-top:.2rem; color:var(--muted, #667085); font-size:.88rem; }
+.profile-password-rules { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:.55rem 1rem; margin:.9rem 0 0; padding:0; list-style:none; }
+.profile-password-rules li { display:flex; gap:.5rem; align-items:center; color:var(--muted, #667085); font-size:.9rem; transition:color .15s ease; }
+.profile-password-rules li i { font-size:.9rem; }
+.profile-password-rules li.is-valid { color:#198754; }
+
+
+/* Shared layout utilities: keep view markup free of inline styles. */
+.is-hidden { display: none !important; }
+.grid-two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.grid-three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.security-settings-layout { grid-template-columns: minmax(0, 1.2fr) minmax(18rem, .8fr); align-items: start; }
+.section-spaced { margin-top: 1.25rem; }
+.heading-spaced { margin-top: .35rem; }
+
+@media (max-width: 900px) {
+    .grid-two,
+    .grid-three,
+    .security-settings-layout { grid-template-columns: 1fr; }
+}

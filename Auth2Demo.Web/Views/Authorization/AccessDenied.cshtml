@@ -1,0 +1,115 @@
+@using Auth2Demo.Web.Services.Branding
+@inject IBrandingResolver BrandingResolver
+@model Auth2Demo.Web.Models.Authorization.AuthorizationAccessDeniedViewModel
+
+@{
+    ViewData["Title"] = T["AuthorizationAccessDeniedTitle"].Value;
+    ViewData["HideShellHeader"] = true;
+    var branding = await BrandingResolver.ResolveAsync(Context);
+    var authorizeUrl = $"{Context.Request.PathBase}/connect/authorize";
+}
+
+<section class="authorization-denied-page">
+    <div class="authorization-denied-shell">
+        <article class="authorization-denied-card">
+            <header class="authorization-denied-hero">
+                <div class="authorization-denied-icon" aria-hidden="true">
+                    <i class="bi bi-shield-lock"></i>
+                </div>
+                <div>
+                    <span class="authorization-denied-kicker">@T["AuthorizationAccessDeniedKicker"]</span>
+                    <h1>@T["AuthorizationAccessDeniedHeading"]</h1>
+                    <p>@T["AuthorizationAccessDeniedSubtitle"]</p>
+                </div>
+            </header>
+
+            <div class="authorization-denied-content">
+                <main>
+                    <section class="authorization-denied-reason">
+                        <div class="authorization-denied-reason-icon" aria-hidden="true">
+                            <i class="bi @(Model.IsAssignmentRequired ? "bi-person-check" : "bi-exclamation-triangle")"></i>
+                        </div>
+                        <div>
+                            <span>@T["AuthorizationAccessDeniedReasonLabel"]</span>
+                            <strong>@Model.Reason</strong>
+                        </div>
+                    </section>
+
+                    <section class="authorization-denied-guidance">
+                        <h2>@T["AuthorizationAccessDeniedNextStepsTitle"]</h2>
+                        <ul>
+                            @if (Model.IsAssignmentRequired)
+                            {
+                                <li>@T["AuthorizationAccessDeniedAssignmentStep"]</li>
+                            }
+                            <li>@T["AuthorizationAccessDeniedDifferentAccountStep"]</li>
+                            <li>@T["AuthorizationAccessDeniedSupportStep"]</li>
+                        </ul>
+                    </section>
+
+                    <div class="authorization-denied-actions">
+                        <form method="post" action="@authorizeUrl">
+                            @Html.AntiForgeryToken()
+                            @* OpenIddict reads authorization parameters from the POST body on a POST request.
+                               Preserve every original OIDC parameter as a hidden field instead of leaving
+                               them only in the form action query string. *@
+                            @foreach (var parameter in Context.Request.Query)
+                            {
+                                foreach (var value in parameter.Value)
+                                {
+                                    <input type="hidden" name="@parameter.Key" value="@value" />
+                                }
+                            }
+                            <button type="submit" name="continue_denied" value="true" class="authorization-denied-btn primary">
+                                <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>
+                                @T["AuthorizationAccessDeniedReturnToApplication"]
+                            </button>
+                        </form>
+
+                        <form asp-controller="Account" asp-action="Logout" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="returnUrl" value="@Model.ReturnUrl" />
+                            <button type="submit" class="authorization-denied-btn secondary">
+                                <i class="bi bi-person-circle" aria-hidden="true"></i>
+                                @T["AuthorizationAccessDeniedUseAnotherAccount"]
+                            </button>
+                        </form>
+                    </div>
+                </main>
+
+                <aside aria-label="@T["AuthorizationAccessDeniedDetailsTitle"]">
+                    <section class="authorization-denied-details">
+                        <h2>@T["AuthorizationAccessDeniedDetailsTitle"]</h2>
+                        <dl>
+                            <div>
+                                <dt>@T["Application"]</dt>
+                                <dd>@Model.ApplicationName</dd>
+                            </div>
+                            <div>
+                                <dt>@T["ClientId"]</dt>
+                                <dd><code>@Model.ClientId</code></dd>
+                            </div>
+                            <div>
+                                <dt>@T["AuthorizationAccessDeniedTenantLabel"]</dt>
+                                <dd>@branding.TenantName</dd>
+                            </div>
+                            <div>
+                                <dt>@T["AuthorizationAccessDeniedCorrelationId"]</dt>
+                                <dd><code>@Model.CorrelationId</code></dd>
+                            </div>
+                        </dl>
+                    </section>
+
+                    <section class="authorization-denied-security-note">
+                        <i class="bi bi-info-circle" aria-hidden="true"></i>
+                        <p>@T["AuthorizationAccessDeniedProtocolNote"]</p>
+                    </section>
+                </aside>
+            </div>
+        </article>
+    </div>
+</section>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/authorization-access-denied.css" asp-append-version="true" />
+}

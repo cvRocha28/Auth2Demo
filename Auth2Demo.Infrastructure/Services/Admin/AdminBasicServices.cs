@@ -190,6 +190,11 @@ public sealed class AdminSecuritySettingsService : IAdminSecuritySettingsService
 
     public Task SaveAsync(SecuritySettings model)
     {
+        model.PasswordRequiredLength = Math.Clamp(model.PasswordRequiredLength, 4, 128);
+        model.MaxFailedAccessAttempts = Math.Clamp(model.MaxFailedAccessAttempts, 1, 25);
+        model.LockoutMinutes = Math.Clamp(model.LockoutMinutes, 1, 1440);
+        model.AccessTokenLifetimeMinutes = Math.Clamp(model.AccessTokenLifetimeMinutes, 5, 1440);
+        model.RefreshTokenLifetimeDays = Math.Clamp(model.RefreshTokenLifetimeDays, 1, 365);
         return _settings.SaveAsync(model);
     }
 }
@@ -528,6 +533,64 @@ public sealed class AdminUserService : IAdminUserService
 }
 
 
+
+public sealed class AdminCompanyService : IAdminCompanyService
+{
+    private readonly IAdminCompanyRepository _companies;
+
+    public AdminCompanyService(IAdminCompanyRepository companies)
+    {
+        _companies = companies;
+    }
+
+    public Task<IReadOnlyList<CompanyListItemData>> ListAsync() => _companies.ListAsync();
+
+    public Task<IReadOnlyList<CompanyListItemData>> ListEnabledAsync() => _companies.ListEnabledAsync();
+
+    public async Task<CompanyEditData?> GetForEditAsync(Guid id)
+    {
+        var company = await _companies.GetAsync(id, tracking: false);
+        if (company is null) return null;
+        return new CompanyEditData
+        {
+            Id = company.Id,
+            Name = company.Name,
+            DisplayName = company.DisplayName,
+            Description = company.Description,
+            DomainHint = company.DomainHint,
+            Country = company.Country,
+            Culture = company.Culture,
+            TimeZone = company.TimeZone,
+            IsEnabled = company.IsEnabled,
+            IsDefault = company.IsDefault
+        };
+    }
+
+    public async Task<SaveCompanyResult> SaveAsync(CompanyEditData model)
+    {
+        var normalizedName = model.Name.Trim();
+        var currentId = model.Id ?? Guid.Empty;
+        if (await _companies.HasDuplicateAsync(currentId, normalizedName))
+        {
+            return new SaveCompanyResult(false, true, false);
+        }
+
+        if (model.Id is null || model.Id == Guid.Empty)
+        {
+            var company = new Company(normalizedName, model.DisplayName);
+            company.Update(model.DisplayName, model.Description, model.DomainHint, model.Country, model.Culture, model.TimeZone, model.IsEnabled, model.IsDefault);
+            await _companies.AddAsync(company);
+            return new SaveCompanyResult(false, false, true);
+        }
+
+        var current = await _companies.GetAsync(model.Id.Value, tracking: true);
+        if (current is null) return new SaveCompanyResult(true, false, false);
+        current.Update(model.DisplayName, model.Description, model.DomainHint, model.Country, model.Culture, model.TimeZone, model.IsEnabled, model.IsDefault);
+        await _companies.SaveChangesAsync();
+        return new SaveCompanyResult(false, false, false);
+    }
+}
+
 public sealed class AdminIdentityProviderService : IAdminIdentityProviderService
 {
     private readonly IAdminIdentityProviderRepository _identityProviders;
@@ -558,6 +621,7 @@ public sealed class AdminIdentityProviderService : IAdminIdentityProviderService
         return new IdentityProviderEditData
         {
             Id = provider.Id,
+            CompanyId = provider.CompanyId,
             Name = provider.Name,
             DisplayName = provider.DisplayName,
             Scheme = provider.Scheme,
@@ -605,7 +669,8 @@ public sealed class AdminIdentityProviderService : IAdminIdentityProviderService
                 model.Authority,
                 model.CallbackPath,
                 model.IsEnabled,
-                model.SortOrder);
+                model.SortOrder,
+                model.CompanyId);
 
             await _identityProviders.AddAsync(provider);
 
@@ -634,7 +699,8 @@ public sealed class AdminIdentityProviderService : IAdminIdentityProviderService
             model.Authority,
             model.CallbackPath,
             model.IsEnabled,
-            model.SortOrder);
+            model.SortOrder,
+            model.CompanyId);
 
         await _identityProviders.SaveChangesAsync();
 

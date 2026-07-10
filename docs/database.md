@@ -1,85 +1,139 @@
-# Database
+# Database and migrations
 
-Auth2Demo uses Entity Framework Core with SQL Server. The database stores identity platform configuration, OpenIddict data, users, roles, branding settings, external identity providers, client secrets, and audit records.
+Auth2Demo uses Entity Framework Core with SQL Server. `ApplicationDbContext` combines ASP.NET Core Identity, OpenIddict, Data Protection, tenant governance, and administrative entities.
 
-## Main concepts
+## Table groups
 
-The database supports:
+### ASP.NET Core Identity
 
-- OpenIddict applications
-- OpenIddict authorizations
-- OpenIddict scopes
-- OpenIddict tokens
-- ASP.NET Core Identity users and roles
-- Identity providers
-- Branding settings
-- Client secret metadata
-- Audit logs
-- Application audit records
-- Application secret audit records
+```text
+IdentityUsers
+IdentityRoles
+IdentityUserRoles
+IdentityUserClaims
+IdentityUserLogins
+IdentityUserTokens
+IdentityRoleClaims
+```
 
-## Client secrets
+`IdentityUsers` also stores optional language, culture, country, locale, time-zone, and company-related profile data.
 
-Client secrets are stored in a dedicated structure instead of being treated as a single static value on the application.
+### OpenIddict
 
-This enables:
+```text
+IdentityApplications
+IdentityAuthorizations
+IdentityScopes
+IdentityTokens
+```
 
-- Multiple active secrets per client
-- Secret rotation without downtime
-- Secret expiration
-- Secret revocation
-- Secret prefix display for safe identification
-- Secret lifecycle auditing
+Auth2Demo adds shadow metadata to applications, including enabled state, timestamps, deletion metadata, and actor identifiers.
 
-Revoked and expired secrets remain useful for audit and troubleshooting scenarios.
+### Data Protection
 
-## Identity providers
+```text
+IdentityDataProtectionKeys
+```
 
-External providers are stored in the IdentityProviders table. This allows the administration portal and authentication screen to dynamically load enabled providers.
+### Tenant governance
 
-Provider data is used by:
+```text
+IdentityCompanies
+IdentityProviders
+IdentityApplicationTenantAssignments
+IdentityApplicationIdentityProviders
+IdentityCompanyUsers
+IdentityCompanyGroups
+IdentityCompanyGroupMembers
+IdentityEnterpriseApplicationRoles
+IdentityEnterpriseApplicationAssignments
+```
 
-- Identity Providers administration screen
-- Client Branding Authentication Methods tab
-- Login/authentication UI
-- Live preview
+### Security and administration
 
-## Branding settings
+```text
+IdentityAuditLogs
+IdentityUserSessions
+IdentityUserDevices
+IdentityMfaMethods
+IdentityPasskeyCredentials
+IdentityPermissions
+IdentityRolePermissions
+IdentityEmailTemplates
+IdentityBrandingSettings
+IdentitySecuritySettings
+IdentityApplicationSecrets
+```
 
-Global branding is stored in the IdentityBrandingSettings table. Client-specific branding is stored as metadata associated with the OpenIddict application.
+The exact names are defined in EF mappings and should be verified in each generated migration.
 
-This design allows Auth2Demo to have a global default theme while also supporting per-client white-label customization.
+## Important constraints
 
-## Auditing
+- Company group names are unique per company.
+- A user can only appear once in the same group.
+- Enterprise role values are unique per application.
+- Enterprise assignment uniqueness prevents duplicate principal assignments.
+- A check constraint enforces either a user principal or a group principal, never both.
+- Provider, membership, and assignment relationships use explicit delete behaviors.
 
-Audit tables are used to retain important security and administration events.
+## SQL Server cascade-path rule
 
-Auditing should be used for:
+SQL Server rejects some graphs with more than one cascading path. The enterprise assignment to application-role relationship uses `NoAction`, while application-to-assignment and application-to-role relationships may cascade.
 
-- Client creation and updates
-- Secret creation, expiration, and revocation
-- Security-sensitive administration changes
-- Identity provider changes
-- Branding and authentication method changes
+Application role deletion must therefore explicitly remove or update related assignments before deleting the role.
 
-## Migrations
+## Migration ownership
 
-Migrations are stored in the Infrastructure project.
+Migrations belong to `Auth2Demo.Infrastructure/Persistence/Migrations`.
 
 Create a migration:
 
-```bash
-dotnet ef migrations add MigrationName --project Auth2Demo.Infrastructure --startup-project Auth2Demo.Web --output-dir Persistence/Migrations
+```powershell
+dotnet ef migrations add MigrationName `
+  --project Auth2Demo.Infrastructure `
+  --startup-project Auth2Demo.Web `
+  --output-dir Persistence\Migrations
 ```
 
 Apply migrations:
 
-```bash
-dotnet ef database update --project Auth2Demo.Infrastructure --startup-project Auth2Demo.Web
+```powershell
+dotnet ef database update `
+  --project Auth2Demo.Infrastructure `
+  --startup-project Auth2Demo.Web
 ```
 
-## Seeding
+Remove the most recent unapplied migration:
 
-The infrastructure layer contains database seeding for initial platform data such as identity providers, branding defaults, scopes, users, and other required records.
+```powershell
+dotnet ef migrations remove `
+  --project Auth2Demo.Infrastructure `
+  --startup-project Auth2Demo.Web
+```
 
-Seed data should be kept safe, repeatable, and idempotent so the application can initialize development environments reliably.
+Generate a reviewable SQL script:
+
+```powershell
+dotnet ef migrations script --idempotent `
+  --project Auth2Demo.Infrastructure `
+  --startup-project Auth2Demo.Web `
+  --output Auth2Demo.sql
+```
+
+## Migration review checklist
+
+Before applying a migration:
+
+- inspect every foreign key and delete action;
+- confirm indexes for common tenant, user, client, and status filters;
+- confirm unique indexes match business rules;
+- check nullable and maximum-length changes;
+- look for unintended table drops or column renames;
+- inspect default constraints and UTC timestamp expressions;
+- test against an empty database;
+- test upgrade from the current production schema;
+- back up production data.
+
+## Database initialization
+
+`DatabaseInitializer` runs through `IApplicationInitializer` at application startup. Seed operations must be idempotent and should never reset production credentials or overwrite administrator changes.

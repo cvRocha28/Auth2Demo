@@ -13,13 +13,16 @@ namespace Auth2Demo.Web.Areas.Admin.Controllers;
 public sealed class IdentityProvidersController : Controller
 {
     private readonly IAdminIdentityProviderService _providers;
+    private readonly IAdminCompanyService _companies;
     private readonly IStringLocalizer<SharedResource> _localizer;
 
     public IdentityProvidersController(
         IAdminIdentityProviderService providers,
+        IAdminCompanyService companies,
         IStringLocalizer<SharedResource> localizer)
     {
         _providers = providers;
+        _companies = companies;
         _localizer = localizer;
     }
 
@@ -29,6 +32,8 @@ public sealed class IdentityProvidersController : Controller
         return View(providers.Select(x => new IdentityProviderListItemViewModel
         {
             Id = x.Id,
+            CompanyId = x.CompanyId,
+            CompanyName = x.CompanyName,
             Name = x.Name,
             DisplayName = x.DisplayName,
             Scheme = x.Scheme,
@@ -42,15 +47,16 @@ public sealed class IdentityProvidersController : Controller
     }
 
     [HttpGet]
-    public IActionResult Create() => View("Edit", new IdentityProviderEditViewModel());
+    public async Task<IActionResult> Create() => View("Edit", await PrepareEditModelAsync(new IdentityProviderEditViewModel()));
 
     [HttpGet]
     public async Task<IActionResult> Edit(Guid id)
     {
         var model = await _providers.GetForEditAsync(id);
-        return model is null ? NotFound() : View(new IdentityProviderEditViewModel
+        return model is null ? NotFound() : View(await PrepareEditModelAsync(new IdentityProviderEditViewModel
         {
             Id = model.Id,
+            CompanyId = model.CompanyId,
             Name = model.Name,
             DisplayName = model.DisplayName,
             Scheme = model.Scheme,
@@ -65,18 +71,19 @@ public sealed class IdentityProvidersController : Controller
             IsEnabled = model.IsEnabled,
             IsSystemProvider = model.IsSystemProvider,
             SortOrder = model.SortOrder
-        });
+        }));
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Save(IdentityProviderEditViewModel model)
     {
-        if (!ModelState.IsValid) return View("Edit", model);
+        if (!ModelState.IsValid) return View("Edit", await PrepareEditModelAsync(model));
 
         var result = await _providers.SaveAsync(new IdentityProviderEditData
         {
             Id = model.Id,
+            CompanyId = model.CompanyId,
             Name = model.Name,
             DisplayName = model.DisplayName,
             Scheme = model.Scheme,
@@ -96,11 +103,29 @@ public sealed class IdentityProvidersController : Controller
         if (result.Duplicated)
         {
             ModelState.AddModelError(string.Empty, _localizer["IdentityProviderAlreadyExists"].Value);
-            return View("Edit", model);
+            return View("Edit", await PrepareEditModelAsync(model));
         }
 
         TempData["Success"] = result.Created ? _localizer["ProviderCreatedSuccessfully"].Value : _localizer["ProviderUpdatedSuccessfully"].Value;
         return RedirectToAction(nameof(Index));
+    }
+
+    private async Task<IdentityProviderEditViewModel> PrepareEditModelAsync(IdentityProviderEditViewModel model)
+    {
+        var companies = await _companies.ListEnabledAsync();
+        model.Companies = companies.Select(x => new CompanyListItemViewModel
+        {
+            Id = x.Id,
+            Name = x.Name,
+            DisplayName = x.DisplayName,
+            DomainHint = x.DomainHint,
+            Country = x.Country,
+            Culture = x.Culture,
+            IsEnabled = x.IsEnabled,
+            IsDefault = x.IsDefault,
+            ProviderCount = x.ProviderCount
+        }).ToArray();
+        return model;
     }
 
     [HttpPost]

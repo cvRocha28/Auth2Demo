@@ -959,6 +959,7 @@ public sealed class ClientsController : Controller
             UseGradientButtons = model.UseGradientButtons,
             ShowCreateAccountLink = model.ShowCreateAccountLink,
             ShowForgotPasswordLink = model.ShowForgotPasswordLink,
+            ShowAuthorizationDeniedPage = model.ShowAuthorizationDeniedPage,
             EnableLocalLogin = model.EnableLocalLogin,
             EnabledProviderSchemes = model.EnabledProviderSchemes
                 .Where(x => !string.IsNullOrWhiteSpace(x))

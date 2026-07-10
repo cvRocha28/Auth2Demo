@@ -1,3 +1,4 @@
+using Auth2Demo.Application.Services.Identity;
 using Auth2Demo.Infrastructure.Identity;
 using Auth2Demo.Web.Localization;
 using Auth2Demo.Infrastructure.Services.Portal;
@@ -16,17 +17,20 @@ public sealed class PerfilController : Controller
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly IPerfilService _perfil;
     private readonly IAccountSecurityService _security;
+    private readonly ISecurityPolicyService _securityPolicy;
 
     public PerfilController(
         UserManager<ApplicationUser> userManager,
         SignInManager<ApplicationUser> signInManager,
         IPerfilService perfil,
-        IAccountSecurityService security)
+        IAccountSecurityService security,
+        ISecurityPolicyService securityPolicy)
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _perfil = perfil;
         _security = security;
+        _securityPolicy = securityPolicy;
     }
 
     public async Task<IActionResult> Index()
@@ -35,6 +39,8 @@ public sealed class PerfilController : Controller
         if (user is null) return Challenge();
 
         var data = await _perfil.BuildIndexAsync(user);
+        var passwordPolicy = await _securityPolicy.GetPasswordPolicyAsync(HttpContext.RequestAborted);
+
         return View(new PerfilIndexViewModel
         {
             User = data.User,
@@ -47,7 +53,13 @@ public sealed class PerfilController : Controller
             AuditLogs = data.AuditLogs,
             MfaMethods = data.MfaMethods,
             Passkeys = data.Passkeys,
-            HasLocalPassword = await _userManager.HasPasswordAsync(user)
+            HasLocalPassword = await _userManager.HasPasswordAsync(user),
+            PasswordPolicy = new PasswordPolicyViewModel(
+                passwordPolicy.RequiredLength,
+                passwordPolicy.RequireDigit,
+                passwordPolicy.RequireUppercase,
+                passwordPolicy.RequireLowercase,
+                passwordPolicy.RequireNonAlphanumeric)
         });
     }
 

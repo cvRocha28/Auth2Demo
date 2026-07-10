@@ -30,12 +30,18 @@
     </div>
 }
 
-<div class="table-wrap">
+<section class="admin-card provider-directory-card">
+    <div class="admin-card-header">
+        <div><strong><i class="bi bi-globe2"></i> @T["AdminProviderDirectory"]</strong><span>@T["AdminProviderDirectoryHelp"]</span></div>
+        <span class="badge">@Model.Count provider(s)</span>
+    </div>
+    <div class="table-wrap">
     <table>
         <thead>
             <tr>
                 <th>@T["Provider"]</th>
                 <th>@T["Scheme"]</th>
+                <th>@T["AdminCompany"]</th>
                 <th>@T["Type"]</th>
                 <th>@T["ClientId"]</th>
                 <th>@T["ClientSecret"]</th>
@@ -57,6 +63,10 @@
 
                     <td>
                         @provider.Scheme
+                    </td>
+
+                    <td>
+                        <span class="badge"><i class="bi bi-building"></i> @(provider.CompanyName ?? T["AdminGlobal"].Value)</span>
                     </td>
 
                     <td>
@@ -102,7 +112,7 @@
                                     value="@provider.Id" />
 
                                 <button class="btn btn-sm btn-outline" type="submit">
-                                    @(provider.IsEnabled ? T["Disabled"] : T["Enabled"])
+                                    @(provider.IsEnabled ? T["AdminDisable"] : T["AdminEnable"])
                                 </button>
                             </form>
 
@@ -127,4 +137,5 @@
             }
         </tbody>
     </table>
-</div>
+    </div>
+</section>

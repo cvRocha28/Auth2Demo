@@ -6,6 +6,8 @@ namespace Auth2Demo.Web.Areas.Admin.Models;
 public sealed class IdentityProviderListItemViewModel
 {
     public Guid Id { get; init; }
+    public Guid? CompanyId { get; init; }
+    public string? CompanyName { get; init; }
     public string Name { get; init; } = string.Empty;
     public string DisplayName { get; init; } = string.Empty;
     public string Scheme { get; init; } = string.Empty;
@@ -20,6 +22,9 @@ public sealed class IdentityProviderListItemViewModel
 public sealed class IdentityProviderEditViewModel
 {
     public Guid? Id { get; set; }
+
+    public Guid? CompanyId { get; set; }
+    public IReadOnlyList<CompanyListItemViewModel> Companies { get; set; } = Array.Empty<CompanyListItemViewModel>();
 
     [Required, StringLength(80)]
     public string Name { get; set; } = string.Empty;

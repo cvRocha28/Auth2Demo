@@ -1,106 +1,144 @@
-# Administration
+# Administration portal
 
-The Auth2Demo administration portal provides the management experience for the identity platform. It centralizes configuration for clients, scopes, permissions, identity providers, branding, users, security settings, audit data, sessions, devices, MFA, and passkeys.
+The administration portal is organized into workspaces that align with identity-platform responsibilities.
 
-## Main administration areas
+## Overview
 
-- Dashboard
-- Clients
-- Scopes
-- Permissions
-- Identity Providers
-- Users
-- Roles
-- MFA
-- Passkeys
-- Sessions
-- Devices
-- Branding
-- Security Settings
-- Email Templates
-- Audit Logs
-- Application Audit
-- Application Secrets Audit
-- Token Explorer
-- Health
+### Dashboard
 
-## Clients
+`/Admin/Dashboard`
 
-The Clients area is used to manage OpenID Connect/OAuth applications. It supports professional client administration including:
+Operational summary for users, applications, sessions, security, and configuration.
 
-- Client creation and editing
-- Client type configuration
-- Grant type configuration
-- Redirect URIs
-- Post logout redirect URIs
-- API permissions
-- Required claims
-- Client secrets
-- Branding configuration
-- Per-client authentication methods
-- Client audit visibility
+### Platform health
 
-## Client branding
+`/Admin/Health`
 
-The Client Branding page allows each application to have its own white-label authentication experience.
+Shows service and persistence health indicators. Do not expose connection strings, secret values, or exception internals.
 
-Configuration areas:
+## Directory
 
-- General
-- Colors
-- Appearance
-- Authentication Methods
-- Advanced
+### Directory overview
 
-The live preview reflects the selected branding, theme, colors, copy, layout options, and authentication methods.
+`/Admin/Directory`
 
-## Authentication Methods tab
+Cross-tenant directory summary.
 
-The Authentication Methods tab controls which login options are available for the selected client.
+### Users
 
-Supported options:
+`/Admin/Directory/Users` and `/Admin/Users`
 
-- Username and password
-- External providers that are enabled in the IdentityProviders table
+Global identity discovery and user account administration. Tenant membership belongs to Directory/TenantDirectory workflows rather than being hidden inside the global user record.
 
-This allows administrators to create different authentication policies per client. For example, an internal admin application may allow username/password and Microsoft login, while another client may only expose a corporate provider.
+### Groups
 
-## Identity Providers
+`/Admin/Directory/Groups`
 
-The Identity Providers area manages external login providers. Enabled providers can be used by authentication pages and can appear as selectable options in client-level Authentication Methods configuration.
+Global group discovery. Group ownership remains tenant-scoped.
 
-Provider configuration is designed to be database-driven so the login experience can be changed without hardcoding providers in the UI.
+### Companies
 
-## Branding
+`/Admin/Companies`
 
-The global Branding area defines default Auth2Demo branding. Client-specific branding can override the global settings when configured.
+Company lifecycle and tenant entry point. The Users and Groups action should open the contextual Tenant Directory.
 
-The default branding should remain Auth2Demo-oriented and professional. Temporary project-specific themes should not be used as the platform default.
+### Roles and permissions
 
-## Auditing
+`/Admin/Roles` and `/Admin/Permissions`
 
-The admin portal includes multiple audit screens to provide visibility into security and configuration changes.
+Platform administration roles and permission mappings. These are distinct from enterprise application roles.
 
-Audit areas include:
+## Applications
 
-- General audit logs
-- Application audit records
-- Application secret audit records
+### App registrations
 
-Auditing is important for client management, secret lifecycle tracking, administrator accountability, and production readiness.
+`/Admin/Clients`
 
-## Security settings
+OpenIddict application definitions, protocol configuration, scopes, secrets, branding, and authentication methods.
 
-Security settings centralize administrative configuration related to authentication behavior and security posture. This area is intended to grow as the project adds more production-grade features.
+### Enterprise applications
 
-## Token Explorer
+`/Admin/EnterpriseApplications`
 
-The Token Explorer area is intended to help inspect and understand token-related information during development, troubleshooting, and administration.
+Allowed tenants, providers, assignment requirements, application roles, and user/group assignments.
 
-## Administration goals
+### Scopes and claims
 
-- Provide a professional identity provider management experience
-- Avoid hardcoded configuration where database-driven configuration is more appropriate
-- Keep sensitive operations auditable
-- Make client-level behavior explicit
-- Keep UI consistent with the real runtime authentication behavior
+`/Admin/Scopes`
+
+Scope administration and related claim behavior.
+
+### Token explorer
+
+`/Admin/TokenExplorer`
+
+Development and troubleshooting utility. Production access should be tightly restricted and sensitive token values must not be persisted.
+
+## Identity and authentication
+
+### Identity providers
+
+`/Admin/IdentityProviders`
+
+Tenant-owned provider configuration and status.
+
+### MFA
+
+`/Admin/Mfa`
+
+Administrative view of MFA methods and enrollment-related operations.
+
+### Passkeys
+
+`/Admin/Passkeys`
+
+Administrative view of registered passkey credentials.
+
+### Security settings
+
+`/Admin/SecuritySettings`
+
+Central password and lockout policy. The persisted configuration must be reflected in registration and every profile password flow.
+
+## Monitoring and audit
+
+- `/Admin/Sessions`
+- `/Admin/Devices`
+- `/Admin/AuditLogs`
+- `/Admin/ApplicationAudit`
+- `/Admin/ApplicationSecretsAudit`
+
+Audit pages should support traceability without revealing credentials or token material.
+
+## Experience
+
+### Branding
+
+`/Admin/Branding` and client-specific branding screens.
+
+### Email templates
+
+`/Admin/EmailTemplates`
+
+Transactional template administration. Template variables should be validated and output must be encoded appropriately for its destination.
+
+## Authorization policies
+
+Administrative controllers use role-based policies:
+
+- Admin;
+- Client Manager;
+- User Manager.
+
+Every new controller must select the narrowest appropriate policy. UI visibility is not authorization; server-side policies remain mandatory.
+
+## State-changing actions
+
+All create, edit, delete, enable, disable, revoke, assignment, and membership actions should:
+
+- use POST, PUT, PATCH, or DELETE semantics as appropriate;
+- validate antiforgery tokens for browser forms;
+- revalidate tenant and object ownership;
+- handle concurrency and duplicate constraints;
+- create an audit entry;
+- return a clear success or validation message.

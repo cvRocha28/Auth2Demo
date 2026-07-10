@@ -1,0 +1,144 @@
+@model Auth2Demo.Application.Services.Admin.CompanyDirectoryData
+@{
+    ViewData["Title"] = $"{Model.CompanyName} directory";
+    var totalUsers = Model.Users.Count;
+    var totalGroups = Model.Groups.Count;
+    var disabledGroups = Model.Groups.Count(x => !x.IsEnabled);
+    var defaultUsers = Model.Users.Count(x => x.IsDefault);
+    var recentUsers = Model.Users.OrderBy(x => x.DisplayName).Take(5).ToList();
+    var recentGroups = Model.Groups.OrderByDescending(x => x.MemberCount).ThenBy(x => x.Name).Take(5).ToList();
+}
+@section AdminHeader {
+    <span class="admin-page-kicker"><i class="bi bi-building"></i> TENANT WORKSPACE</span>
+    <h1>@Model.CompanyName</h1>
+    <p>Manage this tenant's memberships and security groups without mixing account-level administration or application authorization.</p>
+    <div class="admin-page-meta">
+        <span><i class="bi bi-people"></i> @totalUsers membership(s)</span>
+        <span><i class="bi bi-collection"></i> @totalGroups group(s)</span>
+        <span><i class="bi bi-shield-check"></i> @Model.ApplicationAssignmentCount assignment(s)</span>
+    </div>
+}
+@section AdminActions {
+    <a class="btn btn-outline" asp-controller="Directory" asp-action="Index"><i class="bi bi-grid"></i> Global directory</a>
+    <a class="btn btn-outline" asp-controller="Companies" asp-action="Edit" asp-route-id="@Model.CompanyId"><i class="bi bi-gear"></i> Company settings</a>
+    <a class="btn btn-primary" asp-action="Users" asp-route-companyId="@Model.CompanyId"><i class="bi bi-person-plus"></i> Manage users</a>
+}
+
+@if (TempData["Success"] is string ok) { <div class="alert alert-success tenant-alert"><i class="bi bi-check-circle"></i><span>@ok</span></div> }
+@if (TempData["Error"] is string err) { <div class="alert alert-danger tenant-alert"><i class="bi bi-exclamation-triangle"></i><span>@err</span></div> }
+
+<nav class="tenant-workspace-tabs" aria-label="Tenant directory sections">
+    <a class="active" asp-action="Index" asp-route-companyId="@Model.CompanyId"><i class="bi bi-grid-1x2"></i><span>Overview</span></a>
+    <a asp-action="Users" asp-route-companyId="@Model.CompanyId"><i class="bi bi-people"></i><span>Users</span><strong>@totalUsers</strong></a>
+    <a asp-action="Groups" asp-route-companyId="@Model.CompanyId"><i class="bi bi-collection"></i><span>Groups</span><strong>@totalGroups</strong></a>
+</nav>
+
+<div class="admin-stat-grid tenant-stat-grid">
+    <a class="admin-stat-card tenant-stat-card" asp-action="Users" asp-route-companyId="@Model.CompanyId">
+        <span class="admin-stat-icon success"><i class="bi bi-person-check"></i></span>
+        <div><small>Active memberships</small><strong>@Model.ActiveUserCount</strong><span>Users allowed by tenant membership rules</span></div>
+        <i class="bi bi-arrow-up-right tenant-stat-arrow"></i>
+    </a>
+    <a class="admin-stat-card tenant-stat-card @(Model.DisabledUserCount > 0 ? "attention" : null)" asp-action="Users" asp-route-companyId="@Model.CompanyId">
+        <span class="admin-stat-icon warning"><i class="bi bi-person-dash"></i></span>
+        <div><small>Disabled memberships</small><strong>@Model.DisabledUserCount</strong><span>Retained in the directory but blocked</span></div>
+        <i class="bi bi-arrow-up-right tenant-stat-arrow"></i>
+    </a>
+    <a class="admin-stat-card tenant-stat-card" asp-action="Groups" asp-route-companyId="@Model.CompanyId">
+        <span class="admin-stat-icon"><i class="bi bi-collection"></i></span>
+        <div><small>Active groups</small><strong>@Model.ActiveGroupCount</strong><span>@disabledGroups disabled group(s)</span></div>
+        <i class="bi bi-arrow-up-right tenant-stat-arrow"></i>
+    </a>
+    <a class="admin-stat-card tenant-stat-card" asp-controller="EnterpriseApplications" asp-action="Index">
+        <span class="admin-stat-icon violet"><i class="bi bi-box-arrow-in-right"></i></span>
+        <div><small>App assignments</small><strong>@Model.ApplicationAssignmentCount</strong><span>Direct and group-based access</span></div>
+        <i class="bi bi-arrow-up-right tenant-stat-arrow"></i>
+    </a>
+</div>
+
+<div class="tenant-overview-grid">
+    <section class="admin-card tenant-primary-card">
+        <div class="admin-card-header tenant-section-header">
+            <div><strong><i class="bi bi-people"></i> Tenant users</strong><span>Membership status, department, job title and default tenant.</span></div>
+            <a class="btn btn-sm btn-outline-primary" asp-action="Users" asp-route-companyId="@Model.CompanyId">View all <i class="bi bi-arrow-right"></i></a>
+        </div>
+        @if (recentUsers.Count == 0)
+        {
+            <div class="tenant-empty-state">
+                <span><i class="bi bi-person-plus"></i></span>
+                <h2>No users linked yet</h2>
+                <p>Add an existing identity account to create its membership in this tenant.</p>
+                <a class="btn btn-primary" asp-action="Users" asp-route-companyId="@Model.CompanyId"><i class="bi bi-plus-circle"></i> Add first user</a>
+            </div>
+        }
+        else
+        {
+            <div class="tenant-list">
+                @foreach (var user in recentUsers)
+                {
+                    var initials = string.Join("", (user.DisplayName ?? "U").Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(x => x[0])).ToUpperInvariant();
+                    <a class="tenant-list-row" asp-action="Users" asp-route-companyId="@Model.CompanyId" asp-fragment="membership-@user.MembershipId">
+                        <span class="tenant-avatar">@initials</span>
+                        <span class="tenant-list-copy"><strong>@user.DisplayName</strong><small>@user.Email</small></span>
+                        <span class="tenant-list-meta"><strong>@(user.Department ?? "No department")</strong><small>@(user.JobTitle ?? "No job title")</small></span>
+                        <span class="badge @(user.IsEnabled ? "text-bg-success" : "text-bg-secondary")">@(user.IsEnabled ? "Active" : "Disabled")</span>
+                        @if (user.IsDefault) { <span class="tenant-default-indicator" title="Default tenant"><i class="bi bi-star-fill"></i></span> }
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                }
+            </div>
+            <div class="tenant-card-footer"><span>@defaultUsers user(s) use this as their default tenant.</span><a asp-action="Users" asp-route-companyId="@Model.CompanyId">Manage memberships</a></div>
+        }
+    </section>
+
+    <section class="admin-card tenant-primary-card">
+        <div class="admin-card-header tenant-section-header">
+            <div><strong><i class="bi bi-collection"></i> Security groups</strong><span>Reusable principals for Enterprise Application assignments.</span></div>
+            <a class="btn btn-sm btn-outline-primary" asp-action="Groups" asp-route-companyId="@Model.CompanyId">View all <i class="bi bi-arrow-right"></i></a>
+        </div>
+        @if (recentGroups.Count == 0)
+        {
+            <div class="tenant-empty-state">
+                <span><i class="bi bi-collection"></i></span>
+                <h2>No groups created yet</h2>
+                <p>Create groups to assign application access once and manage membership centrally.</p>
+                <a class="btn btn-primary" asp-action="Groups" asp-route-companyId="@Model.CompanyId"><i class="bi bi-plus-circle"></i> Create first group</a>
+            </div>
+        }
+        else
+        {
+            <div class="tenant-list">
+                @foreach (var group in recentGroups)
+                {
+                    <a class="tenant-list-row" asp-controller="Directory" asp-action="Group" asp-route-id="@group.Id">
+                        <span class="tenant-avatar group"><i class="bi bi-people"></i></span>
+                        <span class="tenant-list-copy"><strong>@group.Name</strong><small>@(group.Description ?? "No description")</small></span>
+                        <span class="tenant-list-meta"><strong>@group.MemberCount member(s)</strong><small>Tenant-scoped group</small></span>
+                        <span class="badge @(group.IsEnabled ? "text-bg-success" : "text-bg-secondary")">@(group.IsEnabled ? "Active" : "Disabled")</span>
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                }
+            </div>
+            <div class="tenant-card-footer"><span>Groups can be reused across multiple enterprise applications.</span><a asp-action="Groups" asp-route-companyId="@Model.CompanyId">Manage groups</a></div>
+        }
+    </section>
+</div>
+
+<div class="tenant-secondary-grid">
+    <section class="admin-card">
+        <div class="admin-card-header"><div><strong><i class="bi bi-signpost-split"></i> Administration boundaries</strong><span>Each workspace owns a clear responsibility.</span></div></div>
+        <div class="tenant-boundary-list">
+            <a asp-action="Users" asp-route-companyId="@Model.CompanyId"><span class="tenant-boundary-icon"><i class="bi bi-building-check"></i></span><span><strong>Tenant directory</strong><small>Memberships, organization attributes and tenant groups.</small></span><i class="bi bi-arrow-right"></i></a>
+            <a asp-controller="Users" asp-action="Index"><span class="tenant-boundary-icon"><i class="bi bi-person-gear"></i></span><span><strong>Global identities</strong><small>Credentials, lockout, authentication methods and account status.</small></span><i class="bi bi-arrow-right"></i></a>
+            <a asp-controller="EnterpriseApplications" asp-action="Index"><span class="tenant-boundary-icon"><i class="bi bi-shield-lock"></i></span><span><strong>Application access</strong><small>Allowed tenants, assignments, app roles and token authorization.</small></span><i class="bi bi-arrow-right"></i></a>
+        </div>
+    </section>
+    <section class="admin-card tenant-health-card">
+        <div class="admin-card-header"><div><strong><i class="bi bi-heart-pulse"></i> Tenant health</strong><span>Quick operational checks.</span></div></div>
+        <div class="tenant-health-list">
+            <div><span class="tenant-health-icon @(Model.ActiveUserCount > 0 ? "success" : "neutral")"><i class="bi bi-people"></i></span><span><strong>Membership coverage</strong><small>@(Model.ActiveUserCount > 0 ? $"{Model.ActiveUserCount} active membership(s)" : "No active memberships")</small></span></div>
+            <div><span class="tenant-health-icon @(Model.DisabledUserCount == 0 ? "success" : "warning")"><i class="bi bi-person-x"></i></span><span><strong>Disabled memberships</strong><small>@(Model.DisabledUserCount == 0 ? "No blocked tenant memberships" : $"{Model.DisabledUserCount} membership(s) require review")</small></span></div>
+            <div><span class="tenant-health-icon @(Model.ActiveGroupCount > 0 ? "success" : "neutral")"><i class="bi bi-collection"></i></span><span><strong>Group readiness</strong><small>@(Model.ActiveGroupCount > 0 ? $"{Model.ActiveGroupCount} active security group(s)" : "No active groups configured")</small></span></div>
+        </div>
+    </section>
+</div>

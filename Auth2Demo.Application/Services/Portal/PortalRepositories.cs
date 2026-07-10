@@ -6,7 +6,9 @@ namespace Auth2Demo.Application.Services.Portal;
 public interface IExternalProviderRepository
 {
     Task<IReadOnlyList<ExternalProviderData>> GetEnabledForLoginAsync(ISet<string> configuredSchemes);
+    Task<IReadOnlyList<ExternalProviderData>> GetEnabledForApplicationAsync(string? clientId, ISet<string> configuredSchemes);
     Task<bool> IsProviderEnabledAsync(string provider);
+    Task<bool> IsProviderEnabledForApplicationAsync(string provider, string? clientId);
 }
 
 public interface IPerfilRepository

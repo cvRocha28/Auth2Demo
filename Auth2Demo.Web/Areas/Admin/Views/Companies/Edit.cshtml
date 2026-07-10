@@ -1,0 +1,73 @@
+@model Auth2Demo.Web.Areas.Admin.Models.CompanyEditViewModel
+@{
+    ViewData["Title"] = Model.Id is null ? "Nova empresa" : "Editar empresa";
+}
+
+@section AdminHeader {
+    <span class="admin-page-kicker">DIRECTORY</span>
+    <h1>@ViewData["Title"]</h1>
+    <p>Configure o tenant corporativo usado para segmentar aplicações e provedores de autenticação.</p>
+}
+
+@section AdminActions {
+    @if (Model.Id.HasValue) { <a class="btn btn-outline" asp-controller="TenantDirectory" asp-action="Index" asp-route-companyId="@Model.Id"><i class="bi bi-people"></i> Users and groups</a> }
+    <a class="btn btn-outline" asp-action="Index">Voltar</a>
+}
+
+<form asp-action="Save" method="post" class="card pro-form">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+    <div asp-validation-summary="ModelOnly" class="validation"></div>
+
+    <div class="grid grid-two">
+        <div class="form-row">
+            <label asp-for="Name">Nome interno</label>
+            <input asp-for="Name" placeholder="atento" />
+            <span asp-validation-for="Name"></span>
+        </div>
+        <div class="form-row">
+            <label asp-for="DisplayName">Nome de exibição</label>
+            <input asp-for="DisplayName" placeholder="Atento Brasil" />
+            <span asp-validation-for="DisplayName"></span>
+        </div>
+    </div>
+
+    <div class="form-row">
+        <label asp-for="Description">Descrição</label>
+        <textarea asp-for="Description" rows="3" placeholder="Descrição administrativa da empresa"></textarea>
+    </div>
+
+    <div class="grid grid-three">
+        <div class="form-row">
+            <label asp-for="DomainHint">Domínio principal</label>
+            <input asp-for="DomainHint" placeholder="empresa.com.br" />
+        </div>
+        <div class="form-row">
+            <label asp-for="Country">País</label>
+            <input asp-for="Country" placeholder="BR" />
+        </div>
+        <div class="form-row">
+            <label asp-for="Culture">Cultura</label>
+            <input asp-for="Culture" placeholder="pt-BR" />
+        </div>
+    </div>
+
+    <div class="form-row">
+        <label asp-for="TimeZone">Fuso horário</label>
+        <input asp-for="TimeZone" placeholder="E. South America Standard Time" />
+    </div>
+
+    <label class="check"><input asp-for="IsEnabled" /> Empresa ativa</label>
+    <label class="check"><input asp-for="IsDefault" /> Usar como empresa padrão para novos usuários sem tenant explícito</label>
+
+    <div class="alert">
+        Depois de criar uma empresa, vincule os provedores em <strong>Identity Providers</strong>. Assim cada empresa pode ter seus próprios Google, Microsoft, GitHub ou OIDC corporativo.
+    </div>
+
+    <div class="form-actions">
+        <button class="btn" type="submit">Salvar empresa</button>
+        <a class="btn btn-outline" asp-action="Index">Cancelar</a>
+    </div>
+</form>
+
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

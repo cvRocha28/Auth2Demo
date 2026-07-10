@@ -14,6 +14,7 @@ using OpenIddict.Abstractions;
 using OpenIddict.Server.AspNetCore;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using Auth2Demo.Web;
+using Auth2Demo.Application.Services.Admin;
 
 namespace Auth2Demo.Web.Controllers;
 
@@ -25,6 +26,8 @@ public sealed class AuthorizationController : Controller
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IStringLocalizer<SharedResource> _localizer;
+    private readonly IEnterpriseApplicationAccessEvaluator _accessEvaluator;
+    private readonly ILogger<AuthorizationController> _logger;
 
     public AuthorizationController(
         IOpenIddictApplicationManager applicationManager,
@@ -32,7 +35,9 @@ public sealed class AuthorizationController : Controller
         IOpenIddictScopeManager scopeManager,
         SignInManager<ApplicationUser> signInManager,
         UserManager<ApplicationUser> userManager,
-        IStringLocalizer<SharedResource> localizer)
+        IStringLocalizer<SharedResource> localizer,
+        IEnterpriseApplicationAccessEvaluator accessEvaluator,
+        ILogger<AuthorizationController> logger)
     {
         _applicationManager = applicationManager;
         _authorizationManager = authorizationManager;
@@ -40,6 +45,8 @@ public sealed class AuthorizationController : Controller
         _signInManager = signInManager;
         _userManager = userManager;
         _localizer = localizer;
+        _accessEvaluator = accessEvaluator;
+        _logger = logger;
     }
 
     [HttpGet("~/connect/authorize")]
@@ -65,11 +72,36 @@ public sealed class AuthorizationController : Controller
         var applicationId = await _applicationManager.GetIdAsync(application)
             ?? throw new InvalidOperationException(_localizer["ApplicationIdNotFound"].Value);
 
+        if (!Guid.TryParse(applicationId, out var enterpriseApplicationId))
+        {
+            throw new InvalidOperationException(_localizer["ApplicationIdNotFound"].Value);
+        }
+
+        var access = await _accessEvaluator.EvaluateAsync(user.Id, enterpriseApplicationId, HttpContext.RequestAborted);
+        if (!access.IsAllowed)
+        {
+            var denial = ResolveAccessDenial(access.DenialReason);
+            return await HandleAuthorizationDenialAsync(
+                request,
+                application,
+                user,
+                denial.Message,
+                denial.IsAssignmentRequired);
+        }
+
         var missingClaim = GetMissingRequiredClaim(application, User);
         if (!string.IsNullOrWhiteSpace(missingClaim))
         {
-            TempData["Error"] = $"User does not have the required claim: {missingClaim}.";
-            return Forbid(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+            var denialReason = string.Format(
+                _localizer["AuthorizationMissingRequiredClaimFormat"].Value,
+                missingClaim);
+
+            return await HandleAuthorizationDenialAsync(
+                request,
+                application,
+                user,
+                denialReason,
+                isAssignmentRequired: false);
         }
 
         var userId = await _userManager.GetUserIdAsync(user);
@@ -105,6 +137,13 @@ public sealed class AuthorizationController : Controller
         }
 
         var principal = await CreatePrincipalAsync(user, request);
+        foreach (var role in access.Roles)
+        {
+            if (principal.Identity is ClaimsIdentity claimsIdentity && !claimsIdentity.HasClaim(Claims.Role, role))
+            {
+                claimsIdentity.AddClaim(new Claim(Claims.Role, role).SetDestinations(Destinations.AccessToken, Destinations.IdentityToken));
+            }
+        }
 
         if (!authorizations.Any())
         {
@@ -123,6 +162,106 @@ public sealed class AuthorizationController : Controller
         }
 
         return SignIn(principal, OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+    }
+
+    private (string Message, bool IsAssignmentRequired) ResolveAccessDenial(string? reason)
+    {
+        return reason switch
+        {
+            "This application is no longer available."
+                => (_localizer["AuthorizationApplicationUnavailableReason"].Value, false),
+            "This enterprise application is disabled. Contact an administrator to enable it."
+                => (_localizer["AuthorizationApplicationDisabledReason"].Value, false),
+            "Your tenant is not authorized for this application."
+                => (_localizer["AuthorizationTenantNotAllowedReason"].Value, false),
+            "Your account is valid, but it has not been assigned to this application."
+                => (_localizer["AuthorizationAssignmentRequiredReason"].Value, true),
+            _ => (reason ?? _localizer["AuthorizationAccessDeniedDefaultReason"].Value, false)
+        };
+    }
+
+    private async Task<IActionResult> HandleAuthorizationDenialAsync(
+        OpenIddictRequest request,
+        object application,
+        ApplicationUser user,
+        string denialReason,
+        bool isAssignmentRequired)
+    {
+        var applicationName = await _applicationManager.GetLocalizedDisplayNameAsync(application)
+            ?? request.ClientId
+            ?? _localizer["Application"].Value;
+
+        _logger.LogWarning(
+            "Authorization denied. ClientId: {ClientId}; UserId: {UserId}; Reason: {Reason}; CorrelationId: {CorrelationId}",
+            request.ClientId,
+            user.Id,
+            denialReason,
+            HttpContext.TraceIdentifier);
+
+        // This is configured per client in Admin / Clients / Branding.
+        // Disabled preserves the traditional OIDC behavior: return access_denied
+        // to the requesting application immediately, without an intermediate page.
+        if (!IsAuthorizationDeniedPageEnabled(application) ||
+            (HttpMethods.IsPost(Request.Method) && Request.Form.ContainsKey("continue_denied")))
+        {
+            return CreateAccessDeniedResult(denialReason);
+        }
+
+        var returnUrl = Request.PathBase + Request.Path + Request.QueryString;
+
+        return View("AccessDenied", new AuthorizationAccessDeniedViewModel
+        {
+            ApplicationName = applicationName,
+            ClientId = request.ClientId ?? string.Empty,
+            Reason = denialReason,
+            CorrelationId = HttpContext.TraceIdentifier,
+            ReturnUrl = returnUrl,
+            IsAssignmentRequired = isAssignmentRequired
+        });
+    }
+
+
+    private IActionResult CreateAccessDeniedResult(string denialReason)
+    {
+        return Forbid(
+            new AuthenticationProperties(new Dictionary<string, string?>
+            {
+                [OpenIddictServerAspNetCoreConstants.Properties.Error] = Errors.AccessDenied,
+                [OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription] = denialReason
+            }),
+            OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+    }
+
+    private static bool IsAuthorizationDeniedPageEnabled(object application)
+    {
+        var properties = application.GetType().GetProperty("Properties")?.GetValue(application)?.ToString();
+        if (string.IsNullOrWhiteSpace(properties))
+        {
+            return true;
+        }
+
+        try
+        {
+            using var document = JsonDocument.Parse(properties);
+            if (!document.RootElement.TryGetProperty("auth2demo:branding", out var branding) ||
+                branding.ValueKind != JsonValueKind.Object)
+            {
+                return true;
+            }
+
+            // Missing property means enabled to preserve the new professional screen
+            // for clients created before this option existed.
+            if (!branding.TryGetProperty("showAuthorizationDeniedPage", out var enabled))
+            {
+                return true;
+            }
+
+            return enabled.ValueKind != JsonValueKind.False;
+        }
+        catch (JsonException)
+        {
+            return true;
+        }
     }
 
 

@@ -61,7 +61,7 @@
     <value>Área administrativa</value>
   </data>
   <data name="AdminDashboard" xml:space="preserve">
-    <value>Painel administrativo</value>
+    <value>Painel</value>
   </data>
   <data name="Administration" xml:space="preserve">
     <value>Administração</value>
@@ -1737,9 +1737,6 @@
   <data name="Theme" xml:space="preserve">
     <value>Tema</value>
   </data>
-  <data name="Timezone" xml:space="preserve">
-    <value>Fuso horário</value>
-  </data>
   <data name="TitleSuffix" xml:space="preserve">
     <value>Auth2Demo</value>
   </data>
@@ -1784,9 +1781,6 @@
   </data>
   <data name="UserId" xml:space="preserve">
     <value>ID do usuário</value>
-  </data>
-  <data name="UserName" xml:space="preserve">
-    <value>Nome de usuário</value>
   </data>
   <data name="Username" xml:space="preserve">
     <value>Nome de usuário</value>
@@ -2690,5 +2684,485 @@
   </data>
   <data name="LocalPasswordCreatedSuccessfully" xml:space="preserve">
     <value>Senha local criada com sucesso.</value>
+  </data>
+  <data name="AdminDirectory" xml:space="preserve">
+    <value>Diretório</value>
+  </data>
+  <data name="AdminOverview" xml:space="preserve">
+    <value>Visão geral</value>
+  </data>
+  <data name="AdminUsers" xml:space="preserve">
+    <value>Usuários</value>
+  </data>
+  <data name="AdminGroups" xml:space="preserve">
+    <value>Grupos</value>
+  </data>
+  <data name="AdminCompanies" xml:space="preserve">
+    <value>Empresas</value>
+  </data>
+  <data name="AdminPlatformRoles" xml:space="preserve">
+    <value>Funções da plataforma</value>
+  </data>
+  <data name="AdminPermissions" xml:space="preserve">
+    <value>Permissões</value>
+  </data>
+  <data name="AdminApplications" xml:space="preserve">
+    <value>Aplicações</value>
+  </data>
+  <data name="AdminAppRegistrations" xml:space="preserve">
+    <value>Registros de aplicações</value>
+  </data>
+  <data name="AdminEnterpriseApplications" xml:space="preserve">
+    <value>Aplicações empresariais</value>
+  </data>
+  <data name="AdminScopesClaims" xml:space="preserve">
+    <value>Escopos e claims</value>
+  </data>
+  <data name="AdminTokenExplorer" xml:space="preserve">
+    <value>Explorador de tokens</value>
+  </data>
+  <data name="AdminIdentityAuthentication" xml:space="preserve">
+    <value>Identidade e autenticação</value>
+  </data>
+  <data name="AdminIdentityProviders" xml:space="preserve">
+    <value>Provedores de identidade</value>
+  </data>
+  <data name="AdminMfa" xml:space="preserve">
+    <value>Autenticação multifator</value>
+  </data>
+  <data name="AdminPasskeys" xml:space="preserve">
+    <value>Passkeys</value>
+  </data>
+  <data name="AdminSecuritySettings" xml:space="preserve">
+    <value>Configurações de segurança</value>
+  </data>
+  <data name="AdminMonitoringAudit" xml:space="preserve">
+    <value>Monitoramento e auditoria</value>
+  </data>
+  <data name="AdminActiveSessions" xml:space="preserve">
+    <value>Sessões ativas</value>
+  </data>
+  <data name="AdminDevices" xml:space="preserve">
+    <value>Dispositivos</value>
+  </data>
+  <data name="AdminAuditLogs" xml:space="preserve">
+    <value>Logs de auditoria</value>
+  </data>
+  <data name="AdminApplicationAudit" xml:space="preserve">
+    <value>Auditoria de aplicações</value>
+  </data>
+  <data name="AdminSecretAudit" xml:space="preserve">
+    <value>Auditoria de secrets</value>
+  </data>
+  <data name="AdminExperience" xml:space="preserve">
+    <value>Experiência</value>
+  </data>
+  <data name="AdminBranding" xml:space="preserve">
+    <value>Identidade visual</value>
+  </data>
+  <data name="AdminEmailTemplates" xml:space="preserve">
+    <value>Modelos de e-mail</value>
+  </data>
+  <data name="AdminOpenUserPortal" xml:space="preserve">
+    <value>Abrir portal do usuário</value>
+  </data>
+  <data name="AdminPlatformHealth" xml:space="preserve">
+    <value>Saúde da plataforma</value>
+  </data>
+  <data name="AdminAuthorization" xml:space="preserve">
+    <value>Autorização</value>
+  </data>
+  <data name="AdminCustomization" xml:space="preserve">
+    <value>Personalização</value>
+  </data>
+  <data name="AdminNewCompany" xml:space="preserve">
+    <value>Nova empresa</value>
+  </data>
+  <data name="AdminCompany" xml:space="preserve">
+    <value>Empresa</value>
+  </data>
+  <data name="AdminDomain" xml:space="preserve">
+    <value>Domínio</value>
+  </data>
+  <data name="AdminLocation" xml:space="preserve">
+    <value>Localização</value>
+  </data>
+  <data name="AdminProviders" xml:space="preserve">
+    <value>Provedores</value>
+  </data>
+  <data name="AdminStatus" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="AdminActions" xml:space="preserve">
+    <value>Ações</value>
+  </data>
+  <data name="AdminEdit" xml:space="preserve">
+    <value>Editar</value>
+  </data>
+  <data name="AdminManage" xml:space="preserve">
+    <value>Gerenciar</value>
+  </data>
+  <data name="AdminActive" xml:space="preserve">
+    <value>Ativo</value>
+  </data>
+  <data name="AdminInactive" xml:space="preserve">
+    <value>Inativo</value>
+  </data>
+  <data name="AdminEnabled" xml:space="preserve">
+    <value>Habilitado</value>
+  </data>
+  <data name="AdminDisabled" xml:space="preserve">
+    <value>Desabilitado</value>
+  </data>
+  <data name="AdminCreate" xml:space="preserve">
+    <value>Criar</value>
+  </data>
+  <data name="AdminSave" xml:space="preserve">
+    <value>Salvar</value>
+  </data>
+  <data name="AdminCancel" xml:space="preserve">
+    <value>Cancelar</value>
+  </data>
+  <data name="AdminDelete" xml:space="preserve">
+    <value>Excluir</value>
+  </data>
+  <data name="AdminSearch" xml:space="preserve">
+    <value>Pesquisar</value>
+  </data>
+  <data name="AdminFilter" xml:space="preserve">
+    <value>Filtrar</value>
+  </data>
+  <data name="AdminClear" xml:space="preserve">
+    <value>Limpar</value>
+  </data>
+  <data name="AdminAll" xml:space="preserve">
+    <value>Todos</value>
+  </data>
+  <data name="AdminBack" xml:space="preserve">
+    <value>Voltar</value>
+  </data>
+  <data name="AdminName" xml:space="preserve">
+    <value>Nome</value>
+  </data>
+  <data name="AdminDescription" xml:space="preserve">
+    <value>Descrição</value>
+  </data>
+  <data name="AdminType" xml:space="preserve">
+    <value>Tipo</value>
+  </data>
+  <data name="AdminOrder" xml:space="preserve">
+    <value>Ordem</value>
+  </data>
+  <data name="AdminYes" xml:space="preserve">
+    <value>Sim</value>
+  </data>
+  <data name="AdminNo" xml:space="preserve">
+    <value>Não</value>
+  </data>
+  <data name="AdminSystem" xml:space="preserve">
+    <value>Sistema</value>
+  </data>
+  <data name="AdminCustom" xml:space="preserve">
+    <value>Personalizada</value>
+  </data>
+  <data name="AdminProtected" xml:space="preserve">
+    <value>Protegida</value>
+  </data>
+  <data name="AdminAllowed" xml:space="preserve">
+    <value>Permitido</value>
+  </data>
+  <data name="AdminAdd" xml:space="preserve">
+    <value>Adicionar</value>
+  </data>
+  <data name="AdminTenant" xml:space="preserve">
+    <value>Tenant</value>
+  </data>
+  <data name="AdminMembers" xml:space="preserve">
+    <value>Membros</value>
+  </data>
+  <data name="AdminAssignments" xml:space="preserve">
+    <value>Atribuições</value>
+  </data>
+  <data name="AdminDirectoryOverview" xml:space="preserve">
+    <value>Visão geral do diretório</value>
+  </data>
+  <data name="AdminBrowseUsers" xml:space="preserve">
+    <value>Consultar usuários</value>
+  </data>
+  <data name="AdminBrowseGroups" xml:space="preserve">
+    <value>Consultar grupos</value>
+  </data>
+  <data name="AdminCreateUser" xml:space="preserve">
+    <value>Criar usuário</value>
+  </data>
+  <data name="AdminTotalIdentities" xml:space="preserve">
+    <value>Total de identidades</value>
+  </data>
+  <data name="AdminActiveMemberships" xml:space="preserve">
+    <value>Vínculos ativos</value>
+  </data>
+  <data name="AdminSecurityGroups" xml:space="preserve">
+    <value>Grupos de segurança</value>
+  </data>
+  <data name="AdminWithoutActiveTenant" xml:space="preserve">
+    <value>Sem tenant ativo</value>
+  </data>
+  <data name="AdminTenantDirectory" xml:space="preserve">
+    <value>Diretório do tenant</value>
+  </data>
+  <data name="AdminCompanySettings" xml:space="preserve">
+    <value>Configurações da empresa</value>
+  </data>
+  <data name="AdminAddCompany" xml:space="preserve">
+    <value>Adicionar empresa</value>
+  </data>
+  <data name="AdminCreateFirstTenant" xml:space="preserve">
+    <value>Crie seu primeiro tenant</value>
+  </data>
+  <data name="AdminTenantUsers" xml:space="preserve">
+    <value>Usuários do tenant</value>
+  </data>
+  <data name="AdminAppAssignments" xml:space="preserve">
+    <value>Atribuições de aplicações</value>
+  </data>
+  <data name="AdminViewAll" xml:space="preserve">
+    <value>Ver todos</value>
+  </data>
+  <data name="AdminManageUsers" xml:space="preserve">
+    <value>Gerenciar usuários</value>
+  </data>
+  <data name="AdminManageGroups" xml:space="preserve">
+    <value>Gerenciar grupos</value>
+  </data>
+  <data name="AdminApplicationStatus" xml:space="preserve">
+    <value>Status da aplicação</value>
+  </data>
+  <data name="AdminEnableEnterpriseApplication" xml:space="preserve">
+    <value>Habilitar aplicação empresarial</value>
+  </data>
+  <data name="AdminOwnership" xml:space="preserve">
+    <value>Propriedade</value>
+  </data>
+  <data name="AdminOwnerCompany" xml:space="preserve">
+    <value>Empresa proprietária</value>
+  </data>
+  <data name="AdminTenantAccess" xml:space="preserve">
+    <value>Acesso por tenant</value>
+  </data>
+  <data name="AdminSelectAll" xml:space="preserve">
+    <value>Selecionar todos</value>
+  </data>
+  <data name="AdminSignInProviders" xml:space="preserve">
+    <value>Provedores de entrada</value>
+  </data>
+  <data name="AdminConfigurationSummary" xml:space="preserve">
+    <value>Resumo da configuração</value>
+  </data>
+  <data name="AdminRecommendedSetup" xml:space="preserve">
+    <value>Configuração recomendada</value>
+  </data>
+  <data name="AdminSaveConfiguration" xml:space="preserve">
+    <value>Salvar configuração</value>
+  </data>
+  <data name="AdminUsersAndGroups" xml:space="preserve">
+    <value>Usuários e grupos</value>
+  </data>
+  <data name="AdminBackToApplications" xml:space="preserve">
+    <value>Voltar para aplicações</value>
+  </data>
+  <data name="AdminRequireUserAssignment" xml:space="preserve">
+    <value>Exigir atribuição de usuário</value>
+  </data>
+  <data name="AdminAdministrativeNotes" xml:space="preserve">
+    <value>Observações administrativas</value>
+  </data>
+  <data name="AdminOptionalGovernanceNote" xml:space="preserve">
+    <value>Justificativa de acesso ou observação de governança opcional</value>
+  </data>
+  <data name="AdminPasswordPolicy" xml:space="preserve">
+    <value>Política de senha</value>
+  </data>
+  <data name="AdminMinimumPasswordLength" xml:space="preserve">
+    <value>Tamanho mínimo da senha</value>
+  </data>
+  <data name="AdminLockoutAttempts" xml:space="preserve">
+    <value>Tentativas antes do bloqueio</value>
+  </data>
+  <data name="AdminLockoutMinutes" xml:space="preserve">
+    <value>Bloqueio em minutos</value>
+  </data>
+  <data name="AdminAccessTokenMinutes" xml:space="preserve">
+    <value>Access token em minutos</value>
+  </data>
+  <data name="AdminRefreshTokenDays" xml:space="preserve">
+    <value>Refresh token em dias</value>
+  </data>
+  <data name="AdminRequiredRequirements" xml:space="preserve">
+    <value>Requisitos obrigatórios</value>
+  </data>
+  <data name="AdminRequireNumber" xml:space="preserve">
+    <value>Exigir número</value>
+  </data>
+  <data name="AdminRequireUppercase" xml:space="preserve">
+    <value>Exigir maiúscula</value>
+  </data>
+  <data name="AdminRequireLowercase" xml:space="preserve">
+    <value>Exigir minúscula</value>
+  </data>
+  <data name="AdminRequireSpecialCharacter" xml:space="preserve">
+    <value>Exigir caractere especial</value>
+  </data>
+  <data name="AdminRequireMfaAdmins" xml:space="preserve">
+    <value>Exigir MFA para administradores</value>
+  </data>
+  <data name="AdminSaveSettings" xml:space="preserve">
+    <value>Salvar configurações</value>
+  </data>
+  <data name="AdminPreview" xml:space="preserve">
+    <value>Pré-visualização</value>
+  </data>
+  <data name="AdminInternalName" xml:space="preserve">
+    <value>Nome interno</value>
+  </data>
+  <data name="AdminDisplayName" xml:space="preserve">
+    <value>Nome de exibição</value>
+  </data>
+  <data name="AdminPrimaryDomain" xml:space="preserve">
+    <value>Domínio principal</value>
+  </data>
+  <data name="AdminCountry" xml:space="preserve">
+    <value>País</value>
+  </data>
+  <data name="AdminCulture" xml:space="preserve">
+    <value>Cultura</value>
+  </data>
+  <data name="AdminTimeZone" xml:space="preserve">
+    <value>Fuso horário</value>
+  </data>
+  <data name="AdminCompanyActive" xml:space="preserve">
+    <value>Empresa ativa</value>
+  </data>
+  <data name="AdminDefaultCompany" xml:space="preserve">
+    <value>Usar como empresa padrão para novos usuários sem tenant explícito</value>
+  </data>
+  <data name="AdminBackToCompanies" xml:space="preserve">
+    <value>Voltar para empresas</value>
+  </data>
+  <data name="AdminUsersGroups" xml:space="preserve">
+    <value>Usuários e grupos</value>
+  </data>
+  <data name="AdminGlobalProvider" xml:space="preserve">
+    <value>Global - disponível para todas as empresas</value>
+  </data>
+  <data name="AdminCompanyTenant" xml:space="preserve">
+    <value>Empresa / Tenant</value>
+  </data>
+  <data name="AdminNoResults" xml:space="preserve">
+    <value>Nenhum resultado encontrado</value>
+  </data>
+  <data name="AdminNoData" xml:space="preserve">
+    <value>Ainda não há dados disponíveis.</value>
+  </data>
+  <data name="AdminEnable" xml:space="preserve">
+    <value>Habilitar</value>
+  </data>
+  <data name="AdminDisable" xml:space="preserve">
+    <value>Desabilitar</value>
+  </data>
+  <data name="AdminCategory" xml:space="preserve">
+    <value>Categoria</value>
+  </data>
+  <data name="AdminDisplay" xml:space="preserve">
+    <value>Exibição</value>
+  </data>
+  <data name="AdminPermissionMatrix" xml:space="preserve">
+    <value>Matriz de permissões</value>
+  </data>
+  <data name="AdminPermissionMatrixHelp" xml:space="preserve">
+    <value>Conceda ou revogue permissões da plataforma para cada função administrativa.</value>
+  </data>
+  <data name="AdminCreatePermission" xml:space="preserve">
+    <value>Criar permissão</value>
+  </data>
+  <data name="AdminCreateRole" xml:space="preserve">
+    <value>Criar função</value>
+  </data>
+  <data name="AdminRoleDirectory" xml:space="preserve">
+    <value>Diretório de funções</value>
+  </data>
+  <data name="AdminRoleDirectoryHelp" xml:space="preserve">
+    <value>Revise as funções administrativas internas e personalizadas.</value>
+  </data>
+  <data name="AdminProviderDirectory" xml:space="preserve">
+    <value>Diretório de provedores</value>
+  </data>
+  <data name="AdminProviderDirectoryHelp" xml:space="preserve">
+    <value>Revise o tenant, as credenciais e a disponibilidade de cada provedor de entrada.</value>
+  </data>
+  <data name="AdminGlobal" xml:space="preserve">
+    <value>Global</value>
+  </data>
+  <data name="AuthorizationAccessDeniedTitle" xml:space="preserve">
+    <value>Acesso negado</value>
+  </data>
+  <data name="AuthorizationAccessDeniedKicker" xml:space="preserve">
+    <value>Acesso à aplicação</value>
+  </data>
+  <data name="AuthorizationAccessDeniedHeading" xml:space="preserve">
+    <value>Você não possui acesso a esta aplicação</value>
+  </data>
+  <data name="AuthorizationAccessDeniedSubtitle" xml:space="preserve">
+    <value>Sua identidade foi validada, mas a política de acesso da aplicação não autorizou esta entrada.</value>
+  </data>
+  <data name="AuthorizationAccessDeniedReasonLabel" xml:space="preserve">
+    <value>Motivo</value>
+  </data>
+  <data name="AuthorizationAccessDeniedNextStepsTitle" xml:space="preserve">
+    <value>O que você pode fazer</value>
+  </data>
+  <data name="AuthorizationAccessDeniedAssignmentStep" xml:space="preserve">
+    <value>Solicite a um administrador a atribuição do seu usuário ou de um dos seus grupos a esta aplicação empresarial.</value>
+  </data>
+  <data name="AuthorizationAccessDeniedDifferentAccountStep" xml:space="preserve">
+    <value>Tente outra conta caso esperasse usar uma organização ou tenant diferente.</value>
+  </data>
+  <data name="AuthorizationAccessDeniedSupportStep" xml:space="preserve">
+    <value>Informe o ID de correlação ao suporte para que a negativa seja rastreada com segurança.</value>
+  </data>
+  <data name="AuthorizationAccessDeniedReturnToApplication" xml:space="preserve">
+    <value>Voltar para a aplicação</value>
+  </data>
+  <data name="AuthorizationAccessDeniedUseAnotherAccount" xml:space="preserve">
+    <value>Usar outra conta</value>
+  </data>
+  <data name="AuthorizationAccessDeniedDetailsTitle" xml:space="preserve">
+    <value>Detalhes da solicitação</value>
+  </data>
+  <data name="AuthorizationAccessDeniedTenantLabel" xml:space="preserve">
+    <value>Tenant de identidade</value>
+  </data>
+  <data name="AuthorizationAccessDeniedCorrelationId" xml:space="preserve">
+    <value>ID de correlação</value>
+  </data>
+  <data name="AuthorizationAccessDeniedProtocolNote" xml:space="preserve">
+    <value>O servidor de autorização retornará à aplicação cliente uma resposta OAuth 2.0 padrão do tipo access_denied.</value>
+  </data>
+  <data name="AuthorizationAccessDeniedDefaultReason" xml:space="preserve">
+    <value>O acesso a esta aplicação foi negado pela política configurada.</value>
+  </data>
+  <data name="AuthorizationMissingRequiredClaimFormat" xml:space="preserve">
+    <value>Sua conta não contém a claim obrigatória: {0}.</value>
+  </data>
+  <data name="AuthorizationApplicationUnavailableReason" xml:space="preserve">
+    <value>Esta aplicação não está mais disponível.</value>
+  </data>
+  <data name="AuthorizationApplicationDisabledReason" xml:space="preserve">
+    <value>Esta aplicação empresarial está desabilitada. Entre em contato com um administrador para habilitá-la.</value>
+  </data>
+  <data name="AuthorizationTenantNotAllowedReason" xml:space="preserve">
+    <value>Sua organização não está autorizada a usar esta aplicação.</value>
+  </data>
+  <data name="AuthorizationAssignmentRequiredReason" xml:space="preserve">
+    <value>Sua conta é válida, mas ainda não foi atribuída a esta aplicação.</value>
   </data>
 </root>

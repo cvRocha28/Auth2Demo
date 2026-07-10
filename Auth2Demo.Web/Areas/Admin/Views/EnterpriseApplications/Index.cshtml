@@ -1,0 +1,140 @@
+@model IReadOnlyList<Auth2Demo.Application.Services.Admin.EnterpriseApplicationListItemData>
+@{
+    ViewData["Title"] = "Enterprise applications";
+    var enabledCount = Model.Count(x => x.IsEnabled);
+    var configuredCount = Model.Count(x => x.AllowedCompanyCount > 0 || x.AllowedProviderCount > 0);
+    var restrictedCount = Model.Count(x => x.UserAssignmentRequiredCount > 0);
+}
+
+@section AdminHeader {
+    <span class="admin-page-kicker"><i class="bi bi-diagram-3"></i> MULTI-TENANT ACCESS</span>
+    <h1>Enterprise applications</h1>
+    <p>Control which companies can use each application, which identity providers appear during sign-in, and where explicit user assignment is required.</p>
+    <div class="admin-page-meta">
+        <span><i class="bi bi-app-indicator"></i> @Model.Count application(s)</span>
+        <span><i class="bi bi-check-circle"></i> @enabledCount enabled</span>
+        <span><i class="bi bi-shield-check"></i> @configuredCount configured</span>
+    </div>
+}
+
+<div class="enterprise-stat-grid">
+    <article class="enterprise-stat-card">
+        <div class="enterprise-stat-icon"><i class="bi bi-grid-1x2"></i></div>
+        <div><span>Total applications</span><strong>@Model.Count</strong><small>Registered OIDC clients</small></div>
+    </article>
+    <article class="enterprise-stat-card">
+        <div class="enterprise-stat-icon"><i class="bi bi-toggle-on"></i></div>
+        <div><span>Enabled</span><strong>@enabledCount</strong><small>Available for authentication</small></div>
+    </article>
+    <article class="enterprise-stat-card">
+        <div class="enterprise-stat-icon"><i class="bi bi-building-check"></i></div>
+        <div><span>Configured</span><strong>@configuredCount</strong><small>With tenant or provider policy</small></div>
+    </article>
+    <article class="enterprise-stat-card">
+        <div class="enterprise-stat-icon"><i class="bi bi-person-lock"></i></div>
+        <div><span>Restricted</span><strong>@restrictedCount</strong><small>Explicit assignment required</small></div>
+    </article>
+</div>
+
+<section class="admin-card">
+    <div class="admin-card-header enterprise-list-toolbar">
+        <div>
+            <strong>Application directory</strong>
+            <span>Select an application to manage tenant access and sign-in providers.</span>
+        </div>
+        <div class="enterprise-search-box">
+            <i class="bi bi-search"></i>
+            <input type="search" id="enterpriseApplicationSearch" placeholder="Search by name, client ID or company" autocomplete="off" />
+        </div>
+    </div>
+
+    @if (Model.Count == 0)
+    {
+        <div class="enterprise-empty-state">
+            <i class="bi bi-window-stack"></i>
+            <strong>No applications found</strong>
+            <span>Create an application in Clients before configuring enterprise access.</span>
+            <a class="btn btn-outline" asp-controller="Clients" asp-action="Index">Open clients</a>
+        </div>
+    }
+    else
+    {
+        <div class="admin-table-wrap">
+            <table class="table align-middle enterprise-app-table" id="enterpriseApplicationTable">
+                <thead>
+                    <tr>
+                        <th>Application</th>
+                        <th>Owner tenant</th>
+                        <th>Access policy</th>
+                        <th>Providers</th>
+                        <th>Status</th>
+                        <th class="text-end">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var app in Model)
+                {
+                    var searchText = $"{app.DisplayName} {app.ClientId} {app.OwnerCompanyName}".ToLowerInvariant();
+                    <tr data-enterprise-row data-search="@searchText">
+                        <td>
+                            <div class="enterprise-app-identity">
+                                <span class="enterprise-app-avatar">@((app.DisplayName.FirstOrDefault()).ToString().ToUpperInvariant())</span>
+                                <div>
+                                    <strong>@app.DisplayName</strong>
+                                    <code>@app.ClientId</code>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            @if (string.IsNullOrWhiteSpace(app.OwnerCompanyName))
+                            {
+                                <span class="enterprise-policy-warning"><i class="bi bi-exclamation-triangle"></i> Not assigned</span>
+                            }
+                            else
+                            {
+                                <span class="enterprise-owner"><i class="bi bi-building"></i> @app.OwnerCompanyName</span>
+                            }
+                        </td>
+                        <td>
+                            <div class="enterprise-count-stack">
+                                <span><strong>@app.AllowedCompanyCount</strong> tenant(s)</span>
+                                @if (app.UserAssignmentRequiredCount > 0)
+                                {
+                                    <small><i class="bi bi-person-check"></i> @app.UserAssignmentRequiredCount require assignment</small>
+                                }
+                                else
+                                {
+                                    <small>Tenant-wide access</small>
+                                }
+                            </div>
+                        </td>
+                        <td>
+                            <span class="enterprise-provider-count"><i class="bi bi-key"></i> @app.AllowedProviderCount selected</span>
+                        </td>
+                        <td>
+                            <span class="status @(app.IsEnabled ? "success" : "muted")">
+                                <i class="bi @(app.IsEnabled ? "bi-check-circle" : "bi-pause-circle")"></i>
+                                @(app.IsEnabled ? "Enabled" : "Disabled")
+                            </span>
+                        </td>
+                        <td class="text-end">
+                            <a class="btn btn-sm btn-outline enterprise-configure-button" asp-action="Edit" asp-route-id="@app.ApplicationId">
+                                <i class="bi bi-sliders"></i> Configure
+                            </a>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+        <div class="enterprise-no-results" id="enterpriseNoResults" hidden>
+            <i class="bi bi-search"></i>
+            <strong>No matching applications</strong>
+            <span>Try a different name, client ID or owner company.</span>
+        </div>
+    }
+</section>
+
+@section Scripts {
+    <script src="~/js/pages/enterpriseapplications-index.js" asp-append-version="true" defer></script>
+}

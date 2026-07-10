@@ -45,10 +45,31 @@ public sealed class AccountController : Controller
         _brandingResolver = brandingResolver;
     }
 
+
+    private static string? TryGetClientIdFromReturnUrl(string? returnUrl)
+    {
+        if (string.IsNullOrWhiteSpace(returnUrl)) return null;
+
+        try
+        {
+            var uri = Uri.TryCreate(returnUrl, UriKind.Absolute, out var absolute)
+                ? absolute
+                : new Uri("https://localhost" + (returnUrl.StartsWith('/') ? returnUrl : "/" + returnUrl));
+
+            var query = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
+            return query.TryGetValue("client_id", out var values) ? values.FirstOrDefault() : null;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
     private async Task<IReadOnlyList<ExternalProviderViewModel>> GetExternalProvidersAsync(string? returnUrl)
     {
         var branding = await _brandingResolver.ResolveAsync(HttpContext);
-        var providers = await _security.GetEnabledExternalProvidersAsync();
+        var clientId = TryGetClientIdFromReturnUrl(returnUrl);
+        var providers = await _security.GetEnabledExternalProvidersForApplicationAsync(clientId);
 
         if (branding.RestrictExternalProviders)
         {
@@ -327,7 +348,8 @@ public sealed class AccountController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> ExternalLogin(string provider, string? returnUrl = null)
     {
-        if (!await _security.IsProviderEnabledAsync(provider))
+        var clientId = TryGetClientIdFromReturnUrl(returnUrl);
+        if (!await _security.IsProviderEnabledForApplicationAsync(provider, clientId))
         {
             TempData["Error"] = _localizer["ExternalProviderDisabledOrNotRegistered"].Value;
             return RedirectToAction(nameof(Login), new { returnUrl });
@@ -384,7 +406,7 @@ public sealed class AccountController : Controller
                     return View(nameof(Login), await BuildLoginViewModelAsync(returnUrl));
                 }
 
-                UpdateUserFromExternalProvider(existingUser, info.Principal);
+                UpdateUserFromExternalProvider(existingUser, info.Principal, HttpContext);
                 existingUser.EmailConfirmed = true;
                 existingUser.LastLoginAt = DateTimeOffset.UtcNow;
                 await _userManager.UpdateAsync(existingUser);
@@ -418,6 +440,7 @@ public sealed class AccountController : Controller
                 AvatarUrl = GetExternalAvatarUrl(info.Principal),
                 Status = UserStatus.Active
             };
+            UpdateUserFromExternalProvider(user, info.Principal, HttpContext);
 
             var createResult = await _userManager.CreateAsync(user);
             if (!createResult.Succeeded)
@@ -440,7 +463,7 @@ public sealed class AccountController : Controller
             return View(nameof(Login), await BuildLoginViewModelAsync(returnUrl));
         }
 
-        UpdateUserFromExternalProvider(user, info.Principal);
+        UpdateUserFromExternalProvider(user, info.Principal, HttpContext);
         user.EmailConfirmed = true;
         user.LastLoginAt = DateTimeOffset.UtcNow;
         await _userManager.UpdateAsync(user);
@@ -466,6 +489,12 @@ public sealed class AccountController : Controller
 
         if (result.Succeeded)
         {
+            var createdUser = result.UserId.HasValue ? await _userManager.FindByIdAsync(result.UserId.Value.ToString()) : null;
+            if (createdUser is not null)
+            {
+                ApplyRequestLocalization(createdUser, HttpContext);
+                await _userManager.UpdateAsync(createdUser);
+            }
             await RecordAuditAsync("Register", "Identity", "Success", result.UserId, result.Email, _localizer["AuditUserCreatedNewAccount"].Value, null);
             return View("EmailConfirmationSent", new EmailConfirmationSentViewModel
             {
@@ -620,9 +649,15 @@ public sealed class AccountController : Controller
     [Authorize]
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Logout()
+    public async Task<IActionResult> Logout(string? returnUrl = null)
     {
         await _signInManager.SignOutAsync();
+
+        if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
+        {
+            return RedirectToAction(nameof(Login), new { returnUrl });
+        }
+
         return RedirectToAction("Index", "Home");
     }
 
@@ -687,7 +722,7 @@ public sealed class AccountController : Controller
         return true;
     }
 
-    private static void UpdateUserFromExternalProvider(ApplicationUser user, ClaimsPrincipal principal)
+    private static void UpdateUserFromExternalProvider(ApplicationUser user, ClaimsPrincipal principal, HttpContext httpContext)
     {
         var displayName = GetExternalDisplayName(principal, user.Email ?? user.UserName ?? user.DisplayName);
         if (!string.IsNullOrWhiteSpace(displayName))
@@ -701,7 +736,79 @@ public sealed class AccountController : Controller
             user.AvatarUrl = avatarUrl;
         }
 
+        var locale = GetExternalLocale(principal) ?? GetBrowserCulture(httpContext);
+        if (!string.IsNullOrWhiteSpace(locale))
+        {
+            user.Locale = locale;
+            user.Culture = locale;
+            user.Language = locale.Split('-', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? locale;
+        }
+
+        var country = GetExternalCountry(principal) ?? GetCountryFromCulture(locale);
+        if (!string.IsNullOrWhiteSpace(country))
+        {
+            user.Country = country.ToUpperInvariant();
+        }
+
+        if (string.IsNullOrWhiteSpace(user.TimeZone))
+        {
+            user.TimeZone = string.Equals(user.Country, "BR", StringComparison.OrdinalIgnoreCase)
+                ? "E. South America Standard Time"
+                : "UTC";
+        }
+
         user.UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
+
+    private static void ApplyRequestLocalization(ApplicationUser user, HttpContext httpContext)
+    {
+        var culture = GetBrowserCulture(httpContext);
+        if (!string.IsNullOrWhiteSpace(culture))
+        {
+            user.Locale = culture;
+            user.Culture = culture;
+            user.Language = culture.Split('-', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? culture;
+            user.Country = GetCountryFromCulture(culture);
+        }
+
+        user.TimeZone ??= string.Equals(user.Country, "BR", StringComparison.OrdinalIgnoreCase)
+            ? "E. South America Standard Time"
+            : "UTC";
+        user.UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
+    private static string? GetExternalLocale(ClaimsPrincipal principal)
+    {
+        return principal.FindFirstValue("locale")
+               ?? principal.FindFirstValue("urn:google:locale")
+               ?? principal.FindFirstValue("preferred_language")
+               ?? principal.FindFirstValue("ui_locales")
+               ?? principal.FindFirstValue("lang");
+    }
+
+    private static string? GetExternalCountry(ClaimsPrincipal principal)
+    {
+        return principal.FindFirstValue("country")
+               ?? principal.FindFirstValue("ctry")
+               ?? principal.FindFirstValue("usageLocation")
+               ?? principal.FindFirstValue("urn:microsoft:country");
+    }
+
+    private static string? GetBrowserCulture(HttpContext httpContext)
+    {
+        var header = httpContext.Request.Headers.AcceptLanguage.ToString();
+        if (string.IsNullOrWhiteSpace(header)) return null;
+        return header.Split(',', StringSplitOptions.RemoveEmptyEntries)
+            .Select(x => x.Split(';')[0].Trim())
+            .FirstOrDefault(x => x.Length >= 2);
+    }
+
+    private static string? GetCountryFromCulture(string? culture)
+    {
+        if (string.IsNullOrWhiteSpace(culture)) return null;
+        var parts = culture.Split('-', StringSplitOptions.RemoveEmptyEntries);
+        return parts.Length >= 2 ? parts[^1].ToUpperInvariant() : null;
     }
 
     private static string GetExternalDisplayName(ClaimsPrincipal principal, string fallback)

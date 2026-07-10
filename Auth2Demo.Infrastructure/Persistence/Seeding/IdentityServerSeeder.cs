@@ -15,13 +15,37 @@ public static class IdentityServerSeeder
 {
     public static async Task SeedAsync(IServiceProvider services, IConfiguration configuration)
     {
+        var db = services.GetRequiredService<ApplicationDbContext>();
+        await SeedCompaniesAsync(db);
         await SeedRolesAsync(services.GetRequiredService<RoleManager<ApplicationRole>>());
         await SeedAdminAsync(services.GetRequiredService<UserManager<ApplicationUser>>());
         await SeedScopesAsync(services.GetRequiredService<IOpenIddictScopeManager>());
         await SeedClientsAsync(services.GetRequiredService<IOpenIddictApplicationManager>());
-        var db = services.GetRequiredService<ApplicationDbContext>();
         await SeedIdentityProvidersAsync(db);
         await SeedPortalDefaultsAsync(db);
+    }
+
+
+    private static async Task SeedCompaniesAsync(ApplicationDbContext db)
+    {
+        if (await db.Companies.AnyAsync())
+        {
+            return;
+        }
+
+        var company = new Company("auth2demo", "Auth2Demo");
+        company.Update(
+            displayName: "Auth2Demo",
+            description: "Empresa padrão do ambiente de demonstração.",
+            domainHint: "auth2demo.local",
+            country: "BR",
+            culture: "pt-BR",
+            timeZone: "E. South America Standard Time",
+            isEnabled: true,
+            isDefault: true);
+
+        db.Companies.Add(company);
+        await db.SaveChangesAsync();
     }
 
     private static async Task SeedRolesAsync(RoleManager<ApplicationRole> roleManager)
@@ -122,6 +146,7 @@ public static class IdentityServerSeeder
                 return;
             }
 
+            var defaultCompanyId = await db.Companies.Where(x => x.IsDefault).Select(x => (Guid?)x.Id).FirstOrDefaultAsync();
             provider = new IdentityProvider(name, displayName, scheme, kind);
             provider.MarkAsSystemProvider();
             provider.Update(
@@ -135,7 +160,8 @@ public static class IdentityServerSeeder
                 authority: null,
                 callbackPath: callbackPath,
                 isEnabled: false,
-                sortOrder: sortOrder);
+                sortOrder: sortOrder,
+                companyId: defaultCompanyId);
 
             db.IdentityProviders.Add(provider);
         }

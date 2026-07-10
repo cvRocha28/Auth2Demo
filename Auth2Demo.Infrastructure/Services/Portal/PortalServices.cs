@@ -35,11 +35,21 @@ public sealed class ExternalProviderService : IExternalProviderService
 
     public async Task<IReadOnlyList<ExternalProviderData>> GetEnabledForLoginAsync()
     {
-        var configuredSchemes = (await _signInManager.GetExternalAuthenticationSchemesAsync())
+        var configuredSchemes = await GetConfiguredSchemesAsync();
+        return await _providers.GetEnabledForLoginAsync(configuredSchemes);
+    }
+
+    public async Task<IReadOnlyList<ExternalProviderData>> GetEnabledForApplicationAsync(string? clientId)
+    {
+        var configuredSchemes = await GetConfiguredSchemesAsync();
+        return await _providers.GetEnabledForApplicationAsync(clientId, configuredSchemes);
+    }
+
+    private async Task<ISet<string>> GetConfiguredSchemesAsync()
+    {
+        return (await _signInManager.GetExternalAuthenticationSchemesAsync())
             .Select(x => x.Name)
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
-
-        return await _providers.GetEnabledForLoginAsync(configuredSchemes);
     }
 }
 
@@ -104,7 +114,9 @@ public sealed class PerfilService : IPerfilService
 public interface IAccountSecurityService
 {
     Task<IReadOnlyList<ExternalProviderData>> GetEnabledExternalProvidersAsync();
+    Task<IReadOnlyList<ExternalProviderData>> GetEnabledExternalProvidersForApplicationAsync(string? clientId);
     Task<bool> IsProviderEnabledAsync(string provider);
+    Task<bool> IsProviderEnabledForApplicationAsync(string provider, string? clientId);
     Task UpsertMfaMethodAsync(ApplicationUser user, string method, string displayName, bool enabled, bool isDefault, DateTimeOffset? lastUsedAt);
     Task UpdateMfaMethodStatusAsync(Guid userId, string method, bool enabled);
     Task RecordLoginAsync(ApplicationUser user, string provider, string outcome, string description, string? ipAddress, string? userAgent);
@@ -132,9 +144,19 @@ public sealed class AccountSecurityService : IAccountSecurityService
         return _externalProviders.GetEnabledForLoginAsync();
     }
 
+    public Task<IReadOnlyList<ExternalProviderData>> GetEnabledExternalProvidersForApplicationAsync(string? clientId)
+    {
+        return _externalProviders.GetEnabledForApplicationAsync(clientId);
+    }
+
     public Task<bool> IsProviderEnabledAsync(string provider)
     {
         return _providerRepository.IsProviderEnabledAsync(provider);
+    }
+
+    public Task<bool> IsProviderEnabledForApplicationAsync(string provider, string? clientId)
+    {
+        return _providerRepository.IsProviderEnabledForApplicationAsync(provider, clientId);
     }
 
     public Task UpsertMfaMethodAsync(

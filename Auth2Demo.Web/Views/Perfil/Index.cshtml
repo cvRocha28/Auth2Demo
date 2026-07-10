@@ -7,6 +7,7 @@
     var mfaClass = Model.HasMfa ? "is-ok" : "is-warning";
     var externalClass = Model.HasExternalLogin ? "is-ok" : "is-warning";
     var trustedDevices = Model.Devices.Count(x => x.IsTrusted);
+    var passwordPolicy = Model.PasswordPolicy;
 }
 
 <div class="profile-page-shell">
@@ -179,7 +180,42 @@
                     </div>
                 </div>
 
-                <form asp-controller="Perfil" asp-action="AlterarSenha" method="post" class="profile-password-panel" autocomplete="off">
+                <div class="profile-password-policy" aria-label="Política de senha ativa">
+                    <div class="profile-password-policy-title">
+                        <i class="bi bi-shield-check" aria-hidden="true"></i>
+                        <div>
+                            <strong>Política de senha ativa</strong>
+                            <span>Estas regras são definidas em Security Settings e validadas também no servidor.</span>
+                        </div>
+                    </div>
+                    <ul id="profile-password-rules" class="profile-password-rules">
+                        <li data-password-rule="length"><i class="bi bi-circle" aria-hidden="true"></i> Mínimo de @passwordPolicy.RequiredLength caracteres</li>
+                        @if (passwordPolicy.RequireUppercase)
+                        {
+                            <li data-password-rule="uppercase"><i class="bi bi-circle" aria-hidden="true"></i> Pelo menos uma letra maiúscula</li>
+                        }
+                        @if (passwordPolicy.RequireLowercase)
+                        {
+                            <li data-password-rule="lowercase"><i class="bi bi-circle" aria-hidden="true"></i> Pelo menos uma letra minúscula</li>
+                        }
+                        @if (passwordPolicy.RequireDigit)
+                        {
+                            <li data-password-rule="digit"><i class="bi bi-circle" aria-hidden="true"></i> Pelo menos um número</li>
+                        }
+                        @if (passwordPolicy.RequireNonAlphanumeric)
+                        {
+                            <li data-password-rule="special"><i class="bi bi-circle" aria-hidden="true"></i> Pelo menos um caractere especial</li>
+                        }
+                        <li data-password-rule="confirmation"><i class="bi bi-circle" aria-hidden="true"></i> Confirmação igual à nova senha</li>
+                    </ul>
+                </div>
+
+                <form asp-controller="Perfil" asp-action="AlterarSenha" method="post" class="profile-password-panel" autocomplete="off"
+                      data-required-length="@passwordPolicy.RequiredLength"
+                      data-require-uppercase="@passwordPolicy.RequireUppercase.ToString().ToLowerInvariant()"
+                      data-require-lowercase="@passwordPolicy.RequireLowercase.ToString().ToLowerInvariant()"
+                      data-require-digit="@passwordPolicy.RequireDigit.ToString().ToLowerInvariant()"
+                      data-require-special="@passwordPolicy.RequireNonAlphanumeric.ToString().ToLowerInvariant()">
                     @Html.AntiForgeryToken()
                     <div class="profile-password-grid">
                         @if (Model.HasLocalPassword)
@@ -191,12 +227,12 @@
                         }
                         <div class="profile-field-block">
                             <label for="newPassword">@T["NewPassword"]</label>
-                            <input id="newPassword" name="newPassword" type="password" autocomplete="new-password" minlength="10" required />
-                            <span class="hint">@T["PasswordPolicyHint"]</span>
+                            <input id="newPassword" name="newPassword" type="password" autocomplete="new-password" minlength="@passwordPolicy.RequiredLength" required />
+                            <span class="hint">Use uma senha exclusiva para esta conta. A validação segue a política administrativa exibida acima.</span>
                         </div>
                         <div class="profile-field-block">
                             <label for="confirmPassword">@T["ConfirmPassword"]</label>
-                            <input id="confirmPassword" name="confirmPassword" type="password" autocomplete="new-password" minlength="10" required />
+                            <input id="confirmPassword" name="confirmPassword" type="password" autocomplete="new-password" minlength="@passwordPolicy.RequiredLength" required />
                         </div>
                     </div>
                     <div class="profile-password-actions">
@@ -307,3 +343,8 @@
         </main>
     </div>
 </div>
+
+
+@section Scripts {
+    <script src="~/js/pages/perfil-index.js" asp-append-version="true" defer></script>
+}

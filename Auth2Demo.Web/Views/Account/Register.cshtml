@@ -1,9 +1,14 @@
 @using Auth2Demo.Web.Services.Branding
+@using Microsoft.EntityFrameworkCore
 @inject IBrandingResolver BrandingResolver
+@inject Auth2Demo.Infrastructure.Persistence.ApplicationDbContext DbContext
 @model RegisterViewModel
 @{
     ViewData["Title"] = T["CreateAccount"].Value;
     var branding = await BrandingResolver.ResolveAsync(Context);
+    var security = await DbContext.SecuritySettings.AsNoTracking().FirstOrDefaultAsync();
+    var requiredLength = security?.PasswordRequiredLength ?? 8;
+    var passwordHint = $"Minimum {requiredLength} characters";
 }
 <div class="auth-card form-card auth-tenant-card">
     <div class="auth-header auth-tenant-header">
@@ -36,12 +41,12 @@
         </div>
         <div class="form-row">
             <label asp-for="Password">@T["Password"]</label>
-            <div class="input-wrap"><span class="input-icon"><i class="bi bi-key" aria-hidden="true"></i></span><input class="with-icon" asp-for="Password" placeholder='@T["TextMinimo10Caracteres"].Value' autocomplete="new-password" /></div>
+            <div class="input-wrap"><span class="input-icon"><i class="bi bi-key" aria-hidden="true"></i></span><input class="with-icon" asp-for="Password" placeholder="@passwordHint" minlength="@requiredLength" autocomplete="new-password" /></div>
             <span asp-validation-for="Password"></span>
         </div>
         <div class="form-row">
             <label asp-for="ConfirmPassword">@T["ConfirmarSenha"]</label>
-            <div class="input-wrap"><span class="input-icon"><i class="bi bi-key" aria-hidden="true"></i></span><input class="with-icon" asp-for="ConfirmPassword" placeholder='@T["RepitaASenha"].Value' autocomplete="new-password" /></div>
+            <div class="input-wrap"><span class="input-icon"><i class="bi bi-key" aria-hidden="true"></i></span><input class="with-icon" asp-for="ConfirmPassword" placeholder='@T["RepitaASenha"].Value' minlength="@requiredLength" autocomplete="new-password" /></div>
             <span asp-validation-for="ConfirmPassword"></span>
         </div>
         <button class="btn btn-block" type="submit">@T["CreateAccount"]</button>
