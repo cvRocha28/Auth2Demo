@@ -215,7 +215,7 @@
                                     <td class="table-actions">
                                         @if (clientSecret.IsActive)
                                         {
-                                            <form method="post" asp-action="RevokeSecret" asp-route-clientId="@Model.ClientId" asp-route-secretId="@clientSecret.Id" onsubmit="return confirm('@T["ConfirmRevokeSecret"]');">
+                                            <form method="post" asp-action="RevokeSecret" asp-route-clientId="@Model.ClientId" asp-route-secretId="@clientSecret.Id" data-confirm="@T["ConfirmRevokeSecret"]">
                                                 @Html.AntiForgeryToken()
                                                 <button class="btn ghost danger-text" type="submit">@T["Revoke"]</button>
                                             </form>
@@ -358,7 +358,7 @@
                 <h2>@T["DeleteClient"]</h2>
                 <p>@T["DeleteClientHelp"]</p>
             </div>
-            <form method="post" asp-action="Delete" asp-route-clientId="@Model.ClientId" onsubmit="return confirm('@T["ConfirmDeleteClient"]');">
+            <form method="post" asp-action="Delete" asp-route-clientId="@Model.ClientId" data-confirm="@T["ConfirmDeleteClient"]">
                 @Html.AntiForgeryToken()
                 <button class="danger" type="submit">@T["DeleteClient"]</button>
             </form>
@@ -367,21 +367,5 @@
 </div>
 
 @section Scripts {
-    <script>
-        document.querySelectorAll('[data-copy]').forEach(button => {
-            button.addEventListener('click', async () => {
-                const value = button.getAttribute('data-copy');
-                if (!value) return;
-
-                try {
-                    await navigator.clipboard.writeText(value);
-                    const previous = button.innerHTML;
-                    button.innerHTML = '<i class="bi bi-check-lg" aria-hidden="true"></i> @T["Copied"]';
-                    setTimeout(() => button.innerHTML = previous, 1200);
-                } catch {
-                    window.prompt('@T["CopyValuePrompt"]', value);
-                }
-            });
-        });
-    </script>
+    <script src="~/js/pages/clients-details.js" asp-append-version="true" defer></script>
 }

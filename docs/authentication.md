@@ -1,73 +1,116 @@
-# Authentication
+# Identity and authentication
 
-Auth2Demo provides OAuth 2.0 and OpenID Connect capabilities through OpenIddict. The project supports browser-based authentication, machine-to-machine flows, client-specific branding, external identity providers, and configurable authentication methods per client.
+Auth2Demo combines ASP.NET Core Identity for user management with OpenIddict for OAuth 2.0 and OpenID Connect protocol endpoints.
 
-## Supported flows
+## Local authentication
 
-- Authorization Code with PKCE
-- Client Credentials
-- Refresh Tokens
-- External provider sign-in
-- Local username and password sign-in
+Local users authenticate with the ASP.NET Core Identity account store. The account flows include:
 
-## Authorization Code with PKCE
+- registration;
+- sign-in and sign-out;
+- local password creation for externally created users;
+- password change;
+- password reset infrastructure;
+- lockout and password validation;
+- profile localization preferences.
 
-The Authorization Code flow with PKCE is the recommended flow for browser-based and public clients. It avoids exposing secrets in public clients and protects the authorization code exchange with a code verifier and challenge.
+The active password policy is loaded from `SecuritySettings`. The same effective policy must be enforced by server-side Identity validation in every password-writing flow. Client-side checklists are informational and must not replace server validation.
 
-## Client Credentials
+## External authentication
 
-The Client Credentials flow is supported for confidential clients and service-to-service communication. Confidential clients must have a valid client secret or another valid signing credential according to the OpenIddict configuration.
+Google and Microsoft authentication handlers are registered. Provider configuration is database-driven through tenant-owned `IdentityProvider` records.
 
-## Client secrets
+At external sign-in, the application can persist available profile information such as:
 
-Client secrets are stored separately from the OpenIddict application record using application secret metadata. This allows multiple active secrets per client and enables safe secret rotation.
+- provider subject identifier;
+- e-mail and verification state;
+- display name;
+- language or locale;
+- country when supplied;
+- culture and time-zone preferences when resolved.
 
-Secret management supports:
+Provider claims vary. Country and time zone must not be assumed to exist. Browser culture and explicit profile selection remain the reliable fallback.
 
-- Multiple active secrets
-- Secret prefixes for identification
-- Expiration dates
-- Revocation dates
-- Auditing of secret lifecycle operations
+## Tenant-specific providers
 
-## External identity providers
+Each identity provider belongs to a company. This supports configurations such as:
 
-External providers are managed through the IdentityProviders administration screen. Enabled providers can be displayed on the authentication screen and can also be controlled per client through the Authentication Methods configuration.
+```text
+Atento -> Microsoft Entra provider for the Atento tenant
+Interfile -> Microsoft Entra provider for the Interfile tenant
+```
 
-Identity provider records include provider metadata such as name, scheme, display name, enabled status, and ordering.
+An enterprise application may allow providers from multiple companies. The provider selected during sign-in must be validated against the providers enabled for the target application.
 
-## Per-client authentication methods
+## OAuth 2.0 and OpenID Connect
 
-Each client can control which authentication options are available to users.
+OpenIddict provides the protocol server and EF Core persistence.
 
-Available method types:
+Supported project scenarios include:
 
-- Username and password
-- Enabled external Identity Providers
+- Authorization Code with PKCE;
+- Client Credentials;
+- refresh tokens;
+- registered redirect and post-logout redirect URIs;
+- scopes and permissions;
+- client secrets;
+- authorization and token persistence.
 
-This configuration is managed in the Client Branding page under the Authentication Methods tab. The same configuration is used by the live preview and by the actual login page.
+Public clients should use Authorization Code with PKCE and must not rely on a client secret. Confidential clients must protect their credentials.
 
-## Login experience
+## Authorization flow
 
-The login and authorization screens use the resolved branding for the current client. This includes theme, colors, logo, copy, footer, and enabled authentication methods.
+A simplified interactive flow is:
 
-The goal is to provide a professional, client-aware authentication experience similar to enterprise identity providers.
+```text
+1. Client redirects the browser to /connect/authorize.
+2. Auth2Demo validates the OpenIddict request and client.
+3. The application resolves branding and enabled authentication methods.
+4. The user authenticates locally or through an allowed external provider.
+5. Tenant membership and enterprise application access are evaluated.
+6. Application roles and approved claims are added to the principal.
+7. OpenIddict issues the authorization response.
+```
 
-## Consent experience
+## Enterprise access evaluation
 
-The authorization flow includes support for a consent screen. Consent is part of the roadmap for becoming a complete OAuth/OIDC identity provider experience and can be expanded to include richer permission descriptions, scope grouping, and client trust indicators.
+The evaluator considers:
 
-## Multi-factor authentication
+- the requested application;
+- the authenticated user's active company memberships;
+- allowed tenant configuration;
+- whether assignment is required;
+- direct user assignments;
+- group assignments;
+- enabled application roles.
 
-The project includes MFA-related screens and administration areas. MFA support is part of the security foundation and can be expanded with stronger production policies, enrollment rules, recovery options, and administrative reporting.
+When assignment is required and no valid assignment exists, authentication may be valid while application access is denied. The UI should show a clear access-not-assigned message and a correlation identifier without exposing sensitive internals.
 
-## Security considerations
+## Cookies
 
-- Prefer Authorization Code with PKCE for interactive applications
-- Use Client Credentials only for trusted confidential clients
-- Rotate client secrets regularly
-- Avoid storing plain text secrets
-- Keep revoked secrets for auditing
-- Use HTTPS in all environments outside local development
-- Review redirect URIs carefully
-- Limit external providers per client when required by business rules
+The application cookie is configured with:
+
+- name `Auth2Demo.Identity`;
+- `HttpOnly` enabled;
+- secure transport required;
+- `SameSite=Lax`;
+- sliding expiration;
+- explicit login, logout, and access-denied paths.
+
+Review SameSite behavior whenever external providers, cross-site frontends, or reverse proxies are introduced.
+
+## Data Protection
+
+ASP.NET Core Data Protection keys are stored in SQL Server under `IdentityDataProtectionKeys` and use the application name `Auth2Demo.IdentityServer`. All instances in the same deployment that must share cookies should use the same key ring and application name.
+
+## Profile culture
+
+Culture resolution order is:
+
+1. authenticated user's profile preference;
+2. culture cookie;
+3. query string;
+4. `Accept-Language` header;
+5. default `en-US`.
+
+Supported cultures are currently `pt-BR` and `en-US`.

@@ -1,0 +1,1 @@
+document.getElementById('principalComposite')?.addEventListener('change',function(){const p=this.value.split('|');document.getElementById('companyId').value=p[0]||'';document.getElementById('principalType').value=p[1]||'';document.getElementById('principalId').value=p[2]||'';});

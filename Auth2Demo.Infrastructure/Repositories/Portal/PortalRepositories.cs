@@ -36,6 +36,55 @@ public sealed class ExternalProviderRepository : IExternalProviderRepository
             .ToListAsync();
     }
 
+    public async Task<IReadOnlyList<ExternalProviderData>> GetEnabledForApplicationAsync(string? clientId, ISet<string> configuredSchemes)
+    {
+        if (string.IsNullOrWhiteSpace(clientId))
+        {
+            return await GetEnabledForLoginAsync(configuredSchemes);
+        }
+
+        var application = await _db.Set<OpenIddict.EntityFrameworkCore.Models.OpenIddictEntityFrameworkCoreApplication<Guid>>()
+            .AsNoTracking()
+            .Where(x => x.ClientId == clientId)
+            .Select(x => new { x.Id })
+            .FirstOrDefaultAsync();
+
+        if (application is null)
+        {
+            return await GetEnabledForLoginAsync(configuredSchemes);
+        }
+
+        var hasExplicitProviderPolicy = await _db.ApplicationIdentityProviders
+            .AsNoTracking()
+            .AnyAsync(x => x.ApplicationId == application.Id && x.IsEnabled);
+
+        if (!hasExplicitProviderPolicy)
+        {
+            return await GetEnabledForLoginAsync(configuredSchemes);
+        }
+
+        return await _db.ApplicationIdentityProviders
+            .AsNoTracking()
+            .Where(link => link.ApplicationId == application.Id && link.IsEnabled)
+            .Select(link => link.IdentityProvider!)
+            .Where(x =>
+                x.IsEnabled &&
+                configuredSchemes.Contains(x.Scheme) &&
+                x.ClientId != null &&
+                x.ClientId != string.Empty &&
+                x.ClientSecret != null &&
+                x.ClientSecret != string.Empty)
+            .OrderBy(x => x.SortOrder)
+            .ThenBy(x => x.DisplayName)
+            .Select(x => new ExternalProviderData
+            {
+                DisplayName = x.DisplayName,
+                Scheme = x.Scheme,
+                ButtonText = x.ButtonText ?? $"Continuar com {x.DisplayName}"
+            })
+            .ToListAsync();
+    }
+
     public Task<bool> IsProviderEnabledAsync(string provider)
     {
         return _db.IdentityProviders
@@ -47,6 +96,47 @@ public sealed class ExternalProviderRepository : IExternalProviderRepository
                 x.ClientId != string.Empty &&
                 x.ClientSecret != null &&
                 x.ClientSecret != string.Empty);
+    }
+
+    public async Task<bool> IsProviderEnabledForApplicationAsync(string provider, string? clientId)
+    {
+        if (!await IsProviderEnabledAsync(provider))
+        {
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(clientId))
+        {
+            return true;
+        }
+
+        var application = await _db.Set<OpenIddict.EntityFrameworkCore.Models.OpenIddictEntityFrameworkCoreApplication<Guid>>()
+            .AsNoTracking()
+            .Where(x => x.ClientId == clientId)
+            .Select(x => new { x.Id })
+            .FirstOrDefaultAsync();
+
+        if (application is null)
+        {
+            return true;
+        }
+
+        var hasExplicitProviderPolicy = await _db.ApplicationIdentityProviders
+            .AsNoTracking()
+            .AnyAsync(x => x.ApplicationId == application.Id && x.IsEnabled);
+
+        if (!hasExplicitProviderPolicy)
+        {
+            return true;
+        }
+
+        return await _db.ApplicationIdentityProviders
+            .AsNoTracking()
+            .AnyAsync(x => x.ApplicationId == application.Id &&
+                           x.IsEnabled &&
+                           x.IdentityProvider != null &&
+                           x.IdentityProvider.Scheme == provider &&
+                           x.IdentityProvider.IsEnabled);
     }
 }
 

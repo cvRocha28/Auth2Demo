@@ -1,0 +1,309 @@
+@model Auth2Demo.Application.Services.Admin.EnterpriseApplicationEditData
+@{
+    ViewData["Title"] = "Configure enterprise application";
+    var selectedTenantCount = Model.TenantAccess.Count(x => x.IsEnabled);
+    var selectedProviderCount = Model.AllowedProviderIds.Count;
+    var providersByCompany = Model.Providers
+        .GroupBy(x => x.CompanyId)
+        .OrderBy(x => x.Key.HasValue ? 1 : 0)
+        .ThenBy(x => x.FirstOrDefault()?.CompanyName ?? "Global");
+}
+
+@section AdminHeader {
+    <span class="admin-page-kicker"><i class="bi bi-shield-lock"></i> ENTERPRISE APPLICATION</span>
+    <h1>@Model.DisplayName</h1>
+    <p>Define ownership, tenant access, assignment requirements and the identity providers available for this application.</p>
+    <div class="admin-page-meta">
+        <span><i class="bi bi-upc-scan"></i> <code>@Model.ClientId</code></span>
+        <span id="headerApplicationStatus" class="enterprise-header-status @(Model.IsEnabled ? "is-enabled" : "is-disabled")">
+            <i class="bi @(Model.IsEnabled ? "bi-check-circle" : "bi-pause-circle")"></i>
+            <strong>@(Model.IsEnabled ? "Enabled" : "Disabled")</strong>
+        </span>
+        <span><i class="bi bi-buildings"></i> <strong id="headerTenantCount">@selectedTenantCount</strong> tenant(s)</span>
+        <span><i class="bi bi-key"></i> <strong id="headerProviderCount">@selectedProviderCount</strong> provider(s)</span>
+    </div>
+}
+
+@section AdminActions {
+    <a class="btn btn-primary" asp-controller="EnterpriseAssignments" asp-action="Index" asp-route-applicationId="@Model.ApplicationId"><i class="bi bi-person-check"></i> Users and groups</a>
+    <a class="btn btn-outline" asp-action="Index"><i class="bi bi-arrow-left"></i> Back to applications</a>
+}
+
+@if (TempData["Success"] is string success)
+{
+    <div class="alert alert-success enterprise-alert"><i class="bi bi-check-circle-fill"></i><span>@success</span></div>
+}
+@if (TempData["Error"] is string error)
+{
+    <div class="alert alert-danger enterprise-alert"><i class="bi bi-exclamation-octagon-fill"></i><span>@error</span></div>
+}
+
+<form asp-action="Save" method="post" id="enterpriseApplicationForm">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="ApplicationId" value="@Model.ApplicationId" />
+
+    <div class="enterprise-config-layout">
+        <div class="enterprise-config-main">
+            <section class="admin-card enterprise-config-card enterprise-status-card @(Model.IsEnabled ? "is-enabled" : "is-disabled")" id="applicationStatusCard">
+                <div class="admin-card-header">
+                    <div>
+                        <strong><i class="bi bi-power"></i> Application status</strong>
+                        <span>Control whether this client can start new authorization flows and receive access tokens.</span>
+                    </div>
+                    <span class="enterprise-status-pill @(Model.IsEnabled ? "is-enabled" : "is-disabled")" id="applicationStatusPill">
+                        <i class="bi @(Model.IsEnabled ? "bi-check-circle-fill" : "bi-pause-circle-fill")"></i>
+                        <span>@(Model.IsEnabled ? "Enabled" : "Disabled")</span>
+                    </span>
+                </div>
+                <div class="enterprise-card-body enterprise-status-body">
+                    <div class="enterprise-status-copy">
+                        <div class="enterprise-status-icon"><i class="bi bi-shield-check"></i></div>
+                        <div>
+                            <strong id="applicationStatusTitle">@(Model.IsEnabled ? "Application is available" : "Application is disabled")</strong>
+                            <span id="applicationStatusDescription">
+                                @(Model.IsEnabled
+                                    ? "Users can access this application when tenant, provider and assignment policies allow it."
+                                    : "New authorization requests are denied until an administrator enables this application.")
+                            </span>
+                        </div>
+                    </div>
+                    <label class="enterprise-switch-control" for="IsEnabled">
+                        <input class="form-check-input" type="checkbox" id="IsEnabled" name="IsEnabled" value="true" checked="@Model.IsEnabled" />
+                        <span class="enterprise-switch-track"><span class="enterprise-switch-thumb"></span></span>
+                        <span class="enterprise-switch-label">
+                            <strong>Enable enterprise application</strong>
+                            <small>This setting applies to the app registration, including <code>@Model.ClientId</code>.</small>
+                        </span>
+                        <input type="hidden" name="IsEnabled" value="false" />
+                    </label>
+                    <div class="enterprise-field-help enterprise-status-warning" id="applicationStatusWarning" @(Model.IsEnabled ? "hidden" : null)>
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <span>Disabling the application blocks new sign-ins. Existing sessions or already-issued tokens remain valid until they expire or are revoked.</span>
+                    </div>
+                </div>
+            </section>
+            <section class="admin-card enterprise-config-card">
+                <div class="admin-card-header">
+                    <div>
+                        <strong><i class="bi bi-building-gear"></i> Ownership</strong>
+                        <span>The owner tenant represents the organization that owns the app registration.</span>
+                    </div>
+                    <span class="enterprise-step-badge">1</span>
+                </div>
+                <div class="enterprise-card-body">
+                    <label class="form-label fw-bold" for="OwnerCompanyId">Owner company</label>
+                    <select class="form-select" id="OwnerCompanyId" name="OwnerCompanyId">
+                        <option value="">No owner company</option>
+                        @foreach (var company in Model.TenantAccess)
+                        {
+                            <option value="@company.CompanyId" selected="@(Model.OwnerCompanyId == company.CompanyId)">@company.CompanyName</option>
+                        }
+                    </select>
+                    <div class="enterprise-field-help">
+                        <i class="bi bi-info-circle"></i>
+                        <span>Ownership controls lifecycle, branding and governance. Tenant access is managed independently below.</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="admin-card enterprise-config-card">
+                <div class="admin-card-header enterprise-section-toolbar">
+                    <div>
+                        <strong><i class="bi bi-buildings"></i> Tenant access</strong>
+                        <span>Select which companies can access this application and whether users must be explicitly assigned.</span>
+                    </div>
+                    <div class="enterprise-inline-actions">
+                        <button type="button" class="btn btn-sm btn-outline" data-select-all-tenants>Select all</button>
+                        <button type="button" class="btn btn-sm btn-outline" data-clear-tenants>Clear</button>
+                    </div>
+                </div>
+                <div class="enterprise-card-body">
+                    <div class="enterprise-search-box enterprise-section-search">
+                        <i class="bi bi-search"></i>
+                        <input type="search" id="tenantSearch" placeholder="Search tenant, domain or country" autocomplete="off" />
+                    </div>
+
+                    <div class="enterprise-policy-note" role="note">
+                        <i class="bi bi-info-circle"></i>
+                        <div>
+                            <strong>Tenant access and user assignment are separate controls</strong>
+                            <span>Selecting a tenant allows identities that are active members of that tenant. Leaving <em>Require explicit user assignment</em> unchecked allows all active members of the selected tenant, not users from other tenants.</span>
+                        </div>
+                    </div>
+                    <div class="enterprise-tenant-grid" id="tenantGrid">
+                        @for (var index = 0; index < Model.TenantAccess.Count; index++)
+                        {
+                            var tenant = Model.TenantAccess[index];
+                            var tenantSearch = $"{tenant.CompanyName} {tenant.DomainHint} {tenant.Country} {tenant.Culture}".ToLowerInvariant();
+                            <article class="enterprise-tenant-card @(tenant.IsEnabled ? "is-selected" : null)" data-tenant-card data-company-id="@tenant.CompanyId" data-search="@tenantSearch">
+                                <input type="hidden" name="TenantAccess[@index].CompanyId" value="@tenant.CompanyId" />
+                                <div class="enterprise-tenant-card-top">
+                                    <label class="enterprise-switch-row">
+                                        <input class="form-check-input tenant-enabled-input" type="checkbox" name="TenantAccess[@index].IsEnabled" value="true" checked="@tenant.IsEnabled" />
+                                        <span class="enterprise-tenant-logo">@tenant.CompanyName.FirstOrDefault().ToString().ToUpperInvariant()</span>
+                                        <span>
+                                            <strong>@tenant.CompanyName</strong>
+                                            <small>@(tenant.DomainHint ?? "No domain hint")</small>
+                                        </span>
+                                    </label>
+                                    @if (tenant.IsDefault)
+                                    {
+                                        <span class="enterprise-mini-badge">Default</span>
+                                    }
+                                </div>
+                                <div class="enterprise-tenant-meta">
+                                    <span><i class="bi bi-geo-alt"></i> @(tenant.Country ?? "—")</span>
+                                    <span><i class="bi bi-translate"></i> @(tenant.Culture ?? "—")</span>
+                                    <span><i class="bi bi-key"></i> @tenant.ProviderCount provider(s)</span>
+                                </div>
+                                <div class="enterprise-tenant-options">
+                                    <label class="form-check enterprise-assignment-check">
+                                        <input class="form-check-input assignment-input" type="checkbox" name="TenantAccess[@index].RequireUserAssignment" value="true" checked="@tenant.RequireUserAssignment" />
+                                        <span>
+                                            <strong>Require explicit user assignment</strong>
+                                            <small>When enabled, only assigned users or groups from this tenant can access. When disabled, every active member of this tenant can access.</small>
+                                        </span>
+                                    </label>
+                                    <label class="enterprise-notes-field">
+                                        <span>Administrative notes</span>
+                                        <textarea class="form-control" name="TenantAccess[@index].Notes" rows="2" maxlength="500" placeholder="Optional access rationale or governance note">@tenant.Notes</textarea>
+                                    </label>
+                                </div>
+                            </article>
+                        }
+                    </div>
+                    <div class="enterprise-no-results" id="tenantNoResults" hidden>
+                        <i class="bi bi-search"></i><strong>No matching tenants</strong><span>Try another company, domain or country.</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="admin-card enterprise-config-card">
+                <div class="admin-card-header enterprise-section-toolbar">
+                    <div>
+                        <strong><i class="bi bi-key"></i> Sign-in providers</strong>
+                        <span>Choose which configured external providers appear on the sign-in screen for this application. Provider selection does not grant tenant access by itself.</span>
+                    </div>
+                    <div class="enterprise-inline-actions">
+                        <button type="button" class="btn btn-sm btn-outline" data-select-valid-providers>Select available</button>
+                        <button type="button" class="btn btn-sm btn-outline" data-clear-providers>Clear</button>
+                    </div>
+                </div>
+                <div class="enterprise-card-body">
+                    <div class="enterprise-policy-note">
+                        <i class="bi bi-shield-exclamation"></i>
+                        <div>
+                            <strong>Provider access follows tenant access</strong>
+                            <span>A company-specific provider is available only while its tenant is enabled. Global providers remain available to every allowed tenant.</span>
+                        </div>
+                    </div>
+
+                    <div class="enterprise-search-box enterprise-section-search">
+                        <i class="bi bi-search"></i>
+                        <input type="search" id="providerSearch" placeholder="Search provider, company, type or scheme" autocomplete="off" />
+                    </div>
+
+                    <div class="enterprise-provider-groups" id="providerGroups">
+                        @foreach (var group in providersByCompany)
+                        {
+                            var groupCompanyId = group.Key?.ToString() ?? string.Empty;
+                            <section class="enterprise-provider-group" data-provider-group data-company-id="@groupCompanyId">
+                                <div class="enterprise-provider-group-header">
+                                    <div>
+                                        <strong>@(group.FirstOrDefault()?.CompanyName ?? "Global providers")</strong>
+                                        <span>@group.Count() provider(s)</span>
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-outline" data-toggle-provider-group>Select group</button>
+                                </div>
+                                <div class="enterprise-provider-grid">
+                                    @foreach (var provider in group)
+                                    {
+                                        var configured = provider.HasClientId && provider.HasClientSecret;
+                                        var providerSearch = $"{provider.DisplayName} {provider.CompanyName} {provider.Kind} {provider.Scheme}".ToLowerInvariant();
+                                        <label class="enterprise-provider-card @(!configured ? "is-not-configured" : null)" data-provider-card data-company-id="@(provider.CompanyId?.ToString() ?? string.Empty)" data-search="@providerSearch">
+                                            <input class="form-check-input provider-input" type="checkbox" name="AllowedProviderIds" value="@provider.Id" checked="@(Model.AllowedProviderIds.Contains(provider.Id))" disabled="@(!configured)" />
+                                            <span class="enterprise-provider-icon"><i class="bi bi-box-arrow-in-right"></i></span>
+                                            <span class="enterprise-provider-copy">
+                                                <strong>@provider.DisplayName</strong>
+                                                <small>@provider.Kind · @provider.Scheme</small>
+                                            </span>
+                                            <span class="enterprise-provider-status">
+                                                @if (!configured)
+                                                {
+                                                    <i class="bi bi-exclamation-triangle"></i><text> Not configured</text>
+                                                }
+                                                else
+                                                {
+                                                    <i class="bi bi-check-circle"></i><text> Available</text>
+                                                }
+                                            </span>
+                                        </label>
+                                    }
+                                </div>
+                            </section>
+                        }
+                    </div>
+                    <div class="enterprise-no-results" id="providerNoResults" hidden>
+                        <i class="bi bi-search"></i><strong>No matching providers</strong><span>Try another provider, company, type or scheme.</span>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <aside class="enterprise-config-sidebar">
+            <section class="admin-card enterprise-summary-card">
+                <div class="admin-card-header">
+                    <div><strong>Configuration summary</strong><span>Review before saving.</span></div>
+                </div>
+                <div class="enterprise-summary-body">
+                    <div class="enterprise-summary-item">
+                        <span>Application status</span>
+                        <strong id="summaryApplicationStatus">@(Model.IsEnabled ? "Enabled" : "Disabled")</strong>
+                    </div>
+                    <div class="enterprise-summary-item">
+                        <span>Owner company</span>
+                        <strong id="summaryOwner">@(Model.TenantAccess.FirstOrDefault(x => x.CompanyId == Model.OwnerCompanyId)?.CompanyName ?? "Not assigned")</strong>
+                    </div>
+                    <div class="enterprise-summary-item">
+                        <span>Allowed tenants</span>
+                        <strong id="summaryTenants">@selectedTenantCount</strong>
+                    </div>
+                    <div class="enterprise-summary-item">
+                        <span>Selected providers</span>
+                        <strong id="summaryProviders">@selectedProviderCount</strong>
+                    </div>
+                    <div class="enterprise-summary-item">
+                        <span>Assignment required</span>
+                        <strong id="summaryAssignments">@Model.TenantAccess.Count(x => x.IsEnabled && x.RequireUserAssignment)</strong>
+                    </div>
+                    <div class="enterprise-summary-divider"></div>
+                    <div class="enterprise-summary-guidance" id="summaryGuidance">
+                        <i class="bi bi-info-circle"></i>
+                        <span>Choose at least one tenant and one provider for a complete external sign-in policy.</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="admin-card enterprise-help-card">
+                <div class="enterprise-help-icon"><i class="bi bi-lightbulb"></i></div>
+                <strong>Recommended setup</strong>
+                <p>Assign an owner, enable only trusted partner tenants, require assignment for sensitive applications, and expose only the providers needed by those tenants.</p>
+            </section>
+        </aside>
+    </div>
+
+    <div class="sticky-form-actions enterprise-sticky-actions">
+        <div>
+            <strong>Unsaved enterprise configuration</strong>
+            <span>Saving updates tenant and provider access immediately.</span>
+        </div>
+        <div class="enterprise-inline-actions">
+            <a class="btn btn-outline" asp-action="Index">Cancel</a>
+            <button class="btn" type="submit"><i class="bi bi-check2-circle"></i> Save configuration</button>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    <script src="~/js/pages/enterpriseapplications-edit.js" asp-append-version="true" defer></script>
+}

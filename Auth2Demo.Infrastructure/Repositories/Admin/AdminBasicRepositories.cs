@@ -413,6 +413,87 @@ public sealed class AdminPermissionRepository : IAdminPermissionRepository
     }
 }
 
+
+public sealed class AdminCompanyRepository : IAdminCompanyRepository
+{
+    private readonly ApplicationDbContext _db;
+
+    public AdminCompanyRepository(ApplicationDbContext db)
+    {
+        _db = db;
+    }
+
+    public async Task<IReadOnlyList<CompanyListItemData>> ListAsync()
+    {
+        return await _db.Companies
+            .AsNoTracking()
+            .OrderByDescending(x => x.IsDefault)
+            .ThenBy(x => x.DisplayName)
+            .Select(x => new CompanyListItemData
+            {
+                Id = x.Id,
+                Name = x.Name,
+                DisplayName = x.DisplayName,
+                DomainHint = x.DomainHint,
+                Country = x.Country,
+                Culture = x.Culture,
+                IsEnabled = x.IsEnabled,
+                IsDefault = x.IsDefault,
+                ProviderCount = _db.IdentityProviders.Count(p => p.CompanyId == x.Id)
+            })
+            .ToListAsync();
+    }
+
+    public async Task<IReadOnlyList<CompanyListItemData>> ListEnabledAsync()
+    {
+        return await _db.Companies
+            .AsNoTracking()
+            .Where(x => x.IsEnabled)
+            .OrderByDescending(x => x.IsDefault)
+            .ThenBy(x => x.DisplayName)
+            .Select(x => new CompanyListItemData
+            {
+                Id = x.Id,
+                Name = x.Name,
+                DisplayName = x.DisplayName,
+                DomainHint = x.DomainHint,
+                Country = x.Country,
+                Culture = x.Culture,
+                IsEnabled = x.IsEnabled,
+                IsDefault = x.IsDefault,
+                ProviderCount = 0
+            })
+            .ToListAsync();
+    }
+
+    public Task<Company?> GetAsync(Guid id, bool tracking)
+    {
+        var query = tracking ? _db.Companies : _db.Companies.AsNoTracking();
+        return query.FirstOrDefaultAsync(x => x.Id == id);
+    }
+
+    public Task<bool> HasDuplicateAsync(Guid currentId, string name)
+    {
+        return _db.Companies.AnyAsync(x => x.Id != currentId && x.Name == name);
+    }
+
+    public async Task AddAsync(Company company)
+    {
+        if (company.IsDefault)
+        {
+            await _db.Companies.Where(x => x.IsDefault).ExecuteUpdateAsync(s => s.SetProperty(x => x.IsDefault, false));
+        }
+
+        _db.Companies.Add(company);
+        await _db.SaveChangesAsync();
+    }
+
+    public async Task SaveChangesAsync()
+    {
+        await _db.SaveChangesAsync();
+    }
+}
+
 public sealed class AdminIdentityProviderRepository : IAdminIdentityProviderRepository
 {
     private readonly ApplicationDbContext _db;
@@ -426,11 +507,15 @@ public sealed class AdminIdentityProviderRepository : IAdminIdentityProviderRepo
     {
         return await _db.IdentityProviders
             .AsNoTracking()
-            .OrderBy(x => x.SortOrder)
+            .Include(x => x.Company)
+            .OrderBy(x => x.Company == null ? "" : x.Company.DisplayName)
+            .ThenBy(x => x.SortOrder)
             .ThenBy(x => x.DisplayName)
             .Select(x => new IdentityProviderListItemData
             {
                 Id = x.Id,
+                CompanyId = x.CompanyId,
+                CompanyName = x.Company == null ? null : x.Company.DisplayName,
                 Name = x.Name,
                 DisplayName = x.DisplayName,
                 Scheme = x.Scheme,

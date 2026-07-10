@@ -49,7 +49,7 @@
         <a class="btn btn-success" asp-action="SetupAuthenticator" asp-route-id="@Model.UserId">
             @(Model.TwoFactorEnabled ? T["EditAuthenticator"] : T["EnableMfa"])
         </a>
-        <form asp-action="Disable" method="post" asp-route-id="@Model.UserId" onsubmit='return confirm("@T["TextDesabilitarMfaDesteUsuario"].Value")'>
+        <form asp-action="Disable" method="post" asp-route-id="@Model.UserId" data-confirm="@T["TextDesabilitarMfaDesteUsuario"]">
             @Html.AntiForgeryToken()
             @if (Model.TwoFactorEnabled)
             {
@@ -60,11 +60,11 @@
                 <button class="btn btn-danger" type="button" disabled>@T["DisableMfa"]</button>
             }
         </form>
-        <form asp-action="ResetAuthenticator" method="post" asp-route-id="@Model.UserId" onsubmit='return confirm("@T["TextResetarOAutenticadorDesteUsuario"].Value")'>
+        <form asp-action="ResetAuthenticator" method="post" asp-route-id="@Model.UserId" data-confirm="@T["TextResetarOAutenticadorDesteUsuario"]">
             @Html.AntiForgeryToken()
             <button class="btn" type="submit">@T["ResetAuthenticator"]</button>
         </form>
-        <form asp-action="GenerateRecoveryCodes" method="post" asp-route-id="@Model.UserId" onsubmit='return confirm("@T["TextGerarNovosCodigosDeRecuperacaoOsAntigosSerao"].Value")'>
+        <form asp-action="GenerateRecoveryCodes" method="post" asp-route-id="@Model.UserId" data-confirm="@T["TextGerarNovosCodigosDeRecuperacaoOsAntigosSerao"]">
             @Html.AntiForgeryToken()
             @if (Model.TwoFactorEnabled)
             {
@@ -100,7 +100,7 @@
                 <td>@(method.IsDefault ? T["Yes"] : T["No"])</td>
                 <td>@method.LastUsedAt?.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
                 <td>
-                    <form asp-action="DeleteMethod" method="post" asp-route-id="@Model.UserId" asp-route-methodId="@method.Id" onsubmit='return confirm("@T["TextRemoverEsteMetodoMfa"].Value")'>
+                    <form asp-action="DeleteMethod" method="post" asp-route-id="@Model.UserId" asp-route-methodId="@method.Id" data-confirm="@T["TextRemoverEsteMetodoMfa"]">
                         @Html.AntiForgeryToken()
                         <button class="btn btn-small btn-danger" type="submit">@T["Delete"]</button>
                     </form>
@@ -115,12 +115,6 @@
     </table>
 </div>
 
-<style>
-    .action-row { display: flex; flex-wrap: wrap; gap: 10px; }
-    .btn-danger { background: #dc3545 !important; color: #fff !important; }
-    .btn-success { background: #198754 !important; color: #fff !important; }
-    .btn-small { padding: 8px 12px; border-radius: 10px; font-size: .85rem; }
-    .btn:disabled { opacity: .45; cursor: not-allowed; }
-    .codes-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; margin-top: 12px; }
-    .codes-grid code { background: #f3f7ff; border: 1px solid #d7e3f5; border-radius: 12px; padding: 10px; color: #061a3d; text-align: center; }
-</style>
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/mfa-details.css" asp-append-version="true" />
+}

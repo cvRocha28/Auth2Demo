@@ -19,6 +19,7 @@ public sealed class ApplicationDbContext
     }
 
     public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
+    public DbSet<Company> Companies => Set<Company>();
     public DbSet<IdentityProvider> IdentityProviders => Set<IdentityProvider>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
     public DbSet<UserSession> UserSessions => Set<UserSession>();
@@ -31,6 +32,14 @@ public sealed class ApplicationDbContext
     public DbSet<BrandingSettings> BrandingSettings => Set<BrandingSettings>();
     public DbSet<SecuritySettings> SecuritySettings => Set<SecuritySettings>();
     public DbSet<IdentityApplicationSecret> IdentityApplicationSecrets => Set<IdentityApplicationSecret>();
+    public DbSet<ApplicationTenantAssignment> ApplicationTenantAssignments => Set<ApplicationTenantAssignment>();
+    public DbSet<ApplicationIdentityProvider> ApplicationIdentityProviders => Set<ApplicationIdentityProvider>();
+    public DbSet<ApplicationUserAssignment> ApplicationUserAssignments => Set<ApplicationUserAssignment>();
+    public DbSet<CompanyUser> CompanyUsers => Set<CompanyUser>();
+    public DbSet<CompanyGroup> CompanyGroups => Set<CompanyGroup>();
+    public DbSet<CompanyGroupMember> CompanyGroupMembers => Set<CompanyGroupMember>();
+    public DbSet<EnterpriseApplicationRole> EnterpriseApplicationRoles => Set<EnterpriseApplicationRole>();
+    public DbSet<EnterpriseApplicationAssignment> EnterpriseApplicationAssignments => Set<EnterpriseApplicationAssignment>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -48,7 +57,20 @@ public sealed class ApplicationDbContext
 
     private static void ConfigureIdentityTableNames(ModelBuilder builder)
     {
-        builder.Entity<ApplicationUser>().ToTable("IdentityUsers");
+        builder.Entity<ApplicationUser>(entity =>
+        {
+            entity.ToTable("IdentityUsers");
+            entity.Property(x => x.Language).HasMaxLength(16);
+            entity.Property(x => x.Culture).HasMaxLength(20);
+            entity.Property(x => x.Country).HasMaxLength(8);
+            entity.Property(x => x.Locale).HasMaxLength(20);
+            entity.Property(x => x.TimeZone).HasMaxLength(120);
+            entity.HasIndex(x => x.CompanyId);
+            entity.HasOne<Company>()
+                .WithMany()
+                .HasForeignKey(x => x.CompanyId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
         builder.Entity<ApplicationRole>().ToTable("IdentityRoles");
 
         builder.Entity<IdentityUserRole<Guid>>().ToTable("IdentityUserRoles");
@@ -102,6 +124,37 @@ public sealed class ApplicationDbContext
 
     private static void ConfigurePortalEntities(ModelBuilder builder)
     {
+
+        builder.Entity<Company>(entity =>
+        {
+            entity.ToTable("IdentityCompanies");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Name).HasMaxLength(80).IsRequired();
+            entity.Property(x => x.DisplayName).HasMaxLength(160).IsRequired();
+            entity.Property(x => x.Description).HasMaxLength(500);
+            entity.Property(x => x.DomainHint).HasMaxLength(160);
+            entity.Property(x => x.Country).HasMaxLength(8);
+            entity.Property(x => x.Culture).HasMaxLength(20);
+            entity.Property(x => x.TimeZone).HasMaxLength(120);
+            entity.HasIndex(x => x.Name).IsUnique();
+            entity.HasIndex(x => x.DomainHint);
+        });
+
+        builder.Entity<IdentityProvider>(entity =>
+        {
+            entity.HasIndex(x => new { x.CompanyId, x.SortOrder });
+            entity.HasOne(x => x.Company)
+                .WithMany()
+                .HasForeignKey(x => x.CompanyId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        builder.Entity<OpenIddictEntityFrameworkCoreApplication<Guid>>(entity =>
+        {
+            entity.Property<Guid?>("CompanyId").HasColumnType("uniqueidentifier");
+            entity.HasIndex("CompanyId");
+        });
+
         builder.Entity<AuditLog>(entity =>
         {
             entity.ToTable("IdentityAuditLogs");
@@ -200,6 +253,98 @@ public sealed class ApplicationDbContext
         {
             entity.ToTable("IdentitySecuritySettings");
             entity.HasKey(x => x.Id);
+        });
+
+
+
+        builder.Entity<ApplicationTenantAssignment>(entity =>
+        {
+            entity.ToTable("IdentityApplicationTenantAssignments");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Notes).HasMaxLength(500);
+            entity.HasIndex(x => new { x.ApplicationId, x.CompanyId }).IsUnique();
+            entity.HasOne(x => x.Company)
+                .WithMany()
+                .HasForeignKey(x => x.CompanyId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne<OpenIddictEntityFrameworkCoreApplication<Guid>>()
+                .WithMany()
+                .HasForeignKey(x => x.ApplicationId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<ApplicationIdentityProvider>(entity =>
+        {
+            entity.ToTable("IdentityApplicationProviders");
+            entity.HasKey(x => x.Id);
+            entity.HasIndex(x => new { x.ApplicationId, x.IdentityProviderId }).IsUnique();
+            entity.HasOne(x => x.IdentityProvider)
+                .WithMany()
+                .HasForeignKey(x => x.IdentityProviderId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne<OpenIddictEntityFrameworkCoreApplication<Guid>>()
+                .WithMany()
+                .HasForeignKey(x => x.ApplicationId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<ApplicationUserAssignment>(entity =>
+        {
+            entity.ToTable("IdentityApplicationUserAssignments");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Role).HasMaxLength(120);
+            entity.HasIndex(x => new { x.ApplicationId, x.UserId }).IsUnique();
+            entity.HasOne<OpenIddictEntityFrameworkCoreApplication<Guid>>()
+                .WithMany()
+                .HasForeignKey(x => x.ApplicationId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<CompanyUser>(entity =>
+        {
+            entity.ToTable("IdentityCompanyUsers"); entity.HasKey(x => x.Id);
+            entity.Property(x => x.Department).HasMaxLength(160); entity.Property(x => x.JobTitle).HasMaxLength(160);
+            entity.HasIndex(x => new { x.CompanyId, x.UserId }).IsUnique();
+            entity.HasOne<Company>().WithMany().HasForeignKey(x => x.CompanyId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne<ApplicationUser>().WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
+        });
+        builder.Entity<CompanyGroup>(entity =>
+        {
+            entity.ToTable("IdentityCompanyGroups"); entity.HasKey(x => x.Id);
+            entity.Property(x => x.Name).HasMaxLength(160).IsRequired(); entity.Property(x => x.Description).HasMaxLength(500);
+            entity.HasIndex(x => new { x.CompanyId, x.Name }).IsUnique();
+            entity.HasOne(x => x.Company).WithMany().HasForeignKey(x => x.CompanyId).OnDelete(DeleteBehavior.Cascade);
+        });
+        builder.Entity<CompanyGroupMember>(entity =>
+        {
+            entity.ToTable("IdentityCompanyGroupMembers"); entity.HasKey(x => x.Id);
+            entity.HasIndex(x => new { x.GroupId, x.UserId }).IsUnique();
+            entity.HasOne(x => x.Group).WithMany().HasForeignKey(x => x.GroupId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne<ApplicationUser>().WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
+        });
+        builder.Entity<EnterpriseApplicationRole>(entity =>
+        {
+            entity.ToTable("IdentityEnterpriseApplicationRoles"); entity.HasKey(x => x.Id);
+            entity.Property(x => x.Name).HasMaxLength(160).IsRequired(); entity.Property(x => x.Value).HasMaxLength(120).IsRequired(); entity.Property(x => x.Description).HasMaxLength(500);
+            entity.HasIndex(x => new { x.ApplicationId, x.Value }).IsUnique();
+            entity.HasOne<OpenIddictEntityFrameworkCoreApplication<Guid>>().WithMany().HasForeignKey(x => x.ApplicationId).OnDelete(DeleteBehavior.Cascade);
+        });
+        builder.Entity<EnterpriseApplicationAssignment>(entity =>
+        {
+            entity.ToTable("IdentityEnterpriseApplicationAssignments"); entity.HasKey(x => x.Id);
+            entity.HasIndex(x => new { x.ApplicationId, x.CompanyId, x.PrincipalType, x.UserId, x.GroupId }).IsUnique();
+            entity.HasOne<Company>().WithMany().HasForeignKey(x => x.CompanyId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne<ApplicationUser>().WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(x => x.Group).WithMany().HasForeignKey(x => x.GroupId).OnDelete(DeleteBehavior.Restrict);
+            // SQL Server rejects SET NULL here because Application -> Assignment and
+            // Application -> Role -> Assignment would create multiple cascading paths.
+            // Role deletion is therefore explicit and governed by the application service.
+            entity.HasOne(x => x.ApplicationRole)
+                .WithMany()
+                .HasForeignKey(x => x.ApplicationRoleId)
+                .OnDelete(DeleteBehavior.NoAction);
+            entity.HasOne<OpenIddictEntityFrameworkCoreApplication<Guid>>().WithMany().HasForeignKey(x => x.ApplicationId).OnDelete(DeleteBehavior.Cascade);
+            entity.ToTable(t => t.HasCheckConstraint("CK_EnterpriseAssignment_Principal", "([PrincipalType] = 1 AND [UserId] IS NOT NULL AND [GroupId] IS NULL) OR ([PrincipalType] = 2 AND [UserId] IS NULL AND [GroupId] IS NOT NULL)"));
         });
 
         builder.Entity<IdentityApplicationSecret>(entity =>

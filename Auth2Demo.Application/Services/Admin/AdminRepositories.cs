@@ -73,6 +73,16 @@ public interface IAdminPermissionRepository
     Task ToggleAsync(Guid roleId, Guid permissionId);
 }
 
+public interface IAdminCompanyRepository
+{
+    Task<IReadOnlyList<CompanyListItemData>> ListAsync();
+    Task<IReadOnlyList<CompanyListItemData>> ListEnabledAsync();
+    Task<Company?> GetAsync(Guid id, bool tracking);
+    Task<bool> HasDuplicateAsync(Guid currentId, string name);
+    Task AddAsync(Company company);
+    Task SaveChangesAsync();
+}
+
 public interface IAdminIdentityProviderRepository
 {
     Task<IReadOnlyList<IdentityProviderListItemData>> ListAsync();
@@ -94,3 +104,10 @@ public interface IAdminMfaRepository
     Task AddAuditAsync(AuditLog auditLog);
 }
 
+
+public interface IEnterpriseApplicationRepository
+{
+    Task<IReadOnlyList<EnterpriseApplicationListItemData>> ListAsync();
+    Task<EnterpriseApplicationEditData?> GetForEditAsync(Guid applicationId);
+    Task SaveAsync(SaveEnterpriseApplicationData model);
+}

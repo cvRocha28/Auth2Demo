@@ -63,6 +63,9 @@ builder.Services.AddAuthorization(options =>
         policy.RequireRole(Auth2Demo.Application.Security.AuthRoles.Admin, Auth2Demo.Application.Security.AuthRoles.UserManager));
 });
 
+builder.Services.Configure<Auth2Demo.Web.Security.SecurityHeadersOptions>(
+    builder.Configuration.GetSection(Auth2Demo.Web.Security.SecurityHeadersOptions.SectionName));
+
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())
@@ -72,6 +75,7 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseForwardedHeaders();
+app.UseAuth2DemoSecurityHeaders();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 

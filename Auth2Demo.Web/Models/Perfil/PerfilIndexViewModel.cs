@@ -4,6 +4,13 @@ using Microsoft.AspNetCore.Identity;
 
 namespace Auth2Demo.Web.Models.Perfil;
 
+public sealed record PasswordPolicyViewModel(
+    int RequiredLength,
+    bool RequireDigit,
+    bool RequireUppercase,
+    bool RequireLowercase,
+    bool RequireNonAlphanumeric);
+
 public sealed class PerfilIndexViewModel
 {
     public required ApplicationUser User { get; init; }
@@ -17,6 +24,7 @@ public sealed class PerfilIndexViewModel
     public required IReadOnlyList<MfaMethod> MfaMethods { get; init; }
     public required IReadOnlyList<PasskeyCredential> Passkeys { get; init; }
     public required bool HasLocalPassword { get; init; }
+    public required PasswordPolicyViewModel PasswordPolicy { get; init; }
 
     public bool HasMfa => User.TwoFactorEnabled || MfaMethods.Count > 0;
     public bool HasExternalLogin => ExternalLogins.Count > 0;

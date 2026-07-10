@@ -1,0 +1,12 @@
+.warning-card { margin-bottom: 18px; }
+    .mfa-setup-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .qr-card { text-align: center; }
+    .qr-code { width: min(320px, 100%); border: 1px solid #d7e3f5; border-radius: 22px; padding: 14px; background: #fff; }
+    .manual-key { margin-top: 18px; text-align: left; }
+    .manual-key code { display: block; background: #f3f7ff; border: 1px solid #d7e3f5; border-radius: 14px; padding: 12px; color: #061a3d; word-break: break-all; }
+    .form-stack { display: grid; gap: 10px; }
+    .form-control { border: 1px solid #c7d7ee; border-radius: 14px; padding: 13px 14px; }
+    .btn-success { background: #198754 !important; color: #fff !important; }
+    .action-row { display: flex; flex-wrap: wrap; gap: 10px; }
+    .mt-3 { margin-top: 16px; }
+    @media (max-width: 900px) { .mfa-setup-grid { grid-template-columns: 1fr; } }

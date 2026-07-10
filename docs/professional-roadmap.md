@@ -1,176 +1,104 @@
-# Professional Roadmap
+# Professional roadmap
 
-This roadmap tracks the evolution of Auth2Demo into a professional OAuth 2.0 and OpenID Connect identity provider.
+This roadmap distinguishes implemented foundations from recommended production milestones.
 
-## Completed or in progress
+## Implemented foundations
 
-### Client management
+### Protocol and applications
 
-- Client administration through the UI
-- Redirect URI management
-- Post logout redirect URI management
-- API permissions
-- Required claims
-- Client details page
-- Client secret management
-- Multiple secrets per client
-- Secret rotation support
-- Application audit screens
-- Application secret audit screens
+- OpenIddict-backed applications, authorizations, scopes, and tokens.
+- Authorization Code with PKCE.
+- Client Credentials and refresh-token scenarios.
+- App registration administration.
+- Redirect URI and permission management.
+- Client secret lifecycle metadata and audit views.
+- Per-client branding and authentication method configuration.
 
-### Branding and white-label experience
+### Multi-tenant governance
 
-- Global Auth2Demo branding
-- Per-client branding configuration
-- Professional theme presets
-- Live preview
-- Login page branding resolution
-- Authorization page visual improvements
-- Client-specific authentication method configuration
+- Companies as internal tenants.
+- Multi-company user memberships.
+- Tenant-owned groups and group members.
+- Tenant-owned external identity providers.
+- Allowed tenants and providers per enterprise application.
+- Optional mandatory assignment.
+- Direct user and group assignments.
+- Application roles and access evaluation.
 
-### Authentication methods
+### Identity and security
 
-- Username and password option per client
-- External provider options per client
-- Providers loaded from enabled IdentityProviders records
-- Live preview synchronized with selected methods
-- Real authentication screen synchronized with selected methods
+- Local accounts and external login.
+- Persisted security settings.
+- Password-policy propagation to registration and profile flows.
+- Sessions, devices, MFA, and passkey administration models/screens.
+- Persistent Data Protection keys.
+- Audit-oriented administration areas.
 
-### Administration portal
+### Administration and experience
 
-- Dashboard
-- Clients
-- Scopes
-- Permissions
-- Identity Providers
-- Users
-- Roles
-- MFA
-- Passkeys
-- Sessions
-- Devices
-- Branding
-- Security Settings
-- Email Templates
-- Audit Logs
-- Token Explorer
-- Health
+- Professional workspace-oriented admin navigation.
+- Global and tenant-scoped directory screens.
+- Enterprise application configuration.
+- Localization in `pt-BR` and `en-US`.
+- Branding and email template administration.
 
-### Localization
+## Priority 1: correctness and automated coverage
 
-- Resource-based localization
-- English and Portuguese resources
-- User profile culture support
-- Ongoing cleanup of hardcoded UI text
+- Replace sample tests with domain, service, and protocol tests.
+- Add SQL Server integration tests for cascade behavior and unique constraints.
+- Add end-to-end tests for tenant assignment decisions.
+- Add concurrency handling for administration updates.
+- Add systematic audit events for all governance changes.
+- Eliminate all compiler and resource warnings.
 
-## Next milestones
+## Priority 2: protocol and key hardening
 
-### OAuth/OIDC discovery
+- Use explicit production signing and encryption certificates or managed keys.
+- Document and test discovery metadata.
+- Add token lifetime and refresh-token rotation policies.
+- Add revocation and cleanup jobs.
+- Add DPoP or sender-constrained token research where applicable.
+- Add PAR/JAR support assessment for higher-security clients.
 
-Improve and document the `.well-known/openid-configuration` experience, including metadata validation and examples for client applications.
+## Priority 3: identity security
 
-### Consent screen
+- Enforce administrator MFA.
+- Complete passkey registration and authentication with WebAuthn.
+- Add recovery codes and secure account recovery.
+- Add breached-password checks and password history where required.
+- Add rate limiting, adaptive lockout, and suspicious-sign-in signals.
+- Add step-up authentication and recent-authentication requirements.
 
-Create a more complete consent experience similar to commercial identity providers.
+## Priority 4: governance maturity
 
-Planned improvements:
+- Tenant administrators and delegated administration.
+- Group ownership and dynamic groups.
+- Assignment start/end dates and temporary access.
+- Access reviews and approval workflows.
+- Entitlement packages.
+- Separation-of-duties policies.
+- SCIM provisioning and deprovisioning.
+- Automated joiner/mover/leaver workflows.
 
-- Scope grouping
-- User-friendly permission descriptions
-- Client trust indicators
-- Remembered consent
-- Admin-configurable consent policies
+## Priority 5: federation
 
-### Advanced scopes and claims
+- Generic OIDC provider support.
+- SAML 2.0 federation.
+- Provider metadata validation and health checks.
+- Home-realm discovery using verified domains.
+- Microsoft Entra issuer and tenant allow-list validation.
+- Claim transformation and mapping rules.
 
-Expand scope and claim management.
+## Priority 6: operations
 
-Planned improvements:
-
-- Custom claim mapping
-- Claim rules per client
-- Scope descriptions for consent
-- API resource grouping
-- Claim preview/testing tools
-
-### Passkeys and WebAuthn
-
-Complete production-ready passkey support.
-
-Planned improvements:
-
-- Passkey enrollment
-- Passkey authentication
-- Device naming
-- Recovery flows
-- Admin visibility
-- Security event auditing
-
-### MFA policies
-
-Expand MFA into a full policy-driven system.
-
-Planned improvements:
-
-- MFA requirement per client
-- MFA requirement per role
-- Recovery code policies
-- Enrollment enforcement
-- Admin reset flows
-
-### Advanced auditing
-
-Improve audit coverage and reporting.
-
-Planned improvements:
-
-- Filtering and export
-- Actor and target details
-- Before/after values
-- Security event severity
-- Audit retention configuration
-
-### Dashboard with real metrics
-
-Expand the dashboard with real operational metrics.
-
-Planned metrics:
-
-- Login volume
-- Failed login attempts
-- Active clients
-- Active users
-- Token activity
-- Provider usage
-- MFA adoption
-- Secret expiration warnings
-
-### Federation improvements
-
-Improve support for enterprise federation scenarios.
-
-Planned improvements:
-
-- More provider types
-- Provider-specific settings
-- Per-client provider restrictions
-- Provider health validation
-- Better callback troubleshooting
-
-### Production hardening
-
-Prepare Auth2Demo for stronger production use.
-
-Planned improvements:
-
-- Stronger security headers
-- Rate limiting
-- Lockout policies
-- Secret storage hardening
-- Admin authorization policies
-- Background cleanup jobs
-- Token and authorization retention policies
+- Structured telemetry and distributed tracing.
+- Real dashboard metrics and alerting.
+- Secret and certificate expiration alerts.
+- Background cleanup and retention jobs.
+- Exportable audit reports.
+- Backup/restore drills and disaster-recovery documentation.
+- CI/CD with DEV, QA, and production environments.
 
 ## Long-term vision
 
-Auth2Demo should become a complete identity provider platform with a professional admin portal, customizable authentication experience, strong auditing, production-grade security, and a clean architecture that can support real enterprise scenarios.
+Auth2Demo should evolve into a secure enterprise identity platform with standards-compliant protocols, tenant-aware federation, governed application access, delegated administration, strong observability, and automated lifecycle management.

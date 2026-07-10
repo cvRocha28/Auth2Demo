@@ -1,90 +1,109 @@
-# Deployment
+# Deployment and operations
 
-This document describes the basic deployment requirements for Auth2Demo.
+## Prerequisites
 
-## Requirements
+- .NET 10 runtime or hosting bundle.
+- SQL Server or Azure SQL.
+- HTTPS endpoint and trusted certificate.
+- Persistent Data Protection storage.
+- Production signing/encryption key strategy.
+- Secure configuration and secret storage.
 
-- .NET 10 Runtime or SDK
-- SQL Server
-- HTTPS endpoint
-- Valid connection string
-- Proper redirect URI configuration for each client
-- Secure secret storage for production settings
+## Build and publish
 
-## Local development
-
-Restore dependencies:
-
-```bash
+```powershell
 dotnet restore
+dotnet build --configuration Release
+dotnet test --configuration Release
+dotnet publish Auth2Demo.Web --configuration Release --output publish
 ```
 
-Build the solution:
+## Database deployment
 
-```bash
-dotnet build
+Generate and review an idempotent migration script:
+
+```powershell
+dotnet ef migrations script --idempotent `
+  --project Auth2Demo.Infrastructure `
+  --startup-project Auth2Demo.Web `
+  --output Auth2Demo.sql
 ```
 
-Apply migrations:
+Prefer a controlled deployment step over allowing the web process to make unrestricted production schema changes.
 
-```bash
-dotnet ef database update --project Auth2Demo.Infrastructure --startup-project Auth2Demo.Web
-```
+## Reverse proxy
 
-Run the web project:
+Auth2Demo reads `X-Forwarded-For` and `X-Forwarded-Proto`. In production:
 
-```bash
-dotnet run --project Auth2Demo.Web
-```
+- configure the proxy to overwrite, not append untrusted values;
+- restrict ASP.NET Core known proxies/networks;
+- preserve the public HTTPS scheme and host;
+- test `/signin-*`, `/connect/authorize`, `/connect/token`, and logout callbacks.
 
-## Entity Framework migrations
+Incorrect forwarded headers commonly produce HTTP redirect URIs behind an HTTPS proxy.
 
-The Infrastructure project owns migrations. Use the Web project as the startup project because it contains the runtime configuration and dependency injection setup.
+## IIS
 
-```bash
-dotnet ef migrations add MigrationName --project Auth2Demo.Infrastructure --startup-project Auth2Demo.Web --output-dir Persistence/Migrations
-```
+For IIS deployment:
 
-## HTTPS
+- install the .NET 10 Hosting Bundle;
+- use an application pool without managed CLR;
+- grant the application identity only required file and certificate access;
+- store secrets outside `web.config` when possible;
+- enable stdout logs only during troubleshooting and remove them afterward;
+- configure application initialization and health probes.
 
-OAuth and OpenID Connect deployments should use HTTPS. Local development can use the ASP.NET Core development certificate, but production environments must use a trusted certificate.
+## Multiple instances
 
-## Reverse proxy considerations
+All instances must share:
 
-When deploying behind IIS, Nginx, Cloudflare, a load balancer, or another reverse proxy, make sure forwarded headers are configured correctly so the application can resolve the public scheme and host.
+- the same database schema;
+- the same Data Protection key ring and application name;
+- compatible signing and encryption keys;
+- synchronized time;
+- consistent public issuer and callback URLs.
 
-Important headers:
+Avoid in-memory state for security decisions that must survive restarts or scale-out.
 
-- X-Forwarded-For
-- X-Forwarded-Proto
-- X-Forwarded-Host
+## Health and monitoring
 
-Incorrect forwarded header configuration can cause invalid redirect URIs, wrong HTTP/HTTPS generation, and authentication callback issues.
+Monitor:
 
-## Production configuration
+- process availability and restart count;
+- database connectivity and latency;
+- sign-in success/failure rates;
+- OpenIddict endpoint errors;
+- token issuance latency;
+- external provider failures;
+- Data Protection key access;
+- expiring client/provider secrets;
+- assignment-based access denials;
+- audit ingestion failures.
 
-Recommended production practices:
+## Backup and recovery
 
-- Store connection strings and secrets outside source control
-- Use environment variables or a secure secret provider
-- Enable HTTPS only
-- Review cookie settings
-- Validate redirect URIs and post logout redirect URIs
-- Rotate client secrets regularly
-- Keep audit data enabled
-- Restrict admin access to authorized users only
-- Use strong database backups
+Back up:
 
-## Client deployment checklist
+- SQL Server databases;
+- signing/encryption key material;
+- provider-secret protection keys;
+- deployment configuration;
+- certificates and renewal procedures.
 
-For each client application:
+Test restore procedures regularly. A database restore without the matching protection keys can make stored secrets or cookies unusable.
 
-- Register the correct ClientId
-- Configure allowed redirect URIs
-- Configure allowed post logout redirect URIs
-- Select the correct grant types
-- Configure required scopes and API permissions
-- Create or rotate client secrets when needed
-- Configure branding if the client requires a custom experience
-- Configure authentication methods for the client
-- Test the complete authorization flow
+## Production checklist
+
+- [ ] Release build and tests pass.
+- [ ] Migration SQL reviewed and backed up.
+- [ ] HTTPS and public issuer verified.
+- [ ] Redirect URIs verified for every client/provider.
+- [ ] Development seed credentials removed.
+- [ ] Admin MFA enforced.
+- [ ] Trusted proxies explicitly configured.
+- [ ] Signing and encryption keys are production-grade.
+- [ ] Data Protection keys are shared and backed up.
+- [ ] Secrets are loaded from a secure store.
+- [ ] Rate limiting and security headers configured.
+- [ ] Audit retention and alerting configured.
+- [ ] Health checks and rollback plan tested.

@@ -1,0 +1,36 @@
+@model Auth2Demo.Application.Services.Admin.CompanyDirectoryData
+@{ ViewData["Title"] = $"{Model.CompanyName} groups"; }
+@section AdminHeader {
+    <span class="admin-page-kicker"><i class="bi bi-collection"></i> TENANT GROUPS</span>
+    <h1>@Model.CompanyName groups</h1>
+    <p>Create tenant-scoped security groups. Member management is handled in each group's dedicated workspace.</p>
+}
+@section AdminActions {
+    <a class="btn btn-outline" asp-action="Index" asp-route-companyId="@Model.CompanyId"><i class="bi bi-arrow-left"></i> Tenant overview</a>
+    <a class="btn btn-outline" asp-controller="Directory" asp-action="Groups" asp-route-companyId="@Model.CompanyId"><i class="bi bi-globe2"></i> Global group view</a>
+}
+@if (TempData["Success"] is string ok) { <div class="alert alert-success">@ok</div> }
+@if (TempData["Error"] is string err) { <div class="alert alert-danger">@err</div> }
+
+<div class="row g-4">
+    <div class="col-xl-8">
+        <section class="admin-card">
+            <div class="admin-card-header"><div><strong>Security groups</strong><span>Groups are reusable principals for Enterprise Application assignments.</span></div><span class="badge text-bg-primary">@Model.Groups.Count</span></div>
+            <div class="table-responsive"><table class="table align-middle mb-0"><thead><tr><th>Group</th><th>Members</th><th>Status</th><th class="text-end">Actions</th></tr></thead><tbody>
+            @if (Model.Groups.Count == 0) { <tr><td colspan="4" class="text-center py-5 text-muted">No groups exist for this tenant.</td></tr> }
+            @foreach (var group in Model.Groups) { <tr><td><strong>@group.Name</strong><div class="text-muted small">@(group.Description ?? "No description")</div></td><td>@group.MemberCount</td><td><span class="badge @(group.IsEnabled ? "text-bg-success" : "text-bg-secondary")">@(group.IsEnabled ? "Active" : "Disabled")</span></td><td class="text-end"><a class="btn btn-sm btn-outline-primary" asp-controller="Directory" asp-action="Group" asp-route-id="@group.Id">Manage group <i class="bi bi-arrow-right"></i></a></td></tr> }
+            </tbody></table></div>
+        </section>
+    </div>
+    <div class="col-xl-4">
+        <section class="admin-card">
+            <div class="admin-card-header"><div><strong><i class="bi bi-plus-circle"></i> Create group</strong><span>The group will belong exclusively to @Model.CompanyName.</span></div></div>
+            <form asp-action="CreateGroup" method="post" class="p-4">
+                @Html.AntiForgeryToken()<input type="hidden" name="companyId" value="@Model.CompanyId" />
+                <div class="mb-3"><label class="form-label">Group name</label><input class="form-control" name="name" maxlength="160" required placeholder="e.g. Finance Approvers" /></div>
+                <div class="mb-4"><label class="form-label">Description</label><textarea class="form-control" name="description" rows="4" maxlength="500" placeholder="Explain the business purpose and expected membership."></textarea></div>
+                <button class="btn btn-primary w-100" type="submit"><i class="bi bi-plus-circle"></i> Create and manage members</button>
+            </form>
+        </section>
+    </div>
+</div>

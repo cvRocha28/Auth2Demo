@@ -17,6 +17,8 @@ public sealed class IdentityProvider : AuditableEntity<Guid>
         SortOrder = 100;
     }
 
+    public Guid? CompanyId { get; private set; }
+    public Company? Company { get; private set; }
     public string Name { get; private set; } = string.Empty;
     public string DisplayName { get; private set; } = string.Empty;
     public string Scheme { get; private set; } = string.Empty;
@@ -42,7 +44,8 @@ public sealed class IdentityProvider : AuditableEntity<Guid>
         string? authority,
         string? callbackPath,
         bool isEnabled,
-        int sortOrder)
+        int sortOrder,
+        Guid? companyId = null)
     {
         DisplayName = displayName.Trim();
         Scheme = scheme.Trim();
@@ -55,6 +58,13 @@ public sealed class IdentityProvider : AuditableEntity<Guid>
         CallbackPath = string.IsNullOrWhiteSpace(callbackPath) ? null : callbackPath.Trim();
         IsEnabled = isEnabled;
         SortOrder = sortOrder;
+        CompanyId = companyId;
+        MarkAsUpdated();
+    }
+
+    public void AssignToCompany(Guid? companyId)
+    {
+        CompanyId = companyId;
         MarkAsUpdated();
     }
 

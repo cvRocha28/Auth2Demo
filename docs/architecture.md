@@ -1,91 +1,153 @@
 # Architecture
 
-Auth2Demo follows a Clean Architecture approach. The solution separates business rules, application contracts, persistence, infrastructure, and presentation concerns so the identity platform can evolve without tightly coupling the UI to database or provider-specific implementation details.
-
-## Solution structure
+Auth2Demo follows a Clean Architecture-oriented structure. Dependencies point inward: Web depends on Application and Infrastructure, Infrastructure depends on Application and Domain, Application depends on Domain, and Domain has no project dependency.
 
 ```text
-Auth2Demo.Domain
-Auth2Demo.Application
-Auth2Demo.Infrastructure
-Auth2Demo.Web
+                ┌──────────────────┐
+                │   Auth2Demo.Web  │
+                └────────┬─────────┘
+                         │
+          ┌──────────────┴──────────────┐
+          │                             │
+┌─────────▼──────────┐       ┌──────────▼──────────┐
+│ Auth2Demo.Application│       │Auth2Demo.Infrastructure│
+└─────────┬──────────┘       └──────────┬──────────┘
+          │                             │
+          └──────────────┬──────────────┘
+                         │
+                ┌────────▼────────┐
+                │ Auth2Demo.Domain│
+                └─────────────────┘
 ```
 
-## Auth2Demo.Domain
+## Domain
 
-The Domain project contains the core entities and domain concepts used by the identity platform. It includes security-related entities such as branding settings, identity providers, audit records, and application secret metadata.
+`Auth2Demo.Domain` contains business concepts and persistence-agnostic entities.
 
-This layer should remain independent from ASP.NET Core, Entity Framework Core, OpenIddict implementation details, and UI concerns.
+Main identity concepts:
 
-## Auth2Demo.Application
+- `Company`
+- `CompanyUser`
+- `CompanyGroup`
+- `CompanyGroupMember`
+- `IdentityProvider`
+- `ApplicationTenantAssignment`
+- `ApplicationIdentityProvider`
+- `EnterpriseApplicationRole`
+- `EnterpriseApplicationAssignment`
+- `IdentityApplicationSecret`
 
-The Application project defines service contracts, DTOs, common abstractions, and application-level models. It acts as the boundary between the web layer and infrastructure implementation.
+Main security concepts:
 
-Main responsibilities:
+- `SecuritySettings`
+- `AuditLog`
+- `BrandingSettings`
+- `EmailTemplate`
+- `MfaMethod`
+- `PasskeyCredential`
+- `Permission`
+- `RolePermission`
+- `UserSession`
+- `UserDevice`
 
-- Define service contracts used by controllers
-- Expose DTOs for clients, scopes, users, and administration data
-- Define common abstractions such as current user and date/time provider
-- Keep application logic independent from MVC and EF Core implementation details
+Domain entities should own invariants that do not require infrastructure. They must not reference controllers, Razor views, EF Core, OpenIddict managers, or HTTP objects.
 
-## Auth2Demo.Infrastructure
+## Application
 
-The Infrastructure project implements persistence, repositories, application services, OpenIddict integration, migrations, and database seeding.
+`Auth2Demo.Application` defines use-case boundaries and transport-neutral models.
 
-Main responsibilities:
+Responsibilities:
 
-- Entity Framework Core DbContext
-- OpenIddict application persistence
-- IdentityProvider persistence
-- BrandingSettings persistence
-- Client secret storage and rotation support
-- Audit data storage
-- Repository implementations
-- Initial database seeding
+- service interfaces consumed by Web;
+- DTOs and application records;
+- repository abstractions;
+- common abstractions such as `IApplicationDbContext`, `ICurrentUser`, and `IDateTimeProvider`;
+- tenant-governance and enterprise-application access contracts;
+- shared authorization role names.
 
-## Auth2Demo.Web
+Application contracts should describe intent rather than persistence details. Controllers should call application services instead of querying `ApplicationDbContext` directly.
 
-The Web project contains the MVC application, authentication endpoints, admin portal, UI views, static assets, localization resources, and branding resolution.
+## Infrastructure
 
-Main responsibilities:
+`Auth2Demo.Infrastructure` contains implementation details:
 
-- Public authentication screens
-- Authorization and consent flow
-- Account management
-- User profile portal
-- Administration portal
-- Client branding UI
-- Authentication method configuration UI
-- Localization and culture selection
-- Runtime branding resolution
+- `ApplicationDbContext` and EF Core mappings;
+- SQL Server configuration;
+- ASP.NET Core Identity stores;
+- OpenIddict persistence and server configuration;
+- repositories and application service implementations;
+- password policy resolution and dynamic password validation;
+- external identity provider resolution;
+- client secret generation and provider-secret protection;
+- persistent Data Protection keys;
+- database initialization and seed data.
 
-## Branding architecture
+Delete behavior and relational constraints belong here. Services should use transactions when one operation modifies multiple aggregates or association tables.
 
-Branding is resolved at runtime by combining global branding settings with client-specific branding metadata. Client-specific branding is stored in the OpenIddict application properties under the Auth2Demo branding payload.
+## Web
 
-The branding resolver is responsible for:
+`Auth2Demo.Web` is the presentation and HTTP layer.
 
-- Reading global branding settings
-- Detecting the current client from the OpenID Connect request
-- Loading client-specific branding metadata
-- Merging global and client-level settings
-- Providing a view model used by authentication pages
+Responsibilities:
 
-## Authentication method architecture
+- MVC controllers and Razor views;
+- request validation and antiforgery protection;
+- authentication and authorization policies;
+- route composition;
+- localization and culture selection;
+- UI view models;
+- branding resolution;
+- HTTP-specific error handling.
 
-Authentication method configuration is client-specific. The client branding configuration stores which methods are allowed for the client, including username/password and external identity providers.
+The Web project should not contain core access rules or raw persistence logic. View models are allowed to be UI-specific and should not leak into Domain.
 
-External providers are loaded from enabled records in the IdentityProviders table. This allows the admin portal, live preview, and real login screen to stay consistent with the current provider configuration.
+## Runtime request flow
 
-## Administration architecture
+A typical administrative request follows this path:
 
-The administration portal is implemented under the Admin area. Controllers depend on application service contracts instead of accessing the database directly. This keeps the UI thin and allows business and persistence rules to remain testable and reusable.
+```text
+Razor form
+  -> Admin controller
+  -> Application service contract
+  -> Infrastructure service/repository
+  -> ApplicationDbContext / OpenIddict manager
+  -> SQL Server
+```
 
-## Design principles
+A typical authorization request follows this path:
 
-- Keep domain and application layers independent from UI concerns
-- Keep controllers focused on request handling and orchestration
-- Use services and repositories for business and data access logic
-- Store audit-relevant data instead of deleting important security history
-- Make client-level authentication and branding configuration explicit
-- Keep localization centralized through resources
+```text
+Client /connect/authorize request
+  -> AuthorizationController
+  -> local or external authentication
+  -> tenant/provider resolution
+  -> enterprise access evaluator
+  -> OpenIddict principal and destinations
+  -> authorization code/token
+```
+
+## Composition root
+
+`Auth2Demo.Web/Program.cs` is the composition root. It registers:
+
+- Application services;
+- Infrastructure services;
+- Identity and OpenIddict;
+- MVC and Razor Pages;
+- localization;
+- branding resolution;
+- forwarded headers;
+- application cookies;
+- authorization policies.
+
+The startup pipeline initializes the database through `IApplicationInitializer` before mapping normal application traffic.
+
+## Cross-cutting conventions
+
+- Use UTC or `DateTimeOffset` for persisted timestamps.
+- Use cancellation tokens in I/O-bound services when practical.
+- Keep secrets out of logs, audit payloads, URLs, and validation messages.
+- Use transactions for membership removal, assignment cleanup, group deletion, and other multi-table operations.
+- Use explicit SQL Server delete behavior to avoid cascade cycles.
+- Keep initialization idempotent.
+- Keep resource strings synchronized across all supported cultures.

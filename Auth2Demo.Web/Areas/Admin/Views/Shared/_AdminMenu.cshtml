@@ -4,78 +4,87 @@
     var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? string.Empty;
     var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? string.Empty;
 
-    bool IsController(params string[] controllers) =>
-        controllers.Any(controller => string.Equals(controller, currentController, StringComparison.OrdinalIgnoreCase));
-
-    bool IsActive(string controller, string action = "Index") =>
+    bool IsController(params string[] controllers) => controllers.Any(x => string.Equals(x, currentController, StringComparison.OrdinalIgnoreCase));
+    bool IsActive(string controller, params string[] actions) =>
         string.Equals(currentArea, "Admin", StringComparison.OrdinalIgnoreCase)
         && string.Equals(currentController, controller, StringComparison.OrdinalIgnoreCase)
-        && string.Equals(currentAction, action, StringComparison.OrdinalIgnoreCase);
+        && (actions.Length == 0 || actions.Any(x => string.Equals(x, currentAction, StringComparison.OrdinalIgnoreCase)));
 
     var overviewOpen = IsController("Dashboard", "Health");
-    var accessOpen = IsController("Users", "Roles", "Permissions");
-    var authenticationOpen = IsController("IdentityProviders", "Mfa", "Passkeys", "Sessions", "Devices");
-    var applicationsOpen = IsController("Clients", "Scopes", "TokenExplorer");
-    var administrationOpen = IsController("AuditLogs", "ApplicationAudit", "ApplicationSecretsAudit", "EmailTemplates", "Branding", "SecuritySettings");
+    var directoryOpen = IsController("Directory", "TenantDirectory", "Users", "Companies", "Roles", "Permissions");
+    var applicationsOpen = IsController("Clients", "EnterpriseApplications", "EnterpriseAssignments", "Scopes", "TokenExplorer");
+    var identityOpen = IsController("IdentityProviders", "Mfa", "Passkeys", "SecuritySettings");
+    var monitoringOpen = IsController("Sessions", "Devices", "AuditLogs", "ApplicationAudit", "ApplicationSecretsAudit");
+    var experienceOpen = IsController("EmailTemplates", "Branding");
 }
-
-<aside class="admin-sidebar" aria-label="Menu administrativo">
+<aside class="admin-sidebar" aria-label="Administrative navigation">
     <a class="admin-brand" asp-area="Admin" asp-controller="Dashboard" asp-action="Index">
         <span class="admin-brand-mark"><i class="bi bi-shield-lock" aria-hidden="true"></i></span>
-        <span>
-            <strong>@T["Auth2demoAdmin"]</strong>
-            <small>Identity platform</small>
-        </span>
+        <span><strong>@T["Auth2demoAdmin"]</strong><small>@T["IdentityPlatform"]</small></span>
     </a>
 
     <div class="sidebar-menu" data-admin-menu>
         <details class="sidebar-group" @(overviewOpen ? "open" : null)>
-            <summary><span class="sidebar-icon"><i class="bi bi-grid-1x2" aria-hidden="true"></i></span><span class="sidebar-label">@T["Overview"]</span><span class="sidebar-arrow"><i class="bi bi-chevron-right"></i></span></summary>
+            <summary><span class="sidebar-icon"><i class="bi bi-grid-1x2"></i></span><span class="sidebar-label">@T["AdminOverview"]</span><span class="sidebar-arrow"><i class="bi bi-chevron-right"></i></span></summary>
             <div class="sidebar-items">
-                <a class="@(IsActive("Dashboard") ? "active" : null)" asp-area="Admin" asp-controller="Dashboard" asp-action="Index"><i class="bi bi-speedometer2" aria-hidden="true"></i> @T["Dashboard"]</a>
-                <a class="@(IsActive("Health") ? "active" : null)" asp-area="Admin" asp-controller="Health" asp-action="Index"><i class="bi bi-heart-pulse" aria-hidden="true"></i> @T["Health"]</a>
+                <a class="@(IsActive("Dashboard") ? "active" : null)" asp-controller="Dashboard" asp-action="Index"><i class="bi bi-speedometer2"></i> @T["AdminDashboard"]</a>
+                <a class="@(IsActive("Health") ? "active" : null)" asp-controller="Health" asp-action="Index"><i class="bi bi-heart-pulse"></i> @T["AdminPlatformHealth"]</a>
             </div>
         </details>
 
-        <details class="sidebar-group" @(accessOpen ? "open" : null)>
-            <summary><span class="sidebar-icon"><i class="bi bi-people" aria-hidden="true"></i></span><span class="sidebar-label">@T["AccessManagement"]</span><span class="sidebar-arrow"><i class="bi bi-chevron-right"></i></span></summary>
+        <details class="sidebar-group" @(directoryOpen ? "open" : null)>
+            <summary><span class="sidebar-icon"><i class="bi bi-people"></i></span><span class="sidebar-label">@T["AdminDirectory"]</span><span class="sidebar-arrow"><i class="bi bi-chevron-right"></i></span></summary>
             <div class="sidebar-items">
-                <a class="@(IsActive("Users") ? "active" : null)" asp-area="Admin" asp-controller="Users" asp-action="Index"><i class="bi bi-person" aria-hidden="true"></i> @T["Users"]</a>
-                <a class="@(IsActive("Roles") ? "active" : null)" asp-area="Admin" asp-controller="Roles" asp-action="Index"><i class="bi bi-shield-check" aria-hidden="true"></i> @T["Roles"]</a>
-                <a class="@(IsActive("Permissions") ? "active" : null)" asp-area="Admin" asp-controller="Permissions" asp-action="Index"><i class="bi bi-key" aria-hidden="true"></i> @T["Permissions"]</a>
-            </div>
-        </details>
-
-        <details class="sidebar-group" @(authenticationOpen ? "open" : null)>
-            <summary><span class="sidebar-icon"><i class="bi bi-shield-lock" aria-hidden="true"></i></span><span class="sidebar-label">@T["Authentication"]</span><span class="sidebar-arrow"><i class="bi bi-chevron-right"></i></span></summary>
-            <div class="sidebar-items">
-                <a class="@(IsActive("IdentityProviders") ? "active" : null)" asp-area="Admin" asp-controller="IdentityProviders" asp-action="Index"><i class="bi bi-globe2" aria-hidden="true"></i> @T["IdentityProviders"]</a>
-                <a class="@(IsActive("Mfa") ? "active" : null)" asp-area="Admin" asp-controller="Mfa" asp-action="Index"><i class="bi bi-shield-lock" aria-hidden="true"></i> @T["Mfa"]</a>
-                <a class="@(IsActive("Passkeys") ? "active" : null)" asp-area="Admin" asp-controller="Passkeys" asp-action="Index"><i class="bi bi-key-fill" aria-hidden="true"></i> @T["Passkeys"]</a>
-                <a class="@(IsActive("Sessions") ? "active" : null)" asp-area="Admin" asp-controller="Sessions" asp-action="Index"><i class="bi bi-pc-display" aria-hidden="true"></i> @T["Sessions"]</a>
-                <a class="@(IsActive("Devices") ? "active" : null)" asp-area="Admin" asp-controller="Devices" asp-action="Index"><i class="bi bi-phone" aria-hidden="true"></i> @T["Devices"]</a>
+                <a class="@(IsActive("Directory", "Index") ? "active" : null)" asp-controller="Directory" asp-action="Index"><i class="bi bi-diagram-2"></i> @T["AdminOverview"]</a>
+                <a class="@(IsActive("Directory", "Users") || IsActive("Users") ? "active" : null)" asp-controller="Directory" asp-action="Users"><i class="bi bi-person-lines-fill"></i> @T["AdminUsers"]</a>
+                <a class="@(IsActive("Directory", "Groups", "Group") ? "active" : null)" asp-controller="Directory" asp-action="Groups"><i class="bi bi-collection"></i> @T["AdminGroups"]</a>
+                <a class="@(IsActive("Companies") || IsActive("TenantDirectory") ? "active" : null)" asp-controller="Companies" asp-action="Index"><i class="bi bi-buildings"></i> @T["AdminCompanies"]</a>
+                <a class="@(IsActive("Roles") ? "active" : null)" asp-controller="Roles" asp-action="Index"><i class="bi bi-shield-check"></i> @T["AdminPlatformRoles"]</a>
+                <a class="@(IsActive("Permissions") ? "active" : null)" asp-controller="Permissions" asp-action="Index"><i class="bi bi-key"></i> @T["AdminPermissions"]</a>
             </div>
         </details>
 
         <details class="sidebar-group" @(applicationsOpen ? "open" : null)>
-            <summary><span class="sidebar-icon"><i class="bi bi-puzzle" aria-hidden="true"></i></span><span class="sidebar-label">@T["Applications"]</span><span class="sidebar-arrow"><i class="bi bi-chevron-right"></i></span></summary>
+            <summary><span class="sidebar-icon"><i class="bi bi-puzzle"></i></span><span class="sidebar-label">@T["AdminApplications"]</span><span class="sidebar-arrow"><i class="bi bi-chevron-right"></i></span></summary>
             <div class="sidebar-items">
-                <a class="@(IsActive("Clients") ? "active" : null)" asp-area="Admin" asp-controller="Clients" asp-action="Index"><i class="bi bi-puzzle" aria-hidden="true"></i> @T["Clients"]</a>
-                <a class="@(IsActive("Scopes") ? "active" : null)" asp-area="Admin" asp-controller="Scopes" asp-action="Index"><i class="bi bi-plug" aria-hidden="true"></i> @T["Scopes"]</a>
-                <a class="@(IsActive("TokenExplorer") ? "active" : null)" asp-area="Admin" asp-controller="TokenExplorer" asp-action="Index"><i class="bi bi-clipboard-pulse" aria-hidden="true"></i> @T["TokenExplorer"]</a>
+                <a class="@(IsActive("Clients") ? "active" : null)" asp-controller="Clients" asp-action="Index"><i class="bi bi-window-stack"></i> @T["AdminAppRegistrations"]</a>
+                <a class="@(IsActive("EnterpriseApplications") || IsActive("EnterpriseAssignments") ? "active" : null)" asp-controller="EnterpriseApplications" asp-action="Index"><i class="bi bi-diagram-3"></i> @T["AdminEnterpriseApplications"]</a>
+                <a class="@(IsActive("Scopes") ? "active" : null)" asp-controller="Scopes" asp-action="Index"><i class="bi bi-plug"></i> @T["AdminScopesClaims"]</a>
+                <a class="@(IsActive("TokenExplorer") ? "active" : null)" asp-controller="TokenExplorer" asp-action="Index"><i class="bi bi-clipboard-pulse"></i> @T["AdminTokenExplorer"]</a>
             </div>
         </details>
 
-        <details class="sidebar-group" @(administrationOpen ? "open" : null)>
-            <summary><span class="sidebar-icon"><i class="bi bi-gear" aria-hidden="true"></i></span><span class="sidebar-label">@T["Administration"]</span><span class="sidebar-arrow"><i class="bi bi-chevron-right"></i></span></summary>
+        <details class="sidebar-group" @(identityOpen ? "open" : null)>
+            <summary><span class="sidebar-icon"><i class="bi bi-person-lock"></i></span><span class="sidebar-label">@T["AdminIdentityAuthentication"]</span><span class="sidebar-arrow"><i class="bi bi-chevron-right"></i></span></summary>
             <div class="sidebar-items">
-                <a class="@(IsActive("AuditLogs") ? "active" : null)" asp-area="Admin" asp-controller="AuditLogs" asp-action="Index"><i class="bi bi-file-earmark-text" aria-hidden="true"></i> @T["AuditLogs"]</a>
-                <a class="@(IsActive("ApplicationAudit") ? "active" : null)" asp-area="Admin" asp-controller="ApplicationAudit" asp-action="Index"><i class="bi bi-database-check" aria-hidden="true"></i> @T["ApplicationAudit"]</a>
-                <a class="@(IsActive("ApplicationSecretsAudit") ? "active" : null)" asp-area="Admin" asp-controller="ApplicationSecretsAudit" asp-action="Index"><i class="bi bi-key" aria-hidden="true"></i> @T["ApplicationSecretsAudit"]</a>
-                <a class="@(IsActive("EmailTemplates") ? "active" : null)" asp-area="Admin" asp-controller="EmailTemplates" asp-action="Index"><i class="bi bi-envelope" aria-hidden="true"></i> @T["Emails"]</a>
-                <a class="@(IsActive("Branding") ? "active" : null)" asp-area="Admin" asp-controller="Branding" asp-action="Index"><i class="bi bi-palette" aria-hidden="true"></i> @T["Branding"]</a>
-                <a class="@(IsActive("SecuritySettings") ? "active" : null)" asp-area="Admin" asp-controller="SecuritySettings" asp-action="Index"><i class="bi bi-gear" aria-hidden="true"></i> @T["Security"]</a>
+                <a class="@(IsActive("IdentityProviders") ? "active" : null)" asp-controller="IdentityProviders" asp-action="Index"><i class="bi bi-globe2"></i> @T["AdminIdentityProviders"]</a>
+                <a class="@(IsActive("Mfa") ? "active" : null)" asp-controller="Mfa" asp-action="Index"><i class="bi bi-shield-lock"></i> @T["AdminMfa"]</a>
+                <a class="@(IsActive("Passkeys") ? "active" : null)" asp-controller="Passkeys" asp-action="Index"><i class="bi bi-key-fill"></i> @T["AdminPasskeys"]</a>
+                <a class="@(IsActive("SecuritySettings") ? "active" : null)" asp-controller="SecuritySettings" asp-action="Index"><i class="bi bi-sliders"></i> @T["AdminSecuritySettings"]</a>
             </div>
         </details>
+
+        <details class="sidebar-group" @(monitoringOpen ? "open" : null)>
+            <summary><span class="sidebar-icon"><i class="bi bi-activity"></i></span><span class="sidebar-label">@T["AdminMonitoringAudit"]</span><span class="sidebar-arrow"><i class="bi bi-chevron-right"></i></span></summary>
+            <div class="sidebar-items">
+                <a class="@(IsActive("Sessions") ? "active" : null)" asp-controller="Sessions" asp-action="Index"><i class="bi bi-pc-display"></i> @T["AdminActiveSessions"]</a>
+                <a class="@(IsActive("Devices") ? "active" : null)" asp-controller="Devices" asp-action="Index"><i class="bi bi-phone"></i> @T["AdminDevices"]</a>
+                <a class="@(IsActive("AuditLogs") ? "active" : null)" asp-controller="AuditLogs" asp-action="Index"><i class="bi bi-journal-text"></i> @T["AdminAuditLogs"]</a>
+                <a class="@(IsActive("ApplicationAudit") ? "active" : null)" asp-controller="ApplicationAudit" asp-action="Index"><i class="bi bi-database-check"></i> @T["AdminApplicationAudit"]</a>
+                <a class="@(IsActive("ApplicationSecretsAudit") ? "active" : null)" asp-controller="ApplicationSecretsAudit" asp-action="Index"><i class="bi bi-key"></i> @T["AdminSecretAudit"]</a>
+            </div>
+        </details>
+
+        <details class="sidebar-group" @(experienceOpen ? "open" : null)>
+            <summary><span class="sidebar-icon"><i class="bi bi-palette"></i></span><span class="sidebar-label">@T["AdminExperience"]</span><span class="sidebar-arrow"><i class="bi bi-chevron-right"></i></span></summary>
+            <div class="sidebar-items">
+                <a class="@(IsActive("Branding") ? "active" : null)" asp-controller="Branding" asp-action="Index"><i class="bi bi-palette"></i> @T["AdminBranding"]</a>
+                <a class="@(IsActive("EmailTemplates") ? "active" : null)" asp-controller="EmailTemplates" asp-action="Index"><i class="bi bi-envelope"></i> @T["AdminEmailTemplates"]</a>
+            </div>
+        </details>
+    </div>
+
+    <div class="admin-sidebar-footer">
+        <a asp-area="" asp-controller="Home" asp-action="Index"><i class="bi bi-box-arrow-up-right"></i><span>@T["AdminOpenUserPortal"]</span></a>
     </div>
 </aside>

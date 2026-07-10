@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
 </head>
 <body class="admin-body">
     <div class="admin-app-shell">
@@ -79,28 +80,8 @@
             </main>
         </div>
     </div>
-
-    <script>
-        (() => {
-            const shell = document.querySelector('.admin-app-shell');
-            const button = document.querySelector('[data-admin-menu-button]');
-            button?.addEventListener('click', () => shell?.classList.toggle('admin-menu-open'));
-
-            const menu = document.querySelector('[data-admin-menu]');
-            if (!menu) return;
-
-            const groups = Array.from(menu.querySelectorAll('.sidebar-group'));
-            groups.forEach(group => {
-                group.addEventListener('toggle', () => {
-                    if (!group.open) return;
-                    groups.forEach(otherGroup => {
-                        if (otherGroup !== group) otherGroup.open = false;
-                    });
-                });
-            });
-        })();
-    </script>
-
-    @await RenderSectionAsync("Scripts", required: false)
+    <script src="~/js/site.js" asp-append-version="true" defer></script>
+    <script src="~/js/admin-layout.js" asp-append-version="true" defer></script>
+@await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

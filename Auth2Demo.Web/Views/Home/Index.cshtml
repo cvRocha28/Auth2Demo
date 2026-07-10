@@ -67,7 +67,7 @@
                     <dt>@T["Cargo"]</dt><dd>@(profile.JobTitle ?? T["NotInformed"].Value)</dd>
                     <dt>@T["Department"]</dt><dd>@(profile.Department ?? T["NotInformed"].Value)</dd>
                     <dt>@T["Language"]</dt><dd>@(profile.Locale ?? T["NotInformed"].Value)</dd>
-                    <dt>@T["Timezone"]</dt><dd>@(profile.TimeZone ?? T["NotInformed"].Value)</dd>
+                    <dt>@T["TimeZone"]</dt><dd>@(profile.TimeZone ?? T["NotInformed"].Value)</dd>
                     <dt>@T["CriadoEm"]</dt><dd>@profile.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</dd>
                     <dt>@T["LastLogin"]</dt><dd>@(profile.LastLoginAt?.ToLocalTime().ToString("dd/MM/yyyy HH:mm") ?? T["NotRegisteredYet"].Value)</dd>
                     <dt>@T["TextUltimaTrocaDeSenha"]</dt><dd>@(profile.LastPasswordChangeAt?.ToLocalTime().ToString("dd/MM/yyyy HH:mm") ?? T["NotRegisteredYetFemale"].Value)</dd>

@@ -1,62 +1,51 @@
 # Localization
 
-Auth2Demo uses ASP.NET Core localization with `IStringLocalizer` and `.resx` resource files.
+Auth2Demo uses ASP.NET Core localization and `.resx` resources.
 
-## Supported resource files
+## Supported cultures
 
-The Web project contains shared resource files under:
+- `pt-BR`
+- `en-US`
+
+The current default is `en-US`.
+
+## Resource files
 
 ```text
-Auth2Demo.Web/Resources
+Auth2Demo.Web/Resources/SharedResource.resx
+Auth2Demo.Web/Resources/SharedResource.en-US.resx
+Auth2Demo.Web/Resources/SharedResource.pt-BR.resx
 ```
 
-Current resource files:
+`SharedResource.resx` is the neutral fallback. Every user-facing key should be present once in each relevant resource file.
 
-- `SharedResource.resx`
-- `SharedResource.en-US.resx`
-- `SharedResource.pt-BR.resx`
+## Culture selection order
 
-## Localization approach
+1. `UserProfileRequestCultureProvider`.
+2. Localization cookie.
+3. Query string.
+4. `Accept-Language` request header.
+5. Default culture.
 
-Controllers and views should use localized strings instead of hardcoded text whenever the text is user-facing.
+## User profile
 
-Recommended usage:
+User profile fields can preserve language, culture, locale, country, and time-zone preferences. External providers may supply some of these claims, but the profile remains the authoritative user-editable source.
 
-- Use `IStringLocalizer<SharedResource>` in controllers and services that return UI-facing messages
-- Use injected localizer instances in Razor views
-- Keep resource keys consistent across all cultures
-- Add missing translations to all resource files when adding a new key
+## Development rules
 
-## Culture selection
+- Do not hardcode user-facing Portuguese or English in controllers or reusable views.
+- Use stable semantic resource keys.
+- Keep validation messages localized.
+- Do not duplicate resource keys; duplicate XML `<data name="...">` entries are ignored by MSBuild and produce warnings.
+- Keep placeholders, button labels, navigation, empty states, and confirmation messages synchronized.
+- Test both cultures after changing layout because translated text may be longer.
+- Use culture for display formatting, not for persisted numeric or timestamp storage.
 
-The project includes user profile culture resolution through a request culture provider. This allows the UI language to follow the user profile preference when available.
+## Adding a string
 
-## Current localization improvements
-
-Recent updates continued the localization effort by moving more user-facing strings to resources and improving English translations.
-
-Areas that should remain localized:
-
-- Account screens
-- MFA screens
-- Login and authorization screens
-- Admin portal labels
-- Validation messages
-- Success and error messages
-- Branding and client management UI
-
-## Best practices
-
-- Do not hardcode Portuguese or English text directly in controllers
-- Keep resource keys clear and reusable
-- Avoid duplicate keys with slightly different meanings
-- Validate both English and Portuguese screens after adding UI changes
-- Keep fallback resources complete
-
-## Adding a new localized string
-
-1. Add the key to `SharedResource.resx`
-2. Add the English value to `SharedResource.en-US.resx`
-3. Add the Portuguese value to `SharedResource.pt-BR.resx`
-4. Use the key through `IStringLocalizer<SharedResource>`
-5. Test the screen using both supported languages
+1. Add the key once to the neutral resource.
+2. Add the English translation.
+3. Add the Brazilian Portuguese translation.
+4. Reference the key through `IStringLocalizer<SharedResource>`.
+5. Build the Web project to detect resource problems.
+6. Test both cultures.

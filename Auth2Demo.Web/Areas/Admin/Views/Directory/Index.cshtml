@@ -1,0 +1,212 @@
+@model Auth2Demo.Application.Services.Admin.DirectoryOverviewData
+@{
+    ViewData["Title"] = "Directory overview";
+    var activeUserRate = Model.TotalUsers == 0 ? 0 : (int)Math.Round(Model.ActiveUsers * 100d / Model.TotalUsers);
+    var assignedUsers = Math.Max(0, Model.TotalUsers - Model.UnassignedUsers);
+    var assignedUserRate = Model.TotalUsers == 0 ? 0 : (int)Math.Round(assignedUsers * 100d / Model.TotalUsers);
+}
+
+@section AdminHeader {
+    <span class="admin-page-kicker"><i class="bi bi-diagram-3"></i> IDENTITY DIRECTORY</span>
+    <h1>Directory overview</h1>
+    <p>Centralize identities, tenant memberships, security groups and organization-level access in one operational workspace.</p>
+}
+
+@section AdminActions {
+    <a class="btn btn-outline" asp-action="Users"><i class="bi bi-person-lines-fill"></i> Browse users</a>
+    <a class="btn btn-outline" asp-action="Groups"><i class="bi bi-collection"></i> Browse groups</a>
+    <a class="btn btn-primary" asp-controller="Users" asp-action="Create"><i class="bi bi-person-plus"></i> Create user</a>
+}
+
+@if (TempData["Success"] is string success)
+{
+    <div class="alert alert-success d-flex align-items-center gap-2" role="alert"><i class="bi bi-check-circle-fill"></i><span>@success</span></div>
+}
+@if (TempData["Error"] is string error)
+{
+    <div class="alert alert-danger d-flex align-items-center gap-2" role="alert"><i class="bi bi-exclamation-triangle-fill"></i><span>@error</span></div>
+}
+
+<section class="dir-kpi-grid" aria-label="Directory summary">
+    <a class="dir-kpi-card" asp-action="Users">
+        <span class="dir-kpi-icon dir-kpi-blue"><i class="bi bi-people"></i></span>
+        <span class="dir-kpi-copy">
+            <small>Total identities</small>
+            <strong>@Model.TotalUsers</strong>
+            <span>@Model.ActiveUsers active <b>·</b> @Model.BlockedUsers blocked</span>
+        </span>
+        <i class="bi bi-arrow-up-right dir-kpi-arrow"></i>
+    </a>
+    <a class="dir-kpi-card" asp-action="Users">
+        <span class="dir-kpi-icon dir-kpi-green"><i class="bi bi-building-check"></i></span>
+        <span class="dir-kpi-copy">
+            <small>Active memberships</small>
+            <strong>@Model.ActiveMemberships</strong>
+            <span>@Model.DisabledMemberships disabled memberships</span>
+        </span>
+        <i class="bi bi-arrow-up-right dir-kpi-arrow"></i>
+    </a>
+    <a class="dir-kpi-card" asp-action="Groups">
+        <span class="dir-kpi-icon dir-kpi-violet"><i class="bi bi-collection"></i></span>
+        <span class="dir-kpi-copy">
+            <small>Security groups</small>
+            <strong>@Model.TotalGroups</strong>
+            <span>@Model.ActiveGroups active groups</span>
+        </span>
+        <i class="bi bi-arrow-up-right dir-kpi-arrow"></i>
+    </a>
+    <a class="dir-kpi-card @(Model.UnassignedUsers > 0 ? "dir-kpi-warning" : string.Empty)" asp-action="Users">
+        <span class="dir-kpi-icon dir-kpi-amber"><i class="bi bi-person-exclamation"></i></span>
+        <span class="dir-kpi-copy">
+            <small>Without active tenant</small>
+            <strong>@Model.UnassignedUsers</strong>
+            <span>@(Model.UnassignedUsers == 0 ? "All identities are classified" : "Review and assign these accounts")</span>
+        </span>
+        <i class="bi bi-arrow-up-right dir-kpi-arrow"></i>
+    </a>
+</section>
+
+<div class="dir-layout">
+    <section class="admin-card dir-tenants-card">
+        <header class="dir-card-header">
+            <div class="dir-card-title">
+                <span class="dir-title-icon"><i class="bi bi-buildings"></i></span>
+                <div>
+                    <strong>Tenant directory</strong>
+                    <span>Open a tenant to manage memberships, groups and identity providers.</span>
+                </div>
+            </div>
+            <div class="dir-header-actions">
+                <a class="btn btn-sm btn-outline" asp-controller="Companies" asp-action="Index"><i class="bi bi-gear"></i> Company settings</a>
+                <a class="btn btn-sm btn-primary" asp-controller="Companies" asp-action="Create"><i class="bi bi-plus-lg"></i> Add company</a>
+            </div>
+        </header>
+
+        @if (Model.Companies.Count == 0)
+        {
+            <div class="dir-empty-state">
+                <span><i class="bi bi-buildings"></i></span>
+                <h2>Create your first tenant</h2>
+                <p>A tenant represents a company or business unit and owns its memberships, groups and identity providers.</p>
+                <a class="btn btn-primary" asp-controller="Companies" asp-action="Create"><i class="bi bi-plus-lg"></i> Create company</a>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive dir-table-wrap">
+                <table class="table align-middle mb-0 dir-table">
+                    <thead>
+                        <tr>
+                            <th>Tenant</th>
+                            <th>Users</th>
+                            <th>Groups</th>
+                            <th>Providers</th>
+                            <th>Assignments</th>
+                            <th>Status</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var company in Model.Companies)
+                    {
+                        <tr class="@(!company.IsActive ? "dir-row-disabled" : string.Empty)">
+                            <td>
+                                <div class="dir-tenant-identity">
+                                    <span class="dir-tenant-avatar">@((string.IsNullOrWhiteSpace(company.Name) ? "?" : company.Name[..1]).ToUpperInvariant())</span>
+                                    <div>
+                                        <strong>@company.Name</strong>
+                                        <small>
+                                            <span>@(company.DomainHint ?? "No verified domain")</span>
+                                            @if (!string.IsNullOrWhiteSpace(company.Country) || !string.IsNullOrWhiteSpace(company.Culture))
+                                            {
+                                                <b>•</b>
+                                                <span>@(company.Country ?? company.Culture)</span>
+                                            }
+                                        </small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><strong class="dir-number">@company.UserCount</strong>@if (company.DisabledUserCount > 0){<small class="dir-submetric">@company.DisabledUserCount disabled</small>}</td>
+                            <td><strong class="dir-number">@company.GroupCount</strong>@if (company.DisabledGroupCount > 0){<small class="dir-submetric">@company.DisabledGroupCount disabled</small>}</td>
+                            <td><span class="dir-pill"><i class="bi bi-shield-check"></i> @company.ProviderCount</span></td>
+                            <td><span class="dir-pill"><i class="bi bi-link-45deg"></i> @company.ApplicationAssignmentCount</span></td>
+                            <td><span class="badge @(company.IsActive ? "text-bg-success" : "text-bg-secondary")">@(company.IsActive ? "Active" : "Disabled")</span></td>
+                            <td class="text-end">
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Manage</button>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li><a class="dropdown-item" asp-controller="TenantDirectory" asp-action="Index" asp-route-companyId="@company.Id"><i class="bi bi-speedometer2"></i> Tenant overview</a></li>
+                                        <li><a class="dropdown-item" asp-controller="TenantDirectory" asp-action="Users" asp-route-companyId="@company.Id"><i class="bi bi-people"></i> Users</a></li>
+                                        <li><a class="dropdown-item" asp-controller="TenantDirectory" asp-action="Groups" asp-route-companyId="@company.Id"><i class="bi bi-collection"></i> Groups</a></li>
+                                        <li><hr class="dropdown-divider" /></li>
+                                        <li><a class="dropdown-item" asp-controller="IdentityProviders" asp-action="Index" asp-route-companyId="@company.Id"><i class="bi bi-box-arrow-in-right"></i> Identity providers</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Companies" asp-action="Edit" asp-route-id="@company.Id"><i class="bi bi-gear"></i> Company settings</a></li>
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </section>
+
+    <aside class="dir-side-stack">
+        <section class="admin-card dir-side-card">
+            <header class="dir-card-header dir-card-header-compact">
+                <div class="dir-card-title">
+                    <span class="dir-title-icon"><i class="bi bi-heart-pulse"></i></span>
+                    <div><strong>Directory health</strong><span>Signals that may require attention.</span></div>
+                </div>
+            </header>
+            <div class="dir-health-list">
+                <a asp-action="Users" class="dir-health-item">
+                    <span class="dir-health-icon @(Model.UnassignedUsers > 0 ? "warning" : "success")"><i class="bi @(Model.UnassignedUsers > 0 ? "bi-exclamation-triangle" : "bi-check2")"></i></span>
+                    <span><strong>Tenant classification</strong><small>@(Model.UnassignedUsers == 0 ? "Every identity has an active tenant." : $"{Model.UnassignedUsers} identities need a tenant.")</small></span>
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+                <a asp-action="Users" class="dir-health-item">
+                    <span class="dir-health-icon @(Model.BlockedUsers > 0 ? "neutral" : "success")"><i class="bi bi-person-lock"></i></span>
+                    <span><strong>Account status</strong><small>@Model.BlockedUsers blocked or inactive identities.</small></span>
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+                <a asp-action="Groups" class="dir-health-item">
+                    <span class="dir-health-icon neutral"><i class="bi bi-diagram-2"></i></span>
+                    <span><strong>App assignments</strong><small>@Model.ApplicationAssignments active assignments.</small></span>
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+                <a asp-controller="Companies" asp-action="Index" class="dir-health-item">
+                    <span class="dir-health-icon @(Model.ActiveCompanies < Model.TotalCompanies ? "warning" : "success")"><i class="bi bi-buildings"></i></span>
+                    <span><strong>Tenant status</strong><small>@Model.ActiveCompanies of @Model.TotalCompanies tenants enabled.</small></span>
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+            </div>
+        </section>
+
+        <section class="admin-card dir-side-card">
+            <header class="dir-card-header dir-card-header-compact">
+                <div class="dir-card-title">
+                    <span class="dir-title-icon"><i class="bi bi-graph-up-arrow"></i></span>
+                    <div><strong>Coverage</strong><span>Current directory adoption.</span></div>
+                </div>
+            </header>
+            <div class="dir-coverage-body">
+                <div class="dir-progress-block">
+                    <div class="dir-progress-heading"><strong>Active identities</strong><span>@Model.ActiveUsers of @Model.TotalUsers</span></div>
+                    <div class="dir-progress-track" role="progressbar" aria-label="Active identities" aria-valuenow="@activeUserRate" aria-valuemin="0" aria-valuemax="100"><span data-progress-value="@activeUserRate"></span></div>
+                    <small>@activeUserRate% of identities are active</small>
+                </div>
+                <div class="dir-progress-block">
+                    <div class="dir-progress-heading"><strong>Tenant assignment</strong><span>@assignedUsers of @Model.TotalUsers</span></div>
+                    <div class="dir-progress-track" role="progressbar" aria-label="Tenant assignment" aria-valuenow="@assignedUserRate" aria-valuemin="0" aria-valuemax="100"><span data-progress-value="@assignedUserRate"></span></div>
+                    <small>@assignedUserRate% of identities are classified</small>
+                </div>
+            </div>
+            <nav class="dir-quick-actions" aria-label="Directory quick actions">
+                <a asp-action="Users"><span class="dir-quick-icon"><i class="bi bi-search"></i></span><span><strong>Find an identity</strong><small>Search by name, email or tenant</small></span><i class="bi bi-arrow-right"></i></a>
+                <a asp-action="Groups"><span class="dir-quick-icon"><i class="bi bi-collection"></i></span><span><strong>Manage groups</strong><small>Review members and assignments</small></span><i class="bi bi-arrow-right"></i></a>
+            </nav>
+        </section>
+    </aside>
+</div>

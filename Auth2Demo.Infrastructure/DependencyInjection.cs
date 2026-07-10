@@ -47,6 +47,7 @@ public static class DependencyInjection
         services.AddSingleton<IIdentityProviderSecretProtector, IdentityProviderSecretProtector>();
 
         services.AddScoped<ILocalAccountService, LocalAccountService>();
+        services.AddScoped<ISecurityPolicyService, SecurityPolicyService>();
         services.AddScoped<IIdentityEmailSender, NullIdentityEmailSender>();
 
         services.AddScoped<IAdminAuditLogRepository, AdminAuditLogRepository>();
@@ -56,10 +57,12 @@ public static class DependencyInjection
         services.AddScoped<IAdminEmailTemplateRepository, AdminEmailTemplateRepository>();
         services.AddScoped<IAdminHealthRepository, AdminHealthRepository>();
         services.AddScoped<IAdminSecuritySettingsRepository, AdminSecuritySettingsRepository>();
+        services.AddScoped<IAdminCompanyRepository, AdminCompanyRepository>();
         services.AddScoped<IAdminSessionRepository, AdminSessionRepository>();
         services.AddScoped<IAdminPasskeyRepository, AdminPasskeyRepository>();
         services.AddScoped<IAdminPermissionRepository, AdminPermissionRepository>();
         services.AddScoped<IAdminIdentityProviderRepository, AdminIdentityProviderRepository>();
+        services.AddScoped<IEnterpriseApplicationRepository, EnterpriseApplicationRepository>();
         services.AddScoped<IAdminMfaRepository, AdminMfaRepository>();
         services.AddScoped<IAdminOpenIddictMetricsRepository, AdminOpenIddictMetricsRepository>();
         services.AddScoped<IAdminRoleRepository, AdminRoleRepository>();
@@ -80,12 +83,16 @@ public static class DependencyInjection
         services.AddScoped<IAdminEmailTemplateService, AdminEmailTemplateService>();
         services.AddScoped<IAdminHealthService, AdminHealthService>();
         services.AddScoped<IAdminSecuritySettingsService, AdminSecuritySettingsService>();
+        services.AddScoped<IAdminCompanyService, AdminCompanyService>();
         services.AddScoped<IAdminSessionService, AdminSessionService>();
         services.AddScoped<IAdminPasskeyService, AdminPasskeyService>();
         services.AddScoped<IAdminPermissionService, AdminPermissionService>();
         services.AddScoped<IAdminRoleService, AdminRoleService>();
         services.AddScoped<IAdminUserService, AdminUserService>();
         services.AddScoped<IAdminIdentityProviderService, AdminIdentityProviderService>();
+        services.AddScoped<IEnterpriseApplicationService, EnterpriseApplicationService>();
+        services.AddScoped<ITenantGovernanceService, TenantGovernanceService>();
+        services.AddScoped<IEnterpriseApplicationAccessEvaluator, TenantGovernanceService>();
         services.AddScoped<IAdminMfaService, AdminMfaService>();
         services.AddScoped<IApplicationAuditService, ApplicationAuditService>();
         services.AddScoped<IApplicationSecretsAuditService, ApplicationSecretsAuditService>();

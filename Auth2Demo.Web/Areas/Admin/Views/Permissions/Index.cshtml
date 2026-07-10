@@ -3,33 +3,85 @@
     ViewData["Title"] = T["Permissions"].Value;
 }
 @section AdminHeader {
-    <span class="admin-page-kicker">@T["Authorization"]</span>
+    <span class="admin-page-kicker"><i class="bi bi-key"></i> @T["Authorization"]</span>
     <h1>@T["Permissions"]</h1>
     <p>@T["ControleGranularNoEstilo"] <code>@T["TextUsersRead"]</code>, <code>@T["TextProvidersWrite"]</code> @T["Texte1671797"] <code>@T["TextClientsManage"]</code>.</p>
 }
 
+<section class="admin-card permission-create-card">
+    <div class="admin-card-header">
+        <div>
+            <strong><i class="bi bi-plus-circle"></i> @T["AdminCreatePermission"]</strong>
+            <span>@T["AdminPermissionMatrixHelp"]</span>
+        </div>
+    </div>
+    <form method="post" asp-action="Create" class="form-inline permission-create-form">
+        <div>
+            <label for="permissionName">@T["Name"]</label>
+            <input id="permissionName" name="name" placeholder="@T["TextUsersRead"]" required />
+        </div>
+        <div>
+            <label for="permissionDisplayName">@T["AdminDisplay"]</label>
+            <input id="permissionDisplayName" name="displayName" placeholder="@T["TextLerUsuarios"]" required />
+        </div>
+        <div>
+            <label for="permissionCategory">@T["AdminCategory"]</label>
+            <input id="permissionCategory" name="category" placeholder="@T["Users"]" required />
+        </div>
+        <div class="grow">
+            <label for="permissionDescription">@T["Description"]</label>
+            <input id="permissionDescription" name="description" />
+        </div>
+        <button class="btn" type="submit"><i class="bi bi-plus-circle"></i> @T["Create"]</button>
+    </form>
+</section>
 
-<div class="card"><form method="post" asp-action="Create" class="form-inline"><div><label>@T["Name"]</label><input name="name" placeholder='@T["TextUsersRead"].Value' /></div><div><label>@T["Display"]</label><input name="displayName" placeholder='@T["TextLerUsuarios"].Value' /></div><div><label>@T["Categoria"]</label><input name="category" placeholder='@T["Users"].Value' /></div><div class="grow"><label>@T["Description"]</label><input name="description" /></div><button class="btn">@T["Create"]</button></form></div>
-<div class="table-wrap">
-    <table>
-        <thead>
-            <tr>
-                <th>@T["Permission"]</th>
-                <th>@T["Categoria"]</th>@foreach(var r in Model.Roles){
-                <th>@r.Name</th>
-            }
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var p in Model.Permissions)
-        {
-            <tr>
-                <td><strong>@p.Name</strong><br /><small class="muted">@p.DisplayName</small></td>
-                <td>@p.Category</td>@foreach(var r in Model.Roles){var has=Model.RolePermissions.Any(x=>x.RoleId==r.Id && x.PermissionId==p.Id);
-                <td><form method="post" asp-action="Toggle"><input type="hidden" name="roleId" value="@r.Id" /><input type="hidden" name="permissionId" value="@p.Id" /><button class="btn btn-sm @(has ? "" : "btn-outline")">@(has ? "Permitido" : "Adicionar")</button></form></td>
-            }
-        </tr>
-    }
-</tbody>
-</table>
-</div>
+<section class="admin-card permission-matrix-card">
+    <div class="admin-card-header">
+        <div>
+            <strong><i class="bi bi-grid-3x3-gap"></i> @T["AdminPermissionMatrix"]</strong>
+            <span>@T["AdminPermissionMatrixHelp"]</span>
+        </div>
+        <span class="badge">@Model.Permissions.Count permission(s)</span>
+    </div>
+    <div class="table-wrap permission-table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>@T["Permission"]</th>
+                    <th>@T["AdminCategory"]</th>
+                    @foreach (var role in Model.Roles)
+                    {
+                        <th>@role.Name</th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var permission in Model.Permissions)
+                {
+                    <tr>
+                        <td>
+                            <strong>@permission.Name</strong><br />
+                            <small class="muted">@permission.DisplayName</small>
+                        </td>
+                        <td><span class="badge">@permission.Category</span></td>
+                        @foreach (var role in Model.Roles)
+                        {
+                            var hasPermission = Model.RolePermissions.Any(x => x.RoleId == role.Id && x.PermissionId == permission.Id);
+                            <td>
+                                <form method="post" asp-action="Toggle" class="inline">
+                                    <input type="hidden" name="roleId" value="@role.Id" />
+                                    <input type="hidden" name="permissionId" value="@permission.Id" />
+                                    <button class="btn btn-sm @(hasPermission ? "" : "btn-outline")" type="submit">
+                                        <i class="bi @(hasPermission ? "bi-check-circle" : "bi-plus-circle")"></i>
+                                        @(hasPermission ? T["AdminAllowed"] : T["AdminAdd"])
+                                    </button>
+                                </form>
+                            </td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</section>

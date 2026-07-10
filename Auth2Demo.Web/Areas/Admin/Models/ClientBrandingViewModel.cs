@@ -64,6 +64,12 @@ public sealed class ClientBrandingViewModel
 
     public bool ShowForgotPasswordLink { get; set; } = true;
 
+    /// <summary>
+    /// Shows the branded authorization denied screen before returning the error to the client.
+    /// When disabled, the OIDC error is returned to the requesting application immediately.
+    /// </summary>
+    public bool ShowAuthorizationDeniedPage { get; set; } = true;
+
     public bool EnableLocalLogin { get; set; } = true;
 
     public List<string> EnabledProviderSchemes { get; set; } = new();

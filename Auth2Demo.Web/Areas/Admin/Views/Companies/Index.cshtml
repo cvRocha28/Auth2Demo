@@ -1,0 +1,48 @@
+@model IReadOnlyList<Auth2Demo.Web.Areas.Admin.Models.CompanyListItemViewModel>
+@{
+    ViewData["Title"] = "Empresas";
+}
+
+@section AdminHeader {
+    <span class="admin-page-kicker">DIRECTORY</span>
+    <h1>Empresas</h1>
+    <p>Separe aplicações, provedores externos e usuários por empresa, semelhante a um tenant corporativo.</p>
+}
+
+@section AdminActions {
+    <a class="btn" asp-action="Create"><i class="bi bi-building-add"></i> Nova empresa</a>
+}
+
+<div class="card table-card">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Empresa</th>
+                <th>Domínio</th>
+                <th>Localização</th>
+                <th>Providers</th>
+                <th>Status</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    <strong>@item.DisplayName</strong>
+                    <small>@item.Name @(item.IsDefault ? "• padrão" : null)</small>
+                </td>
+                <td>@(item.DomainHint ?? "-")</td>
+                <td>@(item.Country ?? "-") / @(item.Culture ?? "-")</td>
+                <td>@item.ProviderCount</td>
+                <td><span class="status @(item.IsEnabled ? "success" : "muted")">@(item.IsEnabled ? "Ativa" : "Inativa")</span></td>
+                <td class="actions">
+                    <a class="btn btn-sm btn-outline" asp-controller="TenantDirectory" asp-action="Index" asp-route-companyId="@item.Id"><i class="bi bi-people"></i> Users & groups</a>
+                    <a class="btn btn-sm btn-outline" asp-action="Edit" asp-route-id="@item.Id">Editar</a>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>
